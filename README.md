@@ -7,10 +7,10 @@ This repository is my personal [skills.sh](https://skills.sh/) style knowledge b
 ## Installation
 
 ```bash
-npx skills add https://github.com/hugo082/skills
+vpx skills add https://github.com/hugo082/skills
 # Or
-npx skills add https://github.com/hugo082/skills --skill domain-driven-design
-npx skills add https://github.com/hugo082/skills --skill domain-driven-design-for-typescript
+vpx skills add https://github.com/hugo082/skills --skill domain-driven-design
+vpx skills add https://github.com/hugo082/skills --skill domain-driven-design-for-typescript
 ```
 
 ## Skills index
