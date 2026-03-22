@@ -15,25 +15,31 @@ Use this guide to run collaborative workshops that uncover domain knowledge and 
 ## Workshop Formats (choose based on maturity)
 
 ### 1) Big Picture Event Storming
+
 Use when starting from scratch, or when many teams/systems interact.
 
 **Output:**
+
 - End-to-end event flow of the business process
 - Pain points, bottlenecks, unknowns
 - Candidate context boundaries
 
 ### 2) Process-Level Event Storming
+
 Use when one process is selected (e.g., onboarding, checkout, claims).
 
 **Output:**
+
 - Detailed commands/events/policies
 - External dependencies and timing constraints
 - Candidate aggregates and invariants
 
 ### 3) Design-Level Session
+
 Use when implementing a specific use case.
 
 **Output:**
+
 - Aggregate boundaries
 - Invariants and state transitions
 - Domain events + application orchestration plan
@@ -78,31 +84,40 @@ Use consistent notation to reduce confusion:
 ## Event Storming Flow (facilitator playbook)
 
 ### Step 1: Capture domain events first
+
 Ask: **“What happened in the business?”**  
 Write events in past tense and place them on a timeline.
 
 Rules:
+
 - Prefer business language over technical jargon.
 - Split coarse events into meaningful sub-events where needed.
 - Keep chronology accurate enough for causal reasoning.
 
 ### Step 2: Add commands and actors
+
 For each event, ask: **“What command caused this?”** and **“Who/what issued it?”**
 
 ### Step 3: Add policies and decision points
+
 Ask:
+
 - “What rule decides whether this proceeds?”
 - “What conditions trigger retries, escalations, or rejection?”
 
 Document deterministic rules and discretionary decisions separately.
 
 ### Step 4: Surface read models and data needs
+
 Ask:
+
 - “What information must be visible to make this decision?”
 - “Where does that information come from, and how fresh must it be?”
 
 ### Step 5: Mark hotspots
+
 Flag:
+
 - Terminology conflicts (polysemes)
 - Unclear ownership
 - Unknown edge cases
@@ -110,14 +125,18 @@ Flag:
 - SLA or compliance risks
 
 ### Step 6: Propose bounded context candidates
+
 Group events/commands by:
+
 - language consistency
 - business capability
 - team ownership
 - consistency requirements
 
 ### Step 7: Validate with scenario replay
+
 Replay 2–3 realistic scenarios end-to-end:
+
 - happy path
 - high-risk path
 - failure/recovery path
@@ -131,26 +150,31 @@ Refine terminology and boundaries in real time.
 Use these prompts to deepen model quality.
 
 ### Language and meaning
+
 - “Does this term mean the same thing for all participants?”
 - “Where does this word become ambiguous?”
 - “What business term are we avoiding because code uses another one?”
 
 ### Invariants and consistency
+
 - “What must always be true after this action?”
 - “What cannot be allowed, even under concurrency?”
 - “Can this rule be eventually consistent, or must it be immediate?”
 
 ### Ownership and boundaries
+
 - “Which team owns this decision end-to-end?”
 - “Which changes can happen independently without breaking others?”
 - “Where do we need translation instead of shared models?”
 
 ### Failure and recovery
+
 - “What happens when this external system is unavailable?”
 - “How do we prevent duplicate actions?”
 - “What compensating action is needed if step N fails after N-1 succeeded?”
 
 ### Value and prioritization
+
 - “Which part is core domain vs supporting/generic?”
 - “If we model only one area this sprint, where is highest leverage?”
 
@@ -161,28 +185,36 @@ Use these prompts to deepen model quality.
 Convert outputs within 24 hours while context is fresh.
 
 ## 1) Ubiquitous Language draft
+
 Create a glossary with:
+
 - canonical term
 - definition
 - context where valid
 - known synonyms to avoid
 
 ## 2) Bounded Context map (draft)
+
 For each candidate context:
+
 - responsibilities
 - owned model terms
 - upstream/downstream dependencies
 - integration pattern hypotheses (ACL, conformist, OHS, etc.)
 
 ## 3) Tactical model candidates
+
 For priority use cases:
+
 - candidate aggregates
 - invariants per aggregate
 - key entities/value objects
 - domain events and handlers
 
 ## 4) Risk register
+
 Track hotspots with owner + next action:
+
 - unresolved ambiguity
 - integration uncertainty
 - policy/compliance gaps

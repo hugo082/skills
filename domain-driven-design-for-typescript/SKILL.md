@@ -106,16 +106,16 @@ This avoids breaking changes when adding optional parameters while keeping simpl
 
 Never put multiple commands, queries, events, errors, or adapters in the same file.
 
-| Concept | Location | Example |
-|---------|----------|---------|
-| Error | `domain/errors/` | `order-not-found.ts` |
-| Value object | `domain/value-objects/` | `money.ts` |
-| Aggregate | `domain/aggregates/<name>/` | `order/order.ts` |
-| Child entity | `domain/aggregates/<name>/` | `order/order-line.ts` |
+| Concept      | Location                           | Example                           |
+| ------------ | ---------------------------------- | --------------------------------- |
+| Error        | `domain/errors/`                   | `order-not-found.ts`              |
+| Value object | `domain/value-objects/`            | `money.ts`                        |
+| Aggregate    | `domain/aggregates/<name>/`        | `order/order.ts`                  |
+| Child entity | `domain/aggregates/<name>/`        | `order/order-line.ts`             |
 | Domain event | `domain/aggregates/<name>/events/` | `order/events/order-confirmed.ts` |
-| Port | `domain/ports/` | `order-repository.ts` |
-| Command | `application/commands/` | `place-order.ts` |
-| Query | `application/queries/` | `get-order.ts` |
+| Port         | `domain/ports/`                    | `order-repository.ts`             |
+| Command      | `application/commands/`            | `place-order.ts`                  |
+| Query        | `application/queries/`             | `get-order.ts`                    |
 
 ### Barrel exports
 
@@ -158,11 +158,11 @@ Define runtime schema with zod, infer static type, keep them co-located:
 ```ts
 import { z } from "zod";
 
+export type Money = z.output<typeof Money>;
 export const Money = z.object({
   amount: z.number().finite().nonnegative(),
-  currency: z.enum(["EUR", "USD"])
+  currency: z.enum(["EUR", "USD"]),
 });
-export type Money = z.output<typeof Money>;
 ```
 
 Parse/validate at boundary entry points. Never manually define types that drift from schemas.
@@ -174,11 +174,15 @@ Use user-provided `assert(condition, error?)` for all invariant checks:
 ```ts
 // Signature: assert(condition: unknown, error?: Error | string): asserts condition
 
+// Good
 assert(order.status === "Draft", new OrderNotEditable(order.id));
 assert(line.quantity > 0, "Quantity must be positive");
-```
 
-**Never** use `if (condition) throw new Error(...)` pattern.
+// Wrong
+if (order.status !== "Draft") {
+  throw new OrderNotEditable(order.id);
+}
+```
 
 ### Error classes
 
@@ -187,6 +191,7 @@ One error per file in `domain/errors/`, with code and context:
 ```ts
 export class OrderNotEditable extends Error {
   readonly code = "order.not-editable";
+
   constructor(public readonly orderId: string) {
     super(`Order ${orderId} is not editable`);
     this.name = "OrderNotEditable";
@@ -222,6 +227,7 @@ For detailed implementation patterns, see:
 ## Boundaries and non-goals
 
 This skill **provides**:
+
 - Pragmatic DDD folder structure for TypeScript
 - Class-free modeling guidance
 - Zod-first schema/type strategy
@@ -230,6 +236,7 @@ This skill **provides**:
 - Barrel export conventions
 
 This skill **does not** provide:
+
 - Framework-specific setup (NestJS, Express, Fastify)
 - ORM implementation details (Prisma, TypeORM)
 - Event-sourcing infrastructure

@@ -25,6 +25,7 @@ Use this guide to review design and code through a Domain-Driven Design lens. Fo
 - [ ] Language is consistent across domain code, tests, ADRs, and API contracts.
 
 **Red flags**
+
 - Generic technical names replacing business concepts.
 - Same term used with different meanings in one module.
 - Domain expert vocabulary appears in tickets/docs but not in code.
@@ -40,6 +41,7 @@ Use this guide to review design and code through a Domain-Driven Design lens. Fo
 - [ ] Team ownership and change boundaries align with code boundaries.
 
 **Red flags**
+
 - Shared “common domain” package containing unrelated context models.
 - Copy-pasted integration logic spread across services.
 - A single model forced to satisfy conflicting business meanings.
@@ -55,6 +57,7 @@ Use this guide to review design and code through a Domain-Driven Design lens. Fo
 - [ ] Invariants are tested with both happy-path and failure scenarios.
 
 **Red flags**
+
 - “Anemic” entities with all rules in application services.
 - Huge aggregates with many child collections and cross-links.
 - Invariants enforced only in controllers/handlers, not in domain model.
@@ -69,6 +72,7 @@ Use this guide to review design and code through a Domain-Driven Design lens. Fo
 - [ ] Primitive obsession is reduced via meaningful Value Objects (`Money`, `Email`, `PolicyPeriod`, etc.).
 
 **Red flags**
+
 - Mutable Value Objects.
 - Business validations duplicated in many call sites.
 - Entities compared by mutable attributes rather than identity.
@@ -83,6 +87,7 @@ Use this guide to review design and code through a Domain-Driven Design lens. Fo
 - [ ] Transaction boundaries are explicit and aligned with aggregate consistency boundaries.
 
 **Red flags**
+
 - Application service with long `if/else` business decision trees.
 - Domain service doing persistence/transport concerns directly.
 - “God service” coordinating many unrelated subdomains.
@@ -100,6 +105,7 @@ Use this guide to review design and code through a Domain-Driven Design lens. Fo
 - [ ] Side effects are eventually consistent when crossing aggregate/context boundaries.
 
 **Red flags**
+
 - Events used as command substitutes (“DoXNowEvent”).
 - Chattiness: too many low-value events.
 - Missing deduplication/idempotency strategy in consumers.
@@ -114,6 +120,7 @@ Use this guide to review design and code through a Domain-Driven Design lens. Fo
 - [ ] Lazy-loading behavior does not accidentally bypass invariant checks.
 
 **Red flags**
+
 - Domain entities with ORM annotations tightly coupling business model and persistence model (unless intentionally accepted and controlled).
 - Repositories returning persistence DTOs directly to domain.
 - Multiple partial saves inside one aggregate state transition.
@@ -128,6 +135,7 @@ Use this guide to review design and code through a Domain-Driven Design lens. Fo
 - [ ] Read model shortcuts do not bypass critical write-side invariants.
 
 **Red flags**
+
 - Framework concerns imported into core domain module.
 - CQRS introduced with no clear pain point (unnecessary complexity).
 - “Clean architecture” layering present in folders only, not in dependency direction.
@@ -143,6 +151,7 @@ Use this guide to review design and code through a Domain-Driven Design lens. Fo
 - [ ] Test names use ubiquitous language.
 
 **Red flags**
+
 - Mostly controller/integration tests with little domain behavior coverage.
 - Snapshot-heavy tests that miss business rule intent.
 - Invariant failures discovered only in end-to-end tests.
@@ -151,33 +160,36 @@ Use this guide to review design and code through a Domain-Driven Design lens. Fo
 
 ## Common pitfalls and corrective actions
 
-| Pitfall | Why it hurts | Corrective action |
-|---|---|---|
-| Anemic domain model | Business logic drifts to services, hard to protect invariants | Move behavior into aggregates/entities/VOs |
-| Overgrown aggregates | High contention, complex transactions, poor scalability | Split by true consistency boundaries; use events between aggregates |
-| One model for all contexts | Semantic conflicts and coupling | Define bounded contexts and explicit translations |
-| DTO = Domain object | Transport concerns pollute domain model | Map DTOs at boundaries |
-| Premature microservices | Distributed complexity before model clarity | Start modular monolith with context boundaries |
-| Event overproduction | Operational noise and accidental coupling | Emit only meaningful domain facts |
-| Ignoring domain experts | Model diverges from real business | Re-establish collaborative modeling loops |
-| Overengineering simple CRUD | Cost without proportional value | Use lighter patterns where domain is simple |
+| Pitfall                     | Why it hurts                                                  | Corrective action                                                   |
+| --------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Anemic domain model         | Business logic drifts to services, hard to protect invariants | Move behavior into aggregates/entities/VOs                          |
+| Overgrown aggregates        | High contention, complex transactions, poor scalability       | Split by true consistency boundaries; use events between aggregates |
+| One model for all contexts  | Semantic conflicts and coupling                               | Define bounded contexts and explicit translations                   |
+| DTO = Domain object         | Transport concerns pollute domain model                       | Map DTOs at boundaries                                              |
+| Premature microservices     | Distributed complexity before model clarity                   | Start modular monolith with context boundaries                      |
+| Event overproduction        | Operational noise and accidental coupling                     | Emit only meaningful domain facts                                   |
+| Ignoring domain experts     | Model diverges from real business                             | Re-establish collaborative modeling loops                           |
+| Overengineering simple CRUD | Cost without proportional value                               | Use lighter patterns where domain is simple                         |
 
 ---
 
 ## Review comment templates
 
 ### Critical issue
+
 - **Finding:** Invariant `<X>` can be bypassed by `<path>`.
 - **DDD principle:** Aggregate must enforce invariants internally.
 - **Request:** Move rule into `<Aggregate.method>` and block invalid transition.
 - **Suggested test:** `shouldReject<Transition>When<Condition>`.
 
 ### Major issue
+
 - **Finding:** `<ContextA>` model leaks into `<ContextB>` through `<dependency>`.
 - **DDD principle:** Bounded contexts require explicit translation.
 - **Request:** Introduce adapter/ACL mapping at boundary.
 
 ### Minor issue
+
 - **Finding:** Name `<TechnicalName>` obscures domain meaning.
 - **DDD principle:** Preserve ubiquitous language in code.
 - **Request:** Rename to `<DomainTerm>` and update tests/docs.

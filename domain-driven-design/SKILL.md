@@ -13,6 +13,7 @@ DDD is especially relevant in domains with high complexity, evolving business ru
 ## Foundational perspective
 
 DDD is not only a set of coding patterns. It combines:
+
 - **Strategic Design**: deciding where model boundaries exist and how contexts relate.
 - **Tactical Design**: implementing domain concepts so invariants and behavior are preserved in code.
 - **Collaborative Modeling**: evolving the model through domain knowledge refinement.
@@ -46,6 +47,7 @@ Different bounded contexts can legitimately use different models for the same wo
 ## Related architecture knowledge
 
 DDD commonly aligns with:
+
 - **Hexagonal Architecture (Ports and Adapters)** for isolating domain logic from external systems.
 - **Clean Architecture** for dependency direction toward business rules.
 - **CQRS** when read/write concerns diverge significantly and justify separate models.

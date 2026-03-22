@@ -18,8 +18,8 @@ This skill defines how to use Domain-Driven Design as a thinking and collaborati
 
 ## DDD session lifecycle (for collaboration)
 
-1. Frame the problem and desired outcomes  
-2. Explore domain language and key concepts  
-3. Identify boundaries (contexts, actors, responsibilities)  
-4. Surface domain events, rules, and constraints  
+1. Frame the problem and desired outcomes
+2. Explore domain language and key concepts
+3. Identify boundaries (contexts, actors, responsibilities)
+4. Surface domain events, rules, and constraints
 5. Consolidate insights into shared understanding and next steps

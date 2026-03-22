@@ -18,6 +18,7 @@ Use it to avoid one oversized, ambiguous model and to preserve clarity as teams 
 Classify the business domain into subdomains before deep modeling.
 
 ### Core Domain
+
 The part that creates strategic advantage and should receive your best modeling effort.
 
 - Highest product/engineering attention
@@ -25,18 +26,21 @@ The part that creates strategic advantage and should receive your best modeling 
 - Strong language precision and boundary protection
 
 ### Supporting Subdomain
+
 Necessary capabilities that support the core but are not differentiators.
 
 - Keep clean and maintainable
 - Avoid over-investing in sophisticated modeling unless justified
 
 ### Generic Subdomain
+
 Commodity capabilities that are widely available.
 
 - Prefer buy/adopt over custom building
 - Focus on integration quality, not novelty
 
 ### Practical heuristic
+
 If a capability does **not** improve competitive advantage, avoid turning it into a modeling masterpiece.
 
 ---
@@ -46,11 +50,13 @@ If a capability does **not** improve competitive advantage, avoid turning it int
 A **Bounded Context** is an explicit boundary where a specific model and language are consistent and valid.
 
 Inside a context:
+
 - Terms have one clear meaning.
 - Invariants and rules are coherent.
 - Model and code evolve together.
 
 Across contexts:
+
 - Same word can mean different things.
 - Direct model reuse is dangerous.
 - Translation is usually required.
@@ -86,6 +92,7 @@ Ubiquitous Language (UL) is context-specific, not global.
 ### Polyseme handling
 
 When a term has multiple meanings:
+
 1. Acknowledge the conflict explicitly.
 2. Assign each meaning to its context.
 3. Use translation at boundaries.
@@ -101,67 +108,88 @@ It is both a technical and organizational artifact.
 ## Common relationship patterns
 
 ### Partnership
+
 Two teams coordinate closely and evolve together.
 
 Use when:
+
 - Joint success depends on tight alignment.
 
 Risk:
+
 - Coordination overhead and schedule coupling.
 
 ### Customer/Supplier
+
 Downstream (customer) depends on upstream (supplier), with influence on upstream priorities.
 
 Use when:
+
 - One context provides capabilities to another with active collaboration.
 
 Risk:
+
 - Supplier overload if too many customers compete.
 
 ### Conformist
+
 Downstream adopts upstream model as-is.
 
 Use when:
+
 - Speed and low translation cost matter more than local model purity.
 
 Risk:
+
 - Downstream loses conceptual control and may inherit poor upstream design.
 
 ### Anti-Corruption Layer (ACL)
+
 A translation boundary that protects your model from external semantics.
 
 Use when:
+
 - Preserving local model integrity is important.
 - External model is legacy/noisy/misaligned.
 
 Risk:
+
 - Added implementation effort, but usually worth it for core domains.
 
 ### Open Host Service (OHS)
+
 A well-defined published interface/protocol for integration.
 
 Use when:
+
 - Multiple consumers need stable access to capabilities.
 
 Risk:
+
 - Versioning and backward compatibility burden.
 
 ### Published Language
+
 Shared contract format for communication between contexts.
 
 Use when:
+
 - Integration needs stable, explicit schema/terms.
 
 Risk:
+
 - Drift if governance is weak.
 
 ### Shared Kernel
+
 A carefully shared subset of model/code between two contexts.
 
 Use when:
+
 - Shared concepts are small, stable, and collaboratively governed.
 
 Risk:
+
 - Hidden coupling and change coordination pain if it grows.
 
 ---
@@ -232,22 +260,27 @@ A strong strategic design usually shows:
 ## 9) Common strategic mistakes and fixes
 
 ### Mistake: One model for the whole enterprise
+
 **Impact:** semantic conflicts, massive coupling, slow change.  
 **Fix:** split by bounded contexts and add translation.
 
 ### Mistake: Treating all subdomains equally
+
 **Impact:** underinvestment in core, waste in generic areas.  
 **Fix:** invest heavily only in core; simplify/buy where appropriate.
 
 ### Mistake: Shared kernel overuse
+
 **Impact:** hidden coupling and release lockstep.  
 **Fix:** keep shared kernel tiny or replace with explicit contracts.
 
 ### Mistake: Conformist in core domain
+
 **Impact:** core decisions constrained by external model.  
 **Fix:** introduce ACL to protect local model.
 
 ### Mistake: Context maps not maintained
+
 **Impact:** architecture drift and integration surprises.  
 **Fix:** periodic map reviews and ownership governance.
 
