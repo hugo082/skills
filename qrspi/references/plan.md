@@ -72,7 +72,7 @@ Write to `.qrspi/<folder>/plan.md`:
 #### Manual Verification
 - [ ] [What to check manually]
 
-**After automated verification passes, pause for human confirmation before proceeding to Phase 2.**
+
 
 ---
 
@@ -94,7 +94,7 @@ Write to `.qrspi/<folder>/plan.md`:
 3. **Include concrete code** — show actual code changes, not just descriptions
 4. **Reference patterns** — every code block should note which existing pattern it follows
 5. **Automated + manual verification** — separate them clearly for each phase
-6. **Pause between phases** — the implementing agent should pause for human confirmation after each phase
+6. **Implementation is autonomous** — the implementing agent will execute all phases without pausing; write each phase to be self-contained
 7. **No open questions** — if something is unclear, research it or ask before writing
 8. **No opinions** — this is a tactical doc, all decisions were made in the design step
 9. **File paths and line numbers** — every change must reference the exact file

@@ -9,20 +9,20 @@ This is the "architecture review" moment. Before writing any plan or code, we al
 ## Inputs
 
 - **QRSPI folder**: read the existing artifacts
+  - `.qrspi/<folder>/task.md` — the original task/ticket description (persisted by the question step)
   - `.qrspi/<folder>/questions.md` — for context on scope
   - `.qrspi/<folder>/research.md` — the objective codebase facts
-- **Task description**: from the original ticket/issue (fetch if needed)
 
 ## Process
 
 1. **Read all existing artifacts and the task description**
+   - Read task.md completely — this is the original intent behind the work
    - Read research.md completely — this is your factual foundation
    - Read questions.md for scope context
-   - Fetch the ticket/issue if referenced
 
 2. **Present your understanding and open questions**
    - Summarize what you understand about the current state (from research)
-   - State the desired end state (from the ticket)
+   - State the desired end state (from task.md)
    - List patterns found in the research that seem relevant
    - **Ask 3–6 focused design questions** — things that require human judgment:
      - Which pattern should we follow when multiple exist?
@@ -77,7 +77,7 @@ Write to `.qrspi/<folder>/design.md`:
 1. **This step is interactive** — do NOT write the design doc without asking questions first
 2. **Do not outsource the thinking** — present options, let the human decide
 3. **Keep the design doc under ~200 lines** — this is a summary, not a plan
-4. **Ground everything in research.md** — cite file:line references for claims about current state
+4. **Ground current state in research.md** — cite file:line references; ground desired state in task.md
 5. **Patterns matter** — explicitly call out which patterns to follow and which to avoid
 6. **All design decisions must be resolved** before writing the document
 7. **Ask "which pattern?" not "should we?"** — give concrete options from the codebase

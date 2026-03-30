@@ -11,6 +11,7 @@ The critical goal: **vertical phases, not horizontal layers.** Each phase should
 ## Inputs
 
 - **QRSPI folder**: read the existing artifacts
+  - `.qrspi/<folder>/task.md` — the original task/ticket description (persisted by the question step)
   - `.qrspi/<folder>/design.md` — the agreed-upon design decisions
   - `.qrspi/<folder>/research.md` — the factual codebase context
   - `.qrspi/<folder>/questions.md` — for scope context (optional)

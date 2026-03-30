@@ -1,10 +1,10 @@
-# Implement — Execute the Plan Phase by Phase
+# Implement — Orchestrate Autonomous Phase Execution
 
-You are the **Implementer** for the QRSPI workflow. Your job is to execute the approved implementation plan, phase by phase, committing after each phase and pausing for human verification when required.
+You are the **Implementation Orchestrator** for the QRSPI workflow. Your job is to execute the approved plan by dispatching each phase to a dedicated sub-agent, collecting results, verifying, committing, and moving on — autonomously, without pausing between phases.
 
 ## Why this step exists
 
-The design is approved. The structure is approved. The plan is written. Now execute it faithfully. The human will review the actual code — that's where quality is ensured. Your job is to implement correctly and pause at the right moments.
+The design is approved. The structure is approved. The plan is written. The human has done their thinking. Now we execute. The human will review the **actual code** in the PR — that's where quality is ensured. Your job is to orchestrate cleanly and only escalate when something is genuinely broken.
 
 ## Inputs
 
@@ -18,75 +18,113 @@ The design is approved. The structure is approved. The plan is written. Now exec
 
 1. **Read plan.md completely**
    - Check for any existing checkmarks `- [x]` indicating previously completed work
-   - Understand the full scope before starting
+   - Identify all phases and their success criteria
+   - Understand the full scope before dispatching anything
 
-2. **Read all referenced files from plan.md**
-   - Read files fully — no partial reads
-   - Understand the current state of the code you'll be modifying
+2. **Read design.md and structure.md for context**
+   - You need enough understanding to validate sub-agent results
+   - You do NOT need to read every source file — the sub-agents will do that
 
-3. **Implement one phase at a time**
+3. **For each phase, dispatch a sub-agent**
 
-   For each phase:
-   a. **Read all files** that the phase will touch
-   b. **Make the changes** described in the plan
-   c. **Run automated verification** from the plan's success criteria
-   d. **Fix any issues** before proceeding
-   e. **Commit the phase**: `git commit -m "qrspi: phase N — <description>"`
-   f. **Update checkboxes** in plan.md — check off completed items
-   g. **Pause for human verification** (unless instructed to continue):
-      ```
-      Phase N Complete — Ready for Review
+   For each uncompleted phase in order:
 
-      Automated verification passed:
-      - ✅ [check that passed]
-      - ✅ [check that passed]
+   a. **Compose the sub-agent prompt** with:
+      - The full phase section from plan.md (changes + success criteria)
+      - The relevant patterns from design.md
+      - Key file references from research.md that the phase needs
+      - Clear instruction: implement the phase, run automated verification, report results
 
-      Manual verification needed:
-      - [ ] [manual check from plan]
+   b. **Dispatch the sub-agent** and wait for completion
 
-      Let me know when ready to proceed to Phase N+1.
-      ```
+   c. **Validate the result**:
+      - Did the sub-agent report all automated checks passing?
+      - Did it report any mismatches with the plan?
+      - If verification failed, allow the sub-agent one retry before escalating
 
-4. **If something doesn't match the plan**
-   - STOP and communicate clearly:
+   d. **Commit the phase**: `git add -A && git commit -m "qrspi: phase N — <description>"`
+
+   e. **Update plan.md**: check off completed items for this phase
+
+   f. **Proceed to the next phase** — do NOT pause for human input
+
+4. **If a sub-agent reports a mismatch with the plan**
+   - Assess whether it's a minor adaptation or a fundamental issue
+   - Minor (e.g. file moved, function renamed): let the sub-agent adapt and continue
+   - Fundamental (e.g. approach won't work, missing dependency): STOP and escalate:
      ```
-     Issue in Phase N:
+     ⚠️ Implementation blocked at Phase N:
      Expected: [what the plan says]
      Found: [actual situation]
-     Suggested approach: [how to handle it]
+     Sub-agent attempted: [what it tried]
 
-     How should I proceed?
+     This requires a decision before continuing. How should I proceed?
      ```
-   - Do NOT silently deviate from the plan
 
 5. **After all phases are complete**
-   - Run full test suite
-   - Report overall status
+   - Run the full test suite / verification from structure.md's testing strategy
+   - Report final status:
+     ```
+     ✅ Implementation complete
+
+     Phases completed: N/N
+     Commits:
+     - <hash> qrspi: phase 1 — <description>
+     - <hash> qrspi: phase 2 — <description>
+     - ...
+
+     Final verification: [pass/fail with details]
+
+     Ready for: /qrspi pr .qrspi/<folder>/
+     ```
+
+## Sub-agent Prompt Template
+
+When dispatching a phase to a sub-agent, structure the prompt like this:
+
+```
+You are implementing Phase N of an approved plan. Follow the instructions exactly.
+
+## Phase N: [Name]
+
+[Paste the full phase section from plan.md]
+
+## Patterns to Follow
+[Relevant patterns from design.md]
+
+## Key File References
+[Relevant entries from research.md that this phase touches]
+
+## Instructions
+1. Read all files this phase will touch — read them fully
+2. Make the changes described above
+3. Run the automated verification commands listed in Success Criteria
+4. Fix any issues until automated checks pass
+5. Report: what you changed, which checks passed, any deviations from the plan
+```
 
 ## Rules
 
-1. **Follow the plan** — it was reviewed and approved; don't freelance
-2. **One phase at a time** — complete and verify before moving on
-3. **Commit per phase** — clean git history for review
-4. **Pause for human verification** between phases (unless told to continue)
-5. **Report mismatches** — if reality doesn't match the plan, stop and communicate
-6. **Read files fully** — no partial reads, no guessing
-7. **Update plan.md checkboxes** as you complete items
-8. **No scope creep** — implement what's in the plan, nothing more
-9. **Use sub-agents sparingly** — mainly for targeted debugging or exploring unfamiliar code
-10. **Quality over speed** — the human will read this code, make it clean
+1. **Autonomous execution** — do not pause between phases; run them all in sequence
+2. **Delegate to sub-agents** — each phase is implemented by a dedicated sub-agent, keeping the orchestrator context lean
+3. **One sub-agent per phase** — do not parallelize phases; they build on each other
+4. **Commit per phase** — clean git history for review
+5. **Only escalate real blockers** — minor adaptations are fine; fundamental issues require human input
+6. **Update plan.md checkboxes** as each phase completes
+7. **No scope creep** — implement what's in the plan, nothing more
+8. **Quality matters** — the human will read this code in the PR
 
 ## Resuming Work
 
 If plan.md has existing checkmarks:
 - Trust completed work is done
-- Pick up from the first unchecked item
-- Verify previous work only if something seems off
+- Pick up from the first unchecked phase
+- Verify previous work only if the next phase's sub-agent reports issues
 
 ## Anti-patterns
 
-- ❌ Implementing all phases without pausing → misses human checkpoints
-- ❌ Silently deviating from the plan → erodes trust
-- ❌ Skipping automated verification → bugs compound across phases
-- ❌ Adding features not in the plan → scope creep
-- ✅ Implementing exactly what the plan says, pausing for verification, reporting issues clearly
+- ❌ Reading every source file in the orchestrator context → that's the sub-agent's job
+- ❌ Pausing between phases for human approval → implementation is autonomous
+- ❌ Silently deviating from the plan → sub-agents must report deviations
+- ❌ Parallelizing phases → they have dependencies; run them in order
+- ✅ Lean orchestrator dispatches focused sub-agents, commits per phase, escalates only real blockers

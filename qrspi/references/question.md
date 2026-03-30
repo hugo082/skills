@@ -12,11 +12,33 @@ A skilled engineer can look at a ticket and know which parts of the codebase mat
 - If an issue number is provided, fetch it: `gh issue view <number>`
 - If a file path is provided, read it fully
 
+## Task Context Persistence
+
+Before generating questions, you **must** persist the original task context so that downstream steps (design, structure) can access it without the human re-providing it.
+
+Write to `.qrspi/<folder>/task.md`:
+
+```markdown
+# Task Context
+
+## Source
+[How the task was provided: inline prompt / issue #N / file path]
+
+## Original Description
+[The full, unmodified task description — copy the issue body, the user's prompt, or the file contents verbatim]
+
+## Core Intent
+[1–2 sentence distillation of what the user wants to accomplish]
+```
+
+This file is the **single source of truth** for what we're building. The research step must NOT read it (to stay objective), but design, structure, and plan steps will.
+
 ## Process
 
 1. **Read and understand the task completely**
    - Read any referenced tickets, files, or issue descriptions
    - Identify the core intent: what does the user want to accomplish?
+   - **Write `.qrspi/<folder>/task.md`** with the full task context (see template above)
 
 2. **Identify the zones of the codebase that matter**
    - What systems/modules will be touched or extended?
@@ -68,7 +90,8 @@ Write to `.qrspi/<folder>/questions.md`:
 5. **Include location hints** — if you suspect relevant code is in `src/workers/`, say so
 6. **4–8 questions maximum** — more questions dilute focus; fewer may miss important context
 7. **Create the folder** if it doesn't exist: `mkdir -p .qrspi/YY-MM-DD-<short-description>`
-8. **Task summary must be neutral** — a reader should not be able to infer the planned change from it
+8. **Persist the task context** — always write `task.md` before writing `questions.md`
+9. **Task summary must be neutral** — a reader should not be able to infer the planned change from it
 
 ## Anti-patterns
 
