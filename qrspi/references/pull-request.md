@@ -50,6 +50,8 @@ The code is implemented and verified. Now we create a PR that gives reviewers th
 - Structure: `.qrspi/<folder>/structure.md`
 - Plan: `.qrspi/<folder>/plan.md`
 - Research: `.qrspi/<folder>/research.md`
+
+Closes: #<issue-number>
 ```
 
 ## Rules
