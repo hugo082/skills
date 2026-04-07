@@ -9,7 +9,7 @@ Good research is all facts. If you tell the model what you're building, you get 
 ## Inputs
 
 - **Questions file**: read `.qrspi/<folder>/questions.md`
-- Do **NOT** read any ticket, task description, or design files — you must not know what is being built
+- Do **NOT** read `task.md`, any ticket, or task description — you must not know what is being built
 
 ## Process
 
@@ -17,17 +17,23 @@ Good research is all facts. If you tell the model what you're building, you get 
    - Understand each question's intent and scope boundaries
    - Note the location hints provided
 
-2. **For each question, spawn a focused sub-agent**
-   - Use **codebase-locator** to find WHERE relevant code lives
-   - Use **codebase-analyzer** to understand HOW specific code works
-   - Use **codebase-pattern-finder** to find examples of existing patterns
-   - Run sub-agents in parallel when they target different areas
+2. **Group questions by codebase zone**
+   - Cluster questions that touch the same directories or modules
+   - Typically you'll get 1–3 groups (e.g. "API layer", "data model", "worker pipeline")
+
+3. **Dispatch 1–3 sub-agents by zone — not one per question**
+   - Each sub-agent covers **all questions in its zone**, not just one
+   - A single sub-agent prompt should list the 2–4 questions it must answer and the directories to focus on
+   - Use the right agent for the job:
+     - **codebase-locator** first if you don't know where things live
+     - **codebase-analyzer** for understanding how code works
+     - **codebase-pattern-finder** for finding existing patterns and examples
+   - If all questions target the same area, **one sub-agent is enough**
+   - Run sub-agents in parallel when they target different zones
    - Each sub-agent must be a documentarian — no opinions, no critiques
 
-3. **Wait for ALL sub-agents to complete**
-
 4. **Synthesize findings into a research document**
-   - Organize by question
+   - Organize by question (even if one sub-agent answered multiple)
    - Include specific file paths and line numbers
    - Document cross-component connections
    - Note patterns and conventions discovered
@@ -86,17 +92,16 @@ Write to `.qrspi/<folder>/research.md`:
 2. **No opinions, suggestions, or critiques** — just facts
 3. **No implementation recommendations** — do not suggest how to change anything
 4. **Always include file:line references** — every claim must be traceable
-5. **Use sub-agents for research** — keep the main context for synthesis
-6. **Wait for all sub-agents** before writing the document
-7. **Do NOT read the ticket or task description** — your objectivity depends on this
-8. **Trace actual code paths** — don't guess or assume
-9. **Include concrete examples** — show actual function signatures, types, patterns
-10. **Stay within scope boundaries** defined in the questions file
+5. **Batch sub-agents by codebase zone** — 1–3 agents total, not one per question
+6. **Do NOT read task.md or the ticket** — your objectivity depends on this
+7. **Trace actual code paths** — don't guess or assume
+8. **Include concrete examples** — show actual function signatures, types, patterns
+9. **Stay within scope boundaries** defined in the questions file
 
 ## Anti-patterns
 
+- ❌ Spawning one sub-agent per question → wastes tokens on overlapping file reads
 - ❌ "This could be improved by..." → opinion
-- ❌ "A better approach would be..." → recommendation
 - ❌ "The problem with this code is..." → critique
+- ✅ One sub-agent covering 3 related questions in the same zone
 - ✅ "This function accepts X and returns Y (file.ext:L42)"
-- ✅ "The codebase uses pattern Z in 3 places: [references]"

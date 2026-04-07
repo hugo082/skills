@@ -16,14 +16,16 @@ The human has already reviewed and approved the design (where we're going) and t
 ## Process
 
 1. **Read all artifacts completely**
-   - design.md for decisions and patterns
+   - design.md for decisions, patterns, and domain model changes
    - structure.md for phase breakdown and signatures
    - research.md for file references and implementation details
+   - If available, load the `domain-driven-design-for-typescript` skill
 
 2. **For each phase in structure.md, write detailed implementation steps**
    - Expand the signatures into concrete code changes
    - Reference specific files and line numbers from research.md
    - Include the exact patterns to follow (from design.md)
+   - **Code must follow DDD-for-TypeScript conventions** when the skill is loaded
    - Write success criteria (automated + manual)
 
 3. **Spawn sub-agents if needed for additional research**
@@ -72,8 +74,6 @@ Write to `.qrspi/<folder>/plan.md`:
 #### Manual Verification
 - [ ] [What to check manually]
 
-
-
 ---
 
 ## Phase 2: [Name from structure.md]
@@ -99,6 +99,7 @@ Write to `.qrspi/<folder>/plan.md`:
 8. **No opinions** — this is a tactical doc, all decisions were made in the design step
 9. **File paths and line numbers** — every change must reference the exact file
 10. **This is a spot-check document** — the human will skim it, so make it scannable with clear headings
+11. **Respect the `domain-driven-design-for-typescript` conventions** when the skill is available — code in the plan is the implementing agent's template
 
 ## Anti-patterns
 

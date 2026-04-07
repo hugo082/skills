@@ -19,16 +19,19 @@ This is the "architecture review" moment. Before writing any plan or code, we al
    - Read task.md completely — this is the original intent behind the work
    - Read research.md completely — this is your factual foundation
    - Read questions.md for scope context
+   - If the `domain-driven-design` (DDD) skill is available, load it with it's references
 
 2. **Present your understanding and open questions**
    - Summarize what you understand about the current state (from research)
    - State the desired end state (from task.md)
    - List patterns found in the research that seem relevant
+   - If using DDD: identify the bounded context(s), relevant aggregates, and proposed domain model changes
    - **Ask 3–6 focused design questions** — things that require human judgment:
      - Which pattern should we follow when multiple exist?
      - What trade-offs should we make?
      - What is explicitly out of scope?
      - Are there constraints not captured in the ticket?
+     - If DDD applies: aggregate boundary choices, naming decisions, invariant ownership
 
 3. **Discuss interactively with the human**
    - Present options with clear trade-offs for each question
@@ -36,7 +39,12 @@ This is the "architecture review" moment. Before writing any plan or code, we al
    - Update your understanding as decisions are made
    - Ask follow-up questions if answers reveal new considerations
 
-4. **Write the design document once all questions are resolved**
+4. **Validate the design against DDD review criteria**
+   - If the DDD skill was loaded, apply the checks from the review reference before writing the final document
+   - Surface any DDD concerns to the human as final questions before writing
+   - This is a lightweight review, not a full audit — focus on critical and major issues only
+
+5. **Write the design document once all questions are resolved**
 
 ## Output
 
@@ -45,11 +53,17 @@ Write to `.qrspi/<folder>/design.md`:
 ```markdown
 # Design: [Feature/Task Name]
 
+## Bounded Context
+[Which bounded context(s) this work belongs to — if DDD applies]
+
 ## Current State
 [What exists today — sourced from research.md with file references]
 
 ## Desired End State
-[What the system should look like after implementation — from the ticket + discussion]
+[What the system should look like after implementation — from task.md + discussion]
+
+## Domain Model Changes
+[If DDD applies: new/modified aggregates, entities, value objects, events, with rationale]
 
 ## Patterns to Follow
 [Specific existing patterns the implementation should model after, with file:line references]
@@ -68,6 +82,9 @@ Write to `.qrspi/<folder>/design.md`:
 ## Out of Scope
 - [Explicitly excluded items]
 
+## DDD Review Notes
+[If DDD applies: summary of the DDD validation — any concerns surfaced and how they were resolved]
+
 ## Open Questions
 - [Any remaining questions — ideally none before proceeding]
 ```
@@ -83,6 +100,8 @@ Write to `.qrspi/<folder>/design.md`:
 7. **Ask "which pattern?" not "should we?"** — give concrete options from the codebase
 8. **The human reviews this document** — optimize for readability and reviewability
 9. **This is not a plan** — describe WHERE we're going, not HOW we get there step-by-step
+10. **Load the `domain-driven-design` skill when available** — apply its guidelines, don't reinvent them
+11. **Validate before finalizing** — run the DDD review checks before writing the document
 
 ## Anti-patterns
 
@@ -90,5 +109,6 @@ Write to `.qrspi/<folder>/design.md`:
 - ❌ Making design decisions autonomously → outsources the thinking
 - ❌ Including step-by-step implementation details → that's the plan's job
 - ❌ Writing 500+ lines → too long, defeats the leverage purpose
+- ❌ Ignoring DDD guidelines when the skill is available → misses modeling rigor
 - ✅ "I found two patterns for X: [A] at file:L42 and [B] at file:L88. Which should we follow?"
-- ✅ "The research shows the codebase handles Y this way. Should we follow the same approach?"
+- ✅ "The DDD review flags that this aggregate boundary might be too wide — should we split?"
