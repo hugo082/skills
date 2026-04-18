@@ -12,7 +12,7 @@ The design is approved. The structure is approved. The plan is written. The huma
   - `.qrspi/<folder>/plan.md` — the tactical implementation plan (primary guide)
   - `.qrspi/<folder>/design.md` — for design decisions if clarification is needed
   - `.qrspi/<folder>/structure.md` — for phase overview
-  - `.qrspi/<folder>/research.md` — for codebase context and file references
+  - `.qrspi/<folder>/research/*.md` — for codebase context and file references (all files, in numeric order)
 
 ## Process
 
@@ -32,7 +32,7 @@ The design is approved. The structure is approved. The plan is written. The huma
    a. **Compose the sub-agent prompt** with:
       - The full phase section from plan.md (changes + success criteria)
       - The relevant patterns from design.md
-      - Key file references from research.md that the phase needs
+      - Key file references from research/*.md that the phase needs
       - Clear instruction: implement the phase, run automated verification, report results
 
    b. **Dispatch the sub-agent** and wait for completion
@@ -93,7 +93,7 @@ You are implementing Phase N of an approved plan. Follow the instructions exactl
 [Relevant patterns from design.md]
 
 ## Key File References
-[Relevant entries from research.md that this phase touches]
+[Relevant entries from research/*.md that this phase touches]
 
 ## Instructions
 1. Read all files this phase will touch — read them fully

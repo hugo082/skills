@@ -12,7 +12,8 @@ The code is implemented and verified. Now we create a PR that gives reviewers th
   - `.qrspi/<folder>/design.md` — for the overview and decisions
   - `.qrspi/<folder>/structure.md` — for the phase breakdown
   - `.qrspi/<folder>/plan.md` — for implementation details
-  - `.qrspi/<folder>/research.md` — for background context
+  - `.qrspi/<folder>/research/*.md` — for background context (all files)
+  - `.qrspi/<folder>/questions/*.md` — for the trail of what was investigated (all files)
 
 ## Process
 
@@ -49,7 +50,8 @@ The code is implemented and verified. Now we create a PR that gives reviewers th
 - Design: `.qrspi/<folder>/design.md`
 - Structure: `.qrspi/<folder>/structure.md`
 - Plan: `.qrspi/<folder>/plan.md`
-- Research: `.qrspi/<folder>/research.md`
+- Research: `.qrspi/<folder>/research/` (<N> files)
+- Questions: `.qrspi/<folder>/questions/` (<N> files)
 
 Closes: #<issue-number>
 ```

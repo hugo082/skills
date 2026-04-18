@@ -11,25 +11,26 @@ The human has already reviewed and approved the design (where we're going) and t
 - **QRSPI folder**: read ALL existing artifacts
   - `.qrspi/<folder>/design.md` — resolved design decisions
   - `.qrspi/<folder>/structure.md` — approved phase breakdown
-  - `.qrspi/<folder>/research.md` — codebase facts and patterns
+  - `.qrspi/<folder>/research/*.md` — all research files, in numeric order
+  - `.qrspi/<folder>/plan.md` — if it already exists, this run is a **revision**
 
 ## Process
 
 1. **Read all artifacts completely**
-   - design.md for decisions, patterns, and domain model changes
-   - structure.md for phase breakdown and signatures
-   - research.md for file references and implementation details
+   - `design.md` for decisions, patterns, and domain model changes
+   - `structure.md` for phase breakdown and signatures
+   - **All** `research/*.md` files (in numeric order) for file references and implementation details
    - If available, load the `domain-driven-design-for-typescript` skill
 
 2. **For each phase in structure.md, write detailed implementation steps**
    - Expand the signatures into concrete code changes
-   - Reference specific files and line numbers from research.md
+   - Reference specific files and line numbers from research/*.md
    - Include the exact patterns to follow (from design.md)
    - **Code must follow DDD-for-TypeScript conventions** when the skill is loaded
    - Write success criteria (automated + manual)
 
 3. **Spawn sub-agents if needed for additional research**
-   - Use **codebase-analyzer** for implementation details not in research.md
+   - Use **codebase-analyzer** for implementation details not in research/*.md
    - Use **codebase-pattern-finder** for concrete code examples to model after
 
 4. **Write the plan document**
@@ -84,7 +85,7 @@ Write to `.qrspi/<folder>/plan.md`:
 ## References
 - Design: `.qrspi/<folder>/design.md`
 - Structure: `.qrspi/<folder>/structure.md`
-- Research: `.qrspi/<folder>/research.md`
+- Research: `.qrspi/<folder>/research/*.md`
 ````
 
 ## Rules

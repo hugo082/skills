@@ -13,14 +13,21 @@ The critical goal: **vertical phases, not horizontal layers.** Each phase should
 - **QRSPI folder**: read the existing artifacts
   - `.qrspi/<folder>/task.md` — the original task/ticket description (persisted by the question step)
   - `.qrspi/<folder>/design.md` — the agreed-upon design decisions
-  - `.qrspi/<folder>/research.md` — the factual codebase context
-  - `.qrspi/<folder>/questions.md` — for scope context (optional)
+  - `.qrspi/<folder>/research/*.md` — **all** research files, in numeric order
+  - `.qrspi/<folder>/questions/*.md` — all question files, for scope context (optional)
+  - `.qrspi/<folder>/structure.md` — if it already exists, this run is a **revision**
+
+## First run vs. revision
+
+- **First run**: `structure.md` does not exist → produce a new file
+- **Revision run**: `structure.md` already exists → usually triggered by the plan step exposing a phasing problem, or by a revision to `design.md`. Rewrite in place with a `Revision Note` at the top. Git tracks history; never version the filename.
 
 ## Process
 
-1. **Read design.md and research.md completely**
+1. **Read design.md and all research files completely**
    - Understand the desired end state and resolved decisions
    - Know which patterns to follow
+   - If `structure.md` already exists, read it — you are revising
 
 2. **Draft the phase breakdown**
    - Break the work into 2–5 vertical phases
@@ -37,10 +44,14 @@ The critical goal: **vertical phases, not horizontal layers.** Each phase should
 
 ## Output
 
-Write to `.qrspi/<folder>/structure.md`:
+Write to `.qrspi/<folder>/structure.md` (overwrite if revising):
 
 ```markdown
 # Structure: [Feature/Task Name]
+
+<!-- Include only on revision runs: -->
+## Revision Note
+[1–3 sentences: what triggered the revision (e.g. "plan step showed Phase 2 depends on a migration that can't happen until Phase 4") and what changed. Git tracks the prior version.]
 
 ## Overview
 [1–2 sentence summary of the implementation approach]

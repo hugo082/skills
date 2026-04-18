@@ -77,26 +77,40 @@ Once the step is identified:
 - **Load only the one reference file for the matched step.** Do not read reference files for other steps. Each step is designed to be self-contained; loading extra context wastes tokens and risks confusion.
 - **All QRSPI artifacts go in `.qrspi/YY-MM-DD-<short-description>/`.** This is defined by project rules in `AGENTS.md` and reinforced in every reference file.
 
+## The process is not linear
+
+The step order below is the *typical* forward flow, but the process loops. When research reveals the questions missed something, go back to `question`. When design surfaces unknowns, run `research` again. When structuring exposes a flaw in the design, revise the design.
+
+Common loop-backs:
+- **research → question**: research answers expose a gap in the questions → write a new question file
+- **design → research**: design needs facts not covered → run research again with new questions
+- **structure → design**: phase breakdown reveals a design flaw → revise `design.md`
+
+How loops are preserved:
+- **`questions/` and `research/` are directories** that accumulate files (`01-initial.md`, `02-<slug>.md`, …). Never overwrite — always add a new numbered file when looping back.
+- **`design.md`, `structure.md`, `plan.md` are single files** that may be revised in place. Git is the revision history; add a short "Revision note" at the top of the file when you rewrite it.
+- **`task.md` is immutable** after the first `question` run — it captures the original intent.
+
 ## Quick reference — typical full workflow
 
 ```
 /qrspi question <task or issue description>
   ↓ agent detangles ticket into targeted research questions
-  ↓ produces .qrspi/.../questions.md
+  ↓ produces .qrspi/.../questions/NN-<slug>.md  (+ task.md on first run)
   ↓ [HUMAN reviews questions, adjusts if needed]
 /qrspi research .qrspi/.../
   ↓ agent researches codebase objectively using questions (no ticket context)
-  ↓ produces .qrspi/.../research.md
-  ↓ [HUMAN reviews research]
+  ↓ produces .qrspi/.../research/NN-<slug>.md
+  ↓ [HUMAN reviews research — may loop back to /qrspi question]
 /qrspi design .qrspi/.../
   ↓ interactive design discussion with human
-  ↓ produces .qrspi/.../design.md
-  ↓ [HUMAN reviews design, resolves open questions]
+  ↓ produces/revises .qrspi/.../design.md
+  ↓ [HUMAN reviews design — may loop back to /qrspi research]
 /qrspi structure .qrspi/.../
-  ↓ produces .qrspi/.../structure.md
-  ↓ [HUMAN reviews structure]
+  ↓ produces/revises .qrspi/.../structure.md
+  ↓ [HUMAN reviews structure — may loop back to /qrspi design]
 /qrspi plan .qrspi/.../
-  ↓ produces .qrspi/.../plan.md (autonomous)
+  ↓ produces/revises .qrspi/.../plan.md (autonomous)
   ↓ [HUMAN spot-checks plan]
 /qrspi worktree .qrspi/.../
   ↓ creates git worktree for isolated implementation
@@ -104,4 +118,20 @@ Once the step is identified:
   ↓ implements phases, commits along the way
 /qrspi pr .qrspi/.../
   ↓ creates PR with summary linking to artifacts
+```
+
+### Example plan directory after a loop
+
+```
+.qrspi/26-04-18-recovery-week/
+├── task.md                        # immutable, written once by /qrspi question
+├── questions/
+│   ├── 01-initial.md              # first pass
+│   └── 02-periodization-edges.md  # added when research exposed a gap
+├── research/
+│   ├── 01-initial.md              # answers 01-initial.md
+│   └── 02-periodization-edges.md  # answers 02-periodization-edges.md
+├── design.md                      # revised in place; git tracks history
+├── structure.md
+└── plan.md
 ```

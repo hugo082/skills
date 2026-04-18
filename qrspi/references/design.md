@@ -10,16 +10,23 @@ This is the "architecture review" moment. Before writing any plan or code, we al
 
 - **QRSPI folder**: read the existing artifacts
   - `.qrspi/<folder>/task.md` — the original task/ticket description (persisted by the question step)
-  - `.qrspi/<folder>/questions.md` — for context on scope
-  - `.qrspi/<folder>/research.md` — the objective codebase facts
+  - `.qrspi/<folder>/questions/*.md` — **all** question files, in numeric order
+  - `.qrspi/<folder>/research/*.md` — **all** research files, in numeric order
+  - `.qrspi/<folder>/design.md` — if it already exists, this run is a **revision**
+
+## First run vs. revision
+
+- **First run**: `design.md` does not exist → produce a new `design.md` from scratch
+- **Revision run**: `design.md` already exists → the human is looping back (usually because `structure`, `plan`, or new research exposed a flaw). Read the existing `design.md`, identify what changed, and rewrite the file in place with a `Revision Note` at the top summarizing what was revised and why. Git tracks the prior version; do not version the filename.
 
 ## Process
 
 1. **Read all existing artifacts and the task description**
-   - Read task.md completely — this is the original intent behind the work
-   - Read research.md completely — this is your factual foundation
-   - Read questions.md for scope context
-   - If the `domain-driven-design` (DDD) skill is available, load it with it's references
+   - Read `task.md` completely — this is the original intent behind the work
+   - Read **every** `research/*.md` completely (in numeric order) — this is your factual foundation; later files may correct or extend earlier ones
+   - Read **every** `questions/*.md` for scope context
+   - If `design.md` already exists, read it — you are revising, not starting fresh
+   - If the `domain-driven-design` (DDD) skill is available, load it with its references
 
 2. **Present your understanding and open questions**
    - Summarize what you understand about the current state (from research)
@@ -48,16 +55,20 @@ This is the "architecture review" moment. Before writing any plan or code, we al
 
 ## Output
 
-Write to `.qrspi/<folder>/design.md`:
+Write to `.qrspi/<folder>/design.md` (overwrite if revising):
 
 ```markdown
 # Design: [Feature/Task Name]
+
+<!-- Include only on revision runs: -->
+## Revision Note
+[1–3 sentences: what triggered this revision (e.g. "structure step exposed that aggregate X spans two bounded contexts"), and what changed since the previous version. Git tracks the exact prior content.]
 
 ## Bounded Context
 [Which bounded context(s) this work belongs to — if DDD applies]
 
 ## Current State
-[What exists today — sourced from research.md with file references]
+[What exists today — sourced from research/*.md with file references]
 
 ## Desired End State
 [What the system should look like after implementation — from task.md + discussion]
@@ -94,7 +105,7 @@ Write to `.qrspi/<folder>/design.md`:
 1. **This step is interactive** — do NOT write the design doc without asking questions first
 2. **Do not outsource the thinking** — present options, let the human decide
 3. **Keep the design doc under ~200 lines** — this is a summary, not a plan
-4. **Ground current state in research.md** — cite file:line references; ground desired state in task.md
+4. **Ground current state in research/*.md** — cite file:line references; ground desired state in task.md
 5. **Patterns matter** — explicitly call out which patterns to follow and which to avoid
 6. **All design decisions must be resolved** before writing the document
 7. **Ask "which pattern?" not "should we?"** — give concrete options from the codebase
