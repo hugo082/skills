@@ -56,12 +56,43 @@ Write to `.qrspi/<folder>/structure.md` (overwrite if revising):
 ## Overview
 [1–2 sentence summary of the implementation approach]
 
+## Type Definitions
+Shared types/interfaces introduced or modified across phases. Use a fenced code block in the project's language — do not label it `Signatures:`; the fence implies the content type.
+
+```go
+type ExampleInput struct {
+    TenantID int32
+}
+
+func DoThing(ctx context.Context, input ExampleInput) (ExampleResult, error)
+```
+
+## Database Schema (if applicable)
+```sql
+create table example_records (
+    id bigserial primary key,
+    tenant_id integer not null
+);
+```
+
+## Package / File Structure
+- `path/to/new-package/` — [purpose]
+- `path/to/existing.ext` — [what role it plays]
+
+## API Surface (if applicable)
+Fenced block in the appropriate language (`go`, `ts`, `proto`, etc.) showing endpoints/RPCs.
+
+---
+
 ## Phase 1: [Descriptive Name]
 **Goal**: [What this phase accomplishes — should be independently verifiable]
 
 ### New/Modified Signatures
-- `functionName(param: Type): ReturnType` — [purpose]
-- `NewTypeName { field: Type }` — [purpose]
+```go
+func FunctionName(param Type) (ReturnType, error)
+
+type NewStruct struct { ... }
+```
 
 ### Files Touched
 - `path/to/file.ext` — [what changes]
@@ -78,7 +109,9 @@ Write to `.qrspi/<folder>/structure.md` (overwrite if revising):
 **Depends on**: Phase 1
 
 ### New/Modified Signatures
-[...]
+```go
+// signatures specific to this phase
+```
 
 ### Files Touched
 [...]
@@ -95,6 +128,9 @@ Write to `.qrspi/<folder>/structure.md` (overwrite if revising):
 
 ## Risk Notes
 [Anything tricky that the plan/implementation should pay extra attention to]
+
+## Out of Scope
+- [Things explicitly not included in this implementation — deferred work, adjacent refactors, features the design intentionally excluded]
 ```
 
 ## Rules
@@ -102,13 +138,15 @@ Write to `.qrspi/<folder>/structure.md` (overwrite if revising):
 1. **Vertical phases, not horizontal layers** — each phase delivers a testable slice
 2. **2–5 phases maximum** — more than 5 means the feature should be split into multiple tasks
 3. **Show signatures, not implementations** — like C header files, show the shape without the body
-4. **Each phase must have validation criteria** — how do we know it worked?
-5. **Keep it under ~2 pages** — this is reviewed by humans, brevity is leverage
-6. **Present to the human before writing** — get buy-in on the phasing
-7. **Order matters** — phases should build on each other, not be independent silos
-8. **Include file paths** — the human should know exactly which files are affected
-9. **Flag risks** — if something is tricky or error-prone, call it out
-10. **This is not the plan** — no step-by-step implementation details, just the shape
+4. **Use fenced code blocks for structural content** — `go`/`ts`/`py`/`sql`/`proto` for types, signatures, schema. Do not put labels like `Signatures:` inside fences; the fence implies the content type. Reserve bullet lists for file paths, checkpoints, and scope notes.
+5. **Declare an `Out of Scope` section** — explicit exclusions prevent scope creep during planning/implementation
+6. **Each phase must have validation criteria** — how do we know it worked?
+7. **Keep it under ~2 pages** — this is reviewed by humans, brevity is leverage
+8. **Present to the human before writing** — get buy-in on the phasing
+9. **Order matters** — phases should build on each other, not be independent silos
+10. **Include file paths** — the human should know exactly which files are affected
+11. **Flag risks** — if something is tricky or error-prone, call it out
+12. **This is not the plan** — no step-by-step implementation details, just the shape
 
 ## Anti-patterns
 
