@@ -95,6 +95,11 @@ Never edit or overwrite existing `research/*.md` files. If a previous research f
 - [Shared conventions discovered]
 - [Integration points between the researched areas]
 
+## Surprises
+- [Unexpected findings outside the question scope]
+- [Assumptions the code contradicts]
+- [Constraints or patterns not asked about but relevant downstream]
+
 ## Code References Index
 [Deduplicated list of all files referenced, grouped by directory]
 ```
@@ -109,9 +114,15 @@ Never edit or overwrite existing `research/*.md` files. If a previous research f
 6. **Do NOT read task.md or the ticket** — your objectivity depends on this
 7. **Trace actual code paths** — don't guess or assume
 8. **Include concrete examples** — show actual function signatures, types, patterns
-9. **Stay within scope boundaries** defined in the question file
-10. **Never overwrite an existing `research/*.md`** — produce one research file per unanswered question file; history is preserved by accumulation
-11. **Only research unanswered question files** — if `research/<NN>-<slug>.md` exists for `questions/<NN>-<slug>.md`, skip it
+9. **Quote code directly** for non-obvious signatures, invariants, or subtle control flow — a short verbatim snippet beats a paraphrase
+10. **If a question cannot be answered from code, say so explicitly** — write `Could not determine from code` with a one-line reason. Do not guess or infer.
+11. **Stay within scope boundaries** defined in the question file
+12. **Never overwrite an existing `research/*.md`** — produce one research file per unanswered question file; history is preserved by accumulation
+13. **Only research unanswered question files** — if `research/<NN>-<slug>.md` exists for `questions/<NN>-<slug>.md`, skip it
+
+## Learning tests (for black-box dependencies)
+
+When a question targets an external SDK, closed-source API, or other black-box behavior that cannot be resolved by reading the codebase, a **learning test** is in-scope: a small throwaway script that exercises the dependency and proves how it actually behaves. Record the script's observed output as a quoted fact in the research doc (with the script itself inlined or referenced). Learning tests are not shipped code — their purpose is to replace assumptions with evidence before the plan is written.
 
 ## Anti-patterns
 
