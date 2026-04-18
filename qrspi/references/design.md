@@ -123,3 +123,15 @@ Write to `.qrspi/<folder>/design.md` (overwrite if revising):
 - ❌ Ignoring DDD guidelines when the skill is available → misses modeling rigor
 - ✅ "I found two patterns for X: [A] at file:L42 and [B] at file:L88. Which should we follow?"
 - ✅ "The DDD review flags that this aggregate boundary might be too wide — should we split?"
+
+## Handoff
+
+When the design doc is written and all open questions are resolved, close your reply with:
+
+```
+Artifact: .qrspi/<folder>/design.md
+Summary: <1–2 sentences: where we're going and the main decisions locked in>
+Next: /qrspi structure .qrspi/<folder>/
+```
+
+- **Alt-Next** (loop back): `/qrspi research .qrspi/<folder>/` if the design surfaced missing facts that require a fresh research pass.

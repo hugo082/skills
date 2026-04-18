@@ -118,3 +118,15 @@ Write to `.qrspi/<folder>/structure.md` (overwrite if revising):
 - ❌ Skipping validation criteria → defeats the purpose of phasing
 - ✅ Phase 1: "Add mock endpoint + wire to frontend" → testable vertical slice
 - ✅ Phase 2: "Implement real service layer + database migration" → builds on phase 1
+
+## Handoff
+
+When structure.md is written and the phasing is approved by the human, close your reply with:
+
+```
+Artifact: .qrspi/<folder>/structure.md
+Summary: <N phases, brief shape of the path forward and how we validate along the way>
+Next: /qrspi plan .qrspi/<folder>/
+```
+
+- **Alt-Next** (loop back): `/qrspi design .qrspi/<folder>/` if phasing exposed a design flaw that must be resolved before planning.

@@ -109,3 +109,15 @@ Write to `.qrspi/<folder>/plan.md`:
 - ❌ Vague instructions like "update the handler" → specify exactly what changes
 - ❌ Missing success criteria → every phase needs verification
 - ✅ "Add `processSpline(input: SplineInput): SplineOutput` to `services/spline.ts:L45`, modeling after `processWidget` at `services/widget.ts:L23`"
+
+## Handoff
+
+When plan.md is written, close your reply with:
+
+```
+Artifact: .qrspi/<folder>/plan.md
+Summary: <N phases; rough line count or scope summary of the code changes ahead>
+Next: /qrspi implement .qrspi/<folder>/
+```
+
+- **Optional detour**: if the human wants isolation before implementation, they can run `/qrspi worktree .qrspi/<folder>/` first. Worktree is no longer a default pipeline step.

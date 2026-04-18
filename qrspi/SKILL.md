@@ -112,8 +112,7 @@ How loops are preserved:
 /qrspi plan .qrspi/.../
   ↓ produces/revises .qrspi/.../plan.md (autonomous)
   ↓ [HUMAN spot-checks plan]
-/qrspi worktree .qrspi/.../
-  ↓ creates git worktree for isolated implementation
+  ↓ [OPTIONAL] /qrspi worktree .qrspi/.../  — run only if you want an isolated worktree
 /qrspi implement .qrspi/.../
   ↓ implements phases, commits along the way
 /qrspi pr .qrspi/.../

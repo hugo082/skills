@@ -128,3 +128,15 @@ If plan.md has existing checkmarks:
 - ❌ Silently deviating from the plan → sub-agents must report deviations
 - ❌ Parallelizing phases → they have dependencies; run them in order
 - ✅ Lean orchestrator dispatches focused sub-agents, commits per phase, escalates only real blockers
+
+## Handoff
+
+When all phases have completed and verification has passed, close your reply with:
+
+```
+Artifact: <first-commit-hash>..<last-commit-hash> on qrspi/<short-description>
+Summary: <N phases completed; list any deviations from the plan and how they were resolved>
+Next: /qrspi pr .qrspi/<folder>/
+```
+
+- If you escalated a blocker and stopped partway, replace the `Next:` line with a human-readable status (e.g. `Next: resolve blocker in phase <N>: <short description>`), and do not emit a `/qrspi pr` directive.

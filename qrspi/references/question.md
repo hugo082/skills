@@ -190,3 +190,16 @@ Write to `.qrspi/<folder>/questions/<NN>-<slug>.md`:
 - ❌ "Research everything about module Y" → too broad
 - ✅ "How does module Y handle Z today? Trace from entry point to storage."
 - ✅ "What patterns does the codebase use for X? Find 2–3 examples."
+
+## Handoff
+
+When the step is complete, close your reply with this literal, three-line block. Identical shape across every QRSPI step — so the next command can be chained without re-reading the output or guessing the folder path:
+
+```
+Artifact: .qrspi/<folder>/questions/<NN>-<slug>.md
+Summary: <1–2 sentence neutral summary of the areas being explored — do NOT reveal planned changes>
+Next: /qrspi research .qrspi/<folder>/
+```
+
+- On **first run**, include a second `Artifact:` line for `.qrspi/<folder>/task.md`.
+- **Alt-Next** (before research): if the user wants to revise before researching, re-run `/qrspi question .qrspi/<folder>/` to append another question file.

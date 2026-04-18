@@ -72,3 +72,15 @@ Closes: #<issue-number>
 - ❌ Skipping the design decisions → reviewers need to know "why"
 - ❌ Generic PR title like "Implement feature" → be specific
 - ✅ "Add recovery-week generator to periodization module"
+
+## Handoff
+
+When the PR has been created, close your reply with:
+
+```
+Artifact: <PR URL>
+Summary: <PR title> — closes #<issue-number>
+Next: (pipeline complete)
+```
+
+- This is the terminal step of QRSPI. The `Next:` field stays as `(pipeline complete)` so tooling consuming handoff blocks can recognize the end of the chain.

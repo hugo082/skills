@@ -67,3 +67,15 @@ git checkout -b qrspi/<short-description>
 ```
 
 Report the branch name and confirm readiness for the implement step.
+
+## Handoff
+
+When the worktree (or fallback branch) is ready, close your reply with:
+
+```
+Artifact: .worktrees/<short-description> (branch qrspi/<short-description> off <base>@<hash>)
+Summary: Worktree ready at <path>, branch qrspi/<short-description>
+Next: /qrspi implement .qrspi/<folder>/
+```
+
+- If the fallback branch was used instead of a worktree, the `Artifact:` line is just `branch qrspi/<short-description> off <base>@<hash>`.

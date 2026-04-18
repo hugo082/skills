@@ -120,3 +120,16 @@ Never edit or overwrite existing `research/*.md` files. If a previous research f
 - ❌ "The problem with this code is..." → critique
 - ✅ One sub-agent covering 3 related questions in the same zone
 - ✅ "This function accepts X and returns Y (file.ext:L42)"
+
+## Handoff
+
+When the step is complete, close your reply with this literal block so the chain continues without guesswork:
+
+```
+Artifact: .qrspi/<folder>/research/<NN>-<slug>.md
+Summary: <1–2 sentences: what was established; flag any gap the research surfaced>
+Next: /qrspi design .qrspi/<folder>/
+```
+
+- If multiple research files were produced (one per unanswered question file), list each on its own `Artifact:` line.
+- **Alt-Next** (loop back): if the research exposed a gap in the original questions, use `/qrspi question .qrspi/<folder>/` to append a new question file before moving to design.
