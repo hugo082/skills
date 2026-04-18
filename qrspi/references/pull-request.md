@@ -18,15 +18,20 @@ The code is implemented and verified. Now we create a PR that gives reviewers th
 ## Process
 
 1. **Read design.md and structure.md** (primary sources for the PR description)
-2. **Gather implementation metadata**
+2. **Resolve the related issue number** for auto-close
+   - Check `.qrspi/<folder>/task.md` for the source issue (Source field or the issue URL/number in the copied body)
+   - Fallback: scan `questions/*.md` and `design.md` for a `#<N>` reference or GitHub issue URL
+   - If no issue number is found, ask the human before creating the PR — do not skip the `Closes:` line silently
+3. **Gather implementation metadata**
    ```
    git log --oneline main..HEAD
    git diff --stat main..HEAD
    ```
-3. **Create the pull request**
+4. **Create the pull request**
    ```
    gh pr create --title "<title>" --body "<body>"
    ```
+   The body **must** include a `Closes #<issue-number>` line (GitHub's auto-close keyword) so merging the PR closes the linked issue.
 
 ## PR Body Template
 
@@ -53,7 +58,7 @@ The code is implemented and verified. Now we create a PR that gives reviewers th
 - Research: `.qrspi/<folder>/research/` (<N> files)
 - Questions: `.qrspi/<folder>/questions/` (<N> files)
 
-Closes: #<issue-number>
+Closes #<issue-number>
 ```
 
 ## Rules
