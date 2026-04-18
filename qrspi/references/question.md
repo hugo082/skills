@@ -81,6 +81,27 @@ Write to `.qrspi/<folder>/task.md`:
 
 This file is the **single source of truth** for what we're building. The research step must NOT read it (to stay objective), but design, structure, and plan steps will.
 
+## Light Codebase Pre-exploration (both runs)
+
+Before writing the questions file, do a brief scan of the repo so the questions you generate have *real* location hints — not guesses. This is **not** the research step. It is the bare minimum a skilled engineer would do to know which parts of the codebase matter before asking anything.
+
+**Cap it.** If you find yourself reading full implementations, stop — that work belongs to the research agent in the next step.
+
+**Do:**
+- Glob/grep for nouns and verbs pulled from the task: function names, table names, endpoint paths, domain terms
+- List the top-level structure of the 2–3 zones that feel most relevant (`ls`, directory tree)
+- Open 1–2 entry points or obvious files just enough to confirm they exist and are roughly what you think
+- Skim recent git history on relevant paths (`git log --oneline -20 -- <path>`) — often reveals the last person who touched the area and the shape of recent changes
+- On loop-back runs, focus only on the zone that exposed the gap
+
+**Don't:**
+- Don't read files top to bottom — skim only
+- Don't form a solution, propose an approach, or mentally design anything
+- Don't write notes into `task.md` or anywhere persistent — the exploration exists only to sharpen the questions
+- Don't let this expand into research; if you find yourself tracing logic flows, stop and defer that to a research question
+
+**Output of this step:** sharper Q titles, concrete location hints inside each question, and a populated `Scope Boundaries` section in the questions file. Nothing else is written.
+
 ## Process
 
 1. **Detect the run mode**
@@ -99,11 +120,11 @@ This file is the **single source of truth** for what we're building. The researc
 4. **Persist task context** (first run only)
    - **Write `.qrspi/<folder>/task.md`** using the template above, incorporating the interview outputs
 
-5. **Identify the zones of the codebase that matter**
-   - What systems/modules will be touched or extended?
-   - What integration points exist?
-   - What data flows are involved?
+5. **Run the light codebase pre-exploration** (both runs)
+   - Glob/grep for terms from the task; skim 1–2 entry points; scan recent git history on relevant paths
+   - Identify the zones of the codebase that matter: systems/modules touched, integration points, data flows
    - Loop-back: focus only on the zone that exposed the gap
+   - Stop as soon as you have enough to ask strong questions — do not read in depth
 
 6. **Generate targeted research questions**
    - First run: 4–8 questions covering vertical slices (entry points, data models, existing patterns, configuration, tests, adjacent systems)
@@ -160,6 +181,7 @@ Write to `.qrspi/<folder>/questions/<NN>-<slug>.md`:
 10. **Never edit or overwrite existing question files or `task.md`** — they are the historical record; loop-back runs only append new question files
 11. **Task summary must be neutral** — a reader should not be able to infer the planned change from it
 12. **No solution talk during the interview** — gather intent only; approaches and pseudocode belong in later steps
+13. **Pre-exploration is bounded** — skim, don't read in depth; trace no logic flows; write no persistent notes. If it's starting to feel like research, stop and turn it into a question instead
 
 ## Anti-patterns
 
