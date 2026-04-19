@@ -33,20 +33,19 @@ The design is approved. The structure is approved. The plan is written. The huma
       - The full phase section from plan.md (changes + success criteria)
       - The relevant patterns from design.md
       - Key file references from research/*.md that the phase needs
-      - Clear instruction: implement the phase, run automated verification, report results
+      - Clear instruction: implement the phase, run automated verification, **commit the work as one or more atomic conventional commits**, and report results
 
    b. **Dispatch the sub-agent** and wait for completion
 
    c. **Validate the result**:
       - Did the sub-agent report all automated checks passing?
+      - Did it leave the working tree fully committed and clean (`git status` empty)?
       - Did it report any mismatches with the plan?
-      - If verification failed, allow the sub-agent one retry before escalating
+      - If verification failed, or if the tree is dirty, allow the sub-agent one retry before escalating
 
-   d. **Commit the phase**: `git add -A && git commit -m "qrspi: phase N — <description>"`
+   d. **Update plan.md**: check off completed items for this phase
 
-   e. **Update plan.md**: check off completed items for this phase
-
-   f. **Proceed to the next phase** — do NOT pause for human input
+   e. **Proceed to the next phase** — do NOT pause for human input
 
 4. **If a sub-agent reports a mismatch with the plan**
    - Assess whether it's a minor adaptation or a fundamental issue
@@ -100,7 +99,10 @@ You are implementing Phase N of an approved plan. Follow the instructions exactl
 2. Make the changes described above
 3. Run the automated verification commands listed in Success Criteria
 4. Fix any issues until automated checks pass
-5. Report: what you changed, which checks passed, any deviations from the plan
+5. **Commit your work before returning.** Split the phase into **atomic commits** — each commit must be a single coherent change that builds and passes checks on its own (e.g. refactor separate from behavior change, tests separate from unrelated fixes). Do NOT bundle unrelated changes into one commit.
+6. **Use Conventional Commits** for every message: `<type>(<scope>)?: <subject>` where `type` ∈ {feat, fix, refactor, docs, test, chore, perf, build, ci, style}. Keep the subject imperative and under 72 chars. Add a body when the "why" isn't obvious from the diff.
+7. **Leave the working tree clean.** `git status` must be empty when you return — no staged, unstaged, or untracked files. Do not use `--no-verify`.
+8. Report: what you changed, and any deviations from the plan
 ```
 
 ## Rules
@@ -108,7 +110,7 @@ You are implementing Phase N of an approved plan. Follow the instructions exactl
 1. **Autonomous execution** — do not pause between phases; run them all in sequence
 2. **Delegate to sub-agents** — each phase is implemented by a dedicated sub-agent, keeping the orchestrator context lean
 3. **One sub-agent per phase** — do not parallelize phases; they build on each other
-4. **Commit per phase** — clean git history for review
+4. **Sub-agents commit their own work** — every sub-agent must return with a clean working tree and a list of atomic, Conventional Commits-style commits. The orchestrator does not run `git add`/`git commit` for phase code.
 5. **Only escalate real blockers** — minor adaptations are fine; fundamental issues require human input
 6. **Update plan.md checkboxes** as each phase completes
 7. **No scope creep** — implement what's in the plan, nothing more
@@ -127,7 +129,9 @@ If plan.md has existing checkmarks:
 - ❌ Pausing between phases for human approval → implementation is autonomous
 - ❌ Silently deviating from the plan → sub-agents must report deviations
 - ❌ Parallelizing phases → they have dependencies; run them in order
-- ✅ Lean orchestrator dispatches focused sub-agents, commits per phase, escalates only real blockers
+- ❌ Returning from a sub-agent with a dirty working tree or uncommitted changes
+- ❌ One giant `chore: phase N` commit bundling unrelated changes → split into atomic conventional commits
+- ✅ Lean orchestrator dispatches focused sub-agents; sub-agents return with atomic conventional commits and a clean tree; orchestrator escalates only real blockers
 
 ## Handoff
 
