@@ -59,12 +59,12 @@ Write to `.qrspi/<folder>/structure.md` (overwrite if revising):
 ## Type Definitions
 Shared types/interfaces introduced or modified across phases. Use a fenced code block in the project's language — do not label it `Signatures:`; the fence implies the content type.
 
-```go
-type ExampleInput struct {
-    TenantID int32
-}
+```ts
+type ExampleInput = {
+  tenantId: number;
+};
 
-func DoThing(ctx context.Context, input ExampleInput) (ExampleResult, error)
+declare function doThing(input: ExampleInput): Promise<ExampleResult>;
 ```
 
 ## Database Schema (if applicable)
@@ -76,11 +76,20 @@ create table example_records (
 ```
 
 ## Package / File Structure
-- `path/to/new-package/` — [purpose]
-- `path/to/existing.ext` — [what role it plays]
+[Render the touched paths as a tree so reviewers can see the shape at a glance. Mark new files with `(new)` and modified files with `(mod)`. Annotate each leaf with a short purpose.]
+
+```
+path/
+├── to/
+│   ├── new-package/        (new) [purpose]
+│   │   └── thing.ext       (new) [purpose]
+│   └── existing.ext        (mod) [what role it plays]
+└── other/
+    └── file.ext            (mod) [what changes]
+```
 
 ## API Surface (if applicable)
-Fenced block in the appropriate language (`go`, `ts`, `proto`, etc.) showing endpoints/RPCs.
+Fenced block in the appropriate language (`ts`, `proto`, etc.) showing endpoints/RPCs.
 
 ---
 
@@ -88,15 +97,31 @@ Fenced block in the appropriate language (`go`, `ts`, `proto`, etc.) showing end
 **Goal**: [What this phase accomplishes — should be independently verifiable]
 
 ### New/Modified Signatures
-```go
-func FunctionName(param Type) (ReturnType, error)
+```ts
+declare function functionName(param: ParamType): Promise<ReturnType>;
 
-type NewStruct struct { ... }
+type NewShape = {
+  // ...
+};
 ```
 
 ### Files Touched
-- `path/to/file.ext` — [what changes]
-- `path/to/new-file.ext` — [new file, purpose]
+[Render as a tree. `(new)` for new files, `(mod)` for modified.]
+
+```
+path/to/
+├── file.ext        (mod) [what changes]
+└── new-file.ext    (new) [purpose]
+```
+
+[Where the intent isn't obvious from the tree annotation alone, follow up with a short pseudo-code snippet per file — just enough to show the shape of the change (new export, added branch, renamed call). Keep it sketch-level; real code belongs in the plan.]
+
+```ts
+// path/to/new-file.ext
+export function doThing(input: Input): Output {
+  // validate → call service → map result
+}
+```
 
 ### Validation
 - [ ] [Automated check: command to run]
@@ -109,7 +134,7 @@ type NewStruct struct { ... }
 **Depends on**: Phase 1
 
 ### New/Modified Signatures
-```go
+```ts
 // signatures specific to this phase
 ```
 
@@ -138,13 +163,13 @@ type NewStruct struct { ... }
 1. **Vertical phases, not horizontal layers** — each phase delivers a testable slice
 2. **2–5 phases maximum** — more than 5 means the feature should be split into multiple tasks
 3. **Show signatures, not implementations** — like C header files, show the shape without the body
-4. **Use fenced code blocks for structural content** — `go`/`ts`/`py`/`sql`/`proto` for types, signatures, schema. Do not put labels like `Signatures:` inside fences; the fence implies the content type. Reserve bullet lists for file paths, checkpoints, and scope notes.
+4. **Use fenced code blocks for structural content** — `ts`/`sql`/`proto` (or the project's language) for types, signatures, schema. Do not put labels like `Signatures:` inside fences; the fence implies the content type. Reserve bullet lists for file paths, checkpoints, and scope notes.
 5. **Declare an `Out of Scope` section** — explicit exclusions prevent scope creep during planning/implementation
 6. **Each phase must have validation criteria** — how do we know it worked?
 7. **Keep it under ~2 pages** — this is reviewed by humans, brevity is leverage
 8. **Present to the human before writing** — get buy-in on the phasing
 9. **Order matters** — phases should build on each other, not be independent silos
-10. **Include file paths** — the human should know exactly which files are affected
+10. **Render touched files as a tree** — both the global `Package / File Structure` and each phase's `Files Touched` use a tree layout with `(new)`/`(mod)` markers, not a flat bullet list. Supplement with short pseudo-code snippets when the intent of a change isn't self-evident from the tree — sketch-level only, not full implementation
 11. **Flag risks** — if something is tricky or error-prone, call it out
 12. **This is not the plan** — no step-by-step implementation details, just the shape
 
