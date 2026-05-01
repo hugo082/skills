@@ -100,11 +100,13 @@ Use `gh issue create`. Always pass the body via a heredoc to preserve formatting
 
 Keep the ticket free of inline code snippets and pseudocode — they bloat downstream context without adding intent. If a specific API or pattern must be used, name it in **Locked-in decisions** instead of pasting code.
 
+**Title style:** product-first — describe the user-visible outcome, not the technical change. No `feat:`/`fix:` or subsystem prefixes. ✅ "Agent adapts its replies to the messaging channel (WhatsApp first)" ❌ "feat(messaging): make agent aware of channel context".
+
 **Single-issue flow:**
 
 ```
 gh issue create \
-  --title "<concise imperative title>" \
+  --title "<product-first title>" \
   --body "$(cat <<'EOF'
 <body using template above>
 EOF
@@ -113,16 +115,19 @@ EOF
 
 **Breakdown flow** (parent tracking issue + sub-issues):
 
-1. Create the **parent tracking issue** first. Its body uses the template above, plus a `## Sub-issues` section left empty for now (you'll fill it after creating children).
-2. Create each **sub-issue** with its own focused scope. Each sub-issue body should reference the parent: `Parent: #<parent-number>`.
-3. Once all sub-issues exist, edit the parent's body (`gh issue edit <parent> --body ...`) to populate the checklist:
-   ```markdown
-   ## Sub-issues
-   - [ ] #<n1> — <title>
-   - [ ] #<n2> — <title>
-   - [ ] #<n3> — <title>
+1. Create the **parent tracking issue** first. Its body uses the template above. **Do not** add a markdown `## Sub-issues` checklist — GitHub's native sub-issue relationship renders the list and progress automatically. A markdown checklist in the body is redundant noise once the native link exists.
+2. Create each **sub-issue** with its own focused scope. The sub-issue body should reference the parent in plain text (`Parent: #<parent-number>`) for readability and search — this is just prose, not the relationship itself.
+3. **Link each sub-issue to the parent using GitHub's native sub-issues API.** The endpoint takes the child's **integer database id** (not its number, not its node id string). Use `gh api -F` (capital F) so the value is sent as a JSON integer — `-f` (lowercase) sends a string and the endpoint will reject it with a 422 type error.
+
+   ```bash
+   for n in <child-1> <child-2> <child-3>; do
+     CID=$(gh api repos/<owner>/<repo>/issues/$n --jq .id)
+     gh api -X POST repos/<owner>/<repo>/issues/<parent>/sub_issues \
+       -F sub_issue_id="$CID"
+   done
    ```
-   GitHub auto-links these and renders progress on the tracking issue.
+
+   Verify with: `gh api repos/<owner>/<repo>/issues/<parent>/sub_issues --jq '.[].number'`.
 4. If the repo uses labels like `epic`, `tracking`, or `type:parent` — and only if they already exist — apply them to the parent. Do not invent new labels.
 
 **Refining an existing issue:** use `gh issue edit <N> --title ... --body ...` with the same template. Preserve prior discussion; only the top-of-body description is rewritten.
@@ -141,6 +146,7 @@ Before running `gh issue create`/`edit`, show the user the exact title(s) and bo
 6. **Preserve history when refining** — edit the description, never close-and-recreate
 7. **Intent over implementation** — no code snippets, no pseudocode, no step-by-step "how". Downstream Research and Design own that.
 8. **Encode opinions you hold; flag gaps you don't** — locked-in decisions go in their section; unknowns go under *For Research phase*. Don't leave the agent to guess.
+9. **Product-first titles** — see §3.
 
 ## Handoff
 
