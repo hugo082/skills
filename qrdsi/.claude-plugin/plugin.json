@@ -1,4 +1,4 @@
 {
   "name": "qrdsi",
-  "skills": ["./skills/question", "./skills/research"]
+  "skills": ["./skills/question", "./skills/research", "./skills/design"]
 }
