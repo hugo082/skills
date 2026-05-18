@@ -4,6 +4,7 @@
     "./skills/question",
     "./skills/research",
     "./skills/design",
-    "./skills/structure"
+    "./skills/structure",
+    "./skills/implement"
   ]
 }
