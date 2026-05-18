@@ -1,0 +1,5 @@
+{
+  "name": "bighug-local",
+  "owner": { "name": "bighug" },
+  "plugins": [{ "name": "qrdsi", "source": "./qrdsi" }]
+}
