@@ -12,6 +12,7 @@ vpx skills add https://github.com/hugo082/skills
 vpx skills add https://github.com/hugo082/skills --skill domain-driven-design
 vpx skills add https://github.com/hugo082/skills --skill domain-driven-design-for-typescript
 vpx skills add https://github.com/hugo082/skills --skill prd
+vpx skills add https://github.com/hugo082/skills --skill root-cause
 ```
 
 ## Skills index
@@ -19,3 +20,4 @@ vpx skills add https://github.com/hugo082/skills --skill prd
 - [`domain-driven-design`](./domain-driven-design/) — foundations and practical patterns for applying DDD in real systems.
 - [`domain-driven-design-for-typescript`](./domain-driven-design-for-typescript/) — opinionated, functional-first DDD implementation structure for modern TypeScript (ESM), dependency-agnostic, and class-free.
 - [`prd`](./prd/) — templates and guidelines for writing Product Requirements Documents.
+- [`root-cause`](./root-cause/) — templates and guidelines for writing root cause diagnostics documents.
