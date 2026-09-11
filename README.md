@@ -15,6 +15,7 @@ vpx skills add https://github.com/hugo082/skills --skill prd
 vpx skills add https://github.com/hugo082/skills --skill root-cause
 vpx skills add https://github.com/hugo082/skills --skill system-architecture
 vpx skills add https://github.com/hugo082/skills --skill program-design
+vpx skills add https://github.com/hugo082/skills --skill v-sclices
 ```
 
 ## Skills index
@@ -25,3 +26,4 @@ vpx skills add https://github.com/hugo082/skills --skill program-design
 - [`root-cause`](./root-cause/) — templates and guidelines for writing root cause diagnostics documents.
 - [`system-architecture`](./system-architecture/) — templates and guidelines for writing system architecture documents based on product requirements.
 - [`program-design`](./program-design/) — templates and guidelines for writing program design documents.
+- [`v-slices`](./v-slices/) — split a task into smaller vertical slices.
