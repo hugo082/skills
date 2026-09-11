@@ -17,6 +17,7 @@ vpx skills add https://github.com/hugo082/skills --skill system-architecture
 vpx skills add https://github.com/hugo082/skills --skill program-design
 vpx skills add https://github.com/hugo082/skills --skill v-sclices
 vpx skills add https://github.com/hugo082/skills --skill work
+vpx skills add https://github.com/hugo082/skills --skill orchestrate
 ```
 
 ## Skills index
@@ -29,3 +30,4 @@ vpx skills add https://github.com/hugo082/skills --skill work
 - [`program-design`](./program-design/) — templates and guidelines for writing program design documents.
 - [`v-slices`](./v-slices/) — split a task into smaller vertical slices.
 - [`work`](./work/) — working on a task via git best practices and repo conventions.
+- [`orchestrate`](./orchestrate/) — orchestrating multiple sub-tasks via sub-agents.
