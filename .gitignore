@@ -21,3 +21,8 @@ node_modules
 *.njsproj
 *.sln
 *.sw?
+
+# humanlayer/skills
+show-me
+# axiomhq/skills
+query-metrics/
