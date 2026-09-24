@@ -7,7 +7,7 @@ description: Takes requirements, inspects codebase, and outlines system architec
 
 Given these requirements and this existing codebase, how do components interact to satisfy them?
 **Allowed vocabulary**: services, endpoints, request/response payloads, schemas, entities, queues, topics, stores, third-party APIs, auth boundaries, retries, idempotency.
-**Forbidden nouns:** class names, function/method names, file paths, directory layout, types, interfaces, call stacks. Those belong to stage 3. If you're writing `UserRepository.findByEmail`, you've leaked.
+**Forbidden nouns:** class names, function/method names, file paths, directory layout, types, interfaces, call stacks. Those belong to program design. If you're writing `UserRepository.findByEmail`, you've leaked.
  
 
 ## Deliverable
