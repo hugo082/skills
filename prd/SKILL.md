@@ -32,7 +32,7 @@ Keep the dialogue focused and adapt the pace and grouping of questions to what r
 Each question should be formatted like so:
 
 ```
-❓ **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
+❓ **Q<N>** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
 
 ➡️ <your recommended answer>
 ```
@@ -101,4 +101,4 @@ Do not declare the stage done until:
 
 ## Wrapping up
 
-Use the template in `./templates/prd.md`
+Use the template in `./templates/prd.md`. Never reference any ID/prose from the current conversation, the output should be standalone.

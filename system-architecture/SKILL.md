@@ -37,7 +37,7 @@ Work the tree in **rounds**. The **frontier** is every decision whose prerequisi
 Each question should be formatted like so:
 
 ```
-❓ **Q1** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
+❓ **Q<N>** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
 
 ➡️ <your recommended answer>
 ```
@@ -63,4 +63,4 @@ The session is done when the frontier is empty: every branch of the design tree 
 
 ## Wrapping up
 
-Use the template in `./templates/architecture.md`
+Use the template in `./templates/architecture.md`. Never reference any ID/prose from the current conversation, the output should be standalone.
