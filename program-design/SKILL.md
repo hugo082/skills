@@ -5,7 +5,9 @@ description: Takes requirements, codebase, system architecture, and outlines pro
 
 ## Precondition (hard gate)
 
-Establish the design scope: a feature, a named slice, or another explicit unit of work. If a slice plan is supplied, read the selected scope's outcome, dependencies, and verification criteria. A slice plan is not required.
+Establish the design scope: a feature, a named slice, or another explicit unit of work. If a slice plan is supplied, read the selected scope's outcome, dependencies, verification criteria, and open decisions. A slice plan is not required.
+
+If the selected slice is only a roadmap summary, expand its behavior, acceptance criteria, constraints, exclusions, and verification expectations from the supplied requirements, architecture, and repository before designing its code shape. No separate expanded-slice document is required. Distinguish stable prerequisites that are not yet implemented from unresolved prerequisite results that determine behavior or contracts: the former may permit design ahead of implementation; the latter block the affected design until resolved. Surface those blockers rather than guessing or presenting an incomplete handoff as ready.
 
 Locate and fully read the system architecture for system-wide constraints, and read the PRD acceptance criteria relevant to the selected scope. If the architecture doc doesn't exist, stop; offer `/system-architecture` or accept an explicit waiver. Do not reverse-engineer architecture from conversation memory.
 
@@ -18,7 +20,7 @@ The core rule: signatures yes, bodies no. **If you write a loop, a conditional w
 
 Allowed: type definitions, interfaces, function signatures, doc comments, constants, stubbed bodies that only `throw new Error("not implemented")`, wiring that is pure declaration (route table entries pointing at stub handlers).
 
-This stage is not primarily a dialogue. Produce the design, then present it for review. Ask questions only where the architecture doc genuinely underdetermines a code-level choice — and when it does, present the options with tradeoffs rather than an open-ended question.
+This stage is not primarily a dialogue. Produce the design, then present it for review. Ask questions only when the required inputs leave a blocking scope or prerequisite decision unresolved, or the architecture doc genuinely underdetermines a code-level choice. For decisions, present the options with tradeoffs rather than an open-ended question; for missing prerequisite evidence, identify the result needed before the affected design can proceed.
 
 If the design requires changing a shared contract or architectural decision, surface the change and obtain approval before proceeding with the affected design. Do not silently resolve a system-wide decision locally.
 
@@ -47,7 +49,7 @@ If the design requires changing a shared contract or architectural decision, sur
 
 ## Failure modes to watch in yourself
 
-- **Pseudo-implementation**: "stub" bodies that sketch the algorithm in comments so detailed they're code with the serial numbers filed off. Doc comments describe *what and why*, not *how step by step*.
+- **Pseudo-implementation**: "stub" bodies that sketch the algorithm in comments so detailed they're code with the serial numbers filed off. Doc comments describe _what and why_, not _how step by step_.
 - **Anemic interfaces**: signatures so generic (`process(input: unknown): unknown`) that every real decision is deferred to implementation. Types should carry the design.
 - **Convention drift**: inventing a new error-handling or DI pattern when the repo already has one. Match the codebase unless the design doc explicitly argues for a change.
 
