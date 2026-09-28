@@ -6,6 +6,11 @@ codebase this feature builds on, with a one-line note on how each is
 used. **New**: components introduced by this feature. Each entry must
 include the argument for why no existing component could absorb it.]
 
+[For every component in both lists, state its responsibility, ownership boundary
+(which data and decisions it controls), and relevant allowed/forbidden dependencies
+on other components. Describe system boundaries, not imports, dependency injection,
+or file layout.]
+
 [Then a Mermaid diagram showing how the components interact — every component
 from both lists must appear, and every edge must be labeled with what crosses
 it (request, event, data). Distinguish new from existing visually:]
@@ -37,10 +42,26 @@ not ORM models.]
 [Producers, consumers, delivery guarantees, ordering assumptions. Omit the
 section if there is none — do not invent async infrastructure.]
  
+## Shared constraints and invariants
+[State behavioral rules that multiple components or flows must preserve. For each
+rule, name the components responsible for enforcing it and the affected flows.
+Include security constraints (such as tenant isolation) and compatibility constraints
+(such as old/new versions coexisting during rollout) only where the requirements or
+existing system demand them. State the actual rule, not just "secure" or "compatible".
+Reference contracts and data ownership defined above rather than restating them.
+If no additional shared rules apply, say so briefly.]
+
 ## Flows
 [One sequence flow per key acceptance criterion from the PRD, referencing
 criteria by number (AC-1, AC-2 ...). This is the traceability link: every
 acceptance criterion must appear in at least one flow.]
+
+### Cross-flow consistency check
+[For flows sharing a contract or state, explain how their interactions respect the
+same contract semantics, ownership boundaries, component dependency constraints,
+and invariants. Include relevant concurrency and partial-failure cases; individually
+valid flows are not sufficient evidence. Identify any conflicts for resolution before
+approval. If no flows share contracts or state, state that explicitly.]
  
 ## Failure & consistency posture
 [Partial-failure behavior, idempotency, retry policy, what state can be
