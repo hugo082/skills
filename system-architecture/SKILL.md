@@ -12,7 +12,7 @@ Given these requirements and this existing codebase, how do components interact 
 
 ## Deliverable
 
-**Component inventory** — critically, split into what already exists and is reused vs what is new. Do not design greenfield architectures that ignore what's already there.
+**Component inventory** — critically, split into what already exists and is reused vs what is new. For each component, state its responsibility, ownership boundary (which data and decisions it controls), and relevant allowed/forbidden dependencies on other components. These are component-level constraints, not imports, dependency injection, or file layout. Do not design greenfield architectures that ignore what's already there.
 
 **API contracts**: endpoint shapes, request/response payloads, error semantics
 
@@ -20,13 +20,15 @@ Given these requirements and this existing codebase, how do components interact 
 
 **Event/queue topology**: if applicable
 
+**Shared constraints and invariants**: behavioral rules that multiple components or flows must preserve, including security and compatibility constraints where applicable. State each rule, which components enforce it, and which flows it constrains. Derive these from requirements and existing system constraints; do not invent security or rollout requirements as boilerplate.
+
 **Sequence flows for each key acceptance criterion**: this creates the traceability link back to the requirements
 
 **Decision records**: for each non-obvious choice, the alternatives considered and why they were rejected (mini-ADRs). This is what makes the architecture reviewable rather than just readable
 
 **Failure/consistency posture**: what happens on partial failure, idempotency, retries
 
-The template is available in `templates/prd.md`.
+The template is available in `templates/architecture.md`.
 
 ## Process
 
@@ -53,7 +55,8 @@ The session is done when the frontier is empty: every branch of the design tree 
 1. Every acceptance criterion from the PRD traces through at least one flow. Verify this mechanically — list AC numbers, check coverage.
 2. Contracts pass the two-independent-agents test.
 3. Every new component has a documented argument against reuse.
-4. The user has reviewed and approved the Decisions section specifically.
+4. **Cross-flow consistency**: verify that all flows agree on shared contracts, ownership boundaries, component dependency constraints, and invariants. For flows touching the same state, check their interaction, including relevant concurrency and partial-failure cases, not just each flow in isolation. Record the check alongside the flows; unresolved conflicts block approval.
+5. The user has reviewed and approved the Decisions section specifically.
 
 ## Failure modes to watch in yourself
  
