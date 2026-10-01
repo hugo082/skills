@@ -4,7 +4,8 @@
 This is a design brief, not an implementation work order. Keep it concise and
 remove empty sections. Restate the slice's acceptance criteria and critical
 constraints; link to upstream context rather than duplicating entire documents.
-All links and repository paths must be accessible from GitHub and a fresh clone.
+All references must be accessible through the shared project context and its
+configured tools. Adapt these sections to the work item's supported format.
 Do not invent file layouts, signatures, line estimates, or verification commands.
 If missing evidence blocks design, state that blocker and change Next action to
 obtaining the evidence rather than presenting this slice as design-ready.
@@ -13,7 +14,7 @@ obtaining the evidence rather than presenting this slice as design-ready.
 ## Next action
 
 Prepare the program design for this slice.
-Do not implement until the design is explicitly approved and implementation prerequisites are satisfied.
+This brief requests design, not implementation; a later explicit user request may choose a different next action.
 
 ## Read first
 
@@ -56,7 +57,8 @@ Excluded:
 - <Prerequisite capability or result this slice requires.>
 - <Whether it exists, has a stable agreed contract, or remains unresolved.>
 
-Use native issue dependencies to track blocking issues.
+Make blocking relationships discoverable using the project's tracking conventions.
+If the tool has no dependency fields, describe the relationships here.
 
 ## Verification targets
 
@@ -70,9 +72,11 @@ Use native issue dependencies to track blocking issues.
 - <Missing evidence that blocks the affected design, if any.>
 
 <!--
-After program design, add a Design handoff section linking to the one canonical
-current revision and its approval record. Update Next action to review the design.
-Only after explicit approval and prerequisite checks may it become implementation.
+After program design, record a Design handoff, using these sections or equivalent
+fields, that identifies the canonical current design and its approval status.
+Update Next action to review the design.
+Record approval and outstanding prerequisites before recommending implementation.
+This describes the handoff status, not a gate on later user-directed work.
 Keep this issue; do not create a second implementation issue or copy the design
 into several independently maintained locations.
 -->
