@@ -3,11 +3,17 @@ name: program-design
 description: Takes requirements, codebase, system architecture, and outlines program design.
 ---
 
+## Inputs
+
+Accept inline scope, an issue number (`#N`), or a GitHub issue URL. For an issue, load its body and comments with `gh issue view <number-or-url> --comments`, inspect its native dependencies, and read the referenced PRD, architecture, and existing design sections. Use the issue's repository when resolving numbers and links. Check its next action and any recorded approval; do not replace an approved design unless a revision is requested or new evidence requires one.
+
+An issue is not required for standalone design. The issue publication and lifecycle rules below apply only when designing an issue.
+
 ## Precondition (hard gate)
 
 Establish the design scope: a feature, a named slice, or another explicit unit of work. If a slice plan is supplied, read the selected scope's outcome, dependencies, verification criteria, and open decisions. A slice plan is not required.
 
-If the selected slice is only a roadmap summary, expand its behavior, acceptance criteria, constraints, exclusions, and verification expectations from the supplied requirements, architecture, and repository before designing its code shape. No separate expanded-slice document is required. Distinguish stable prerequisites that are not yet implemented from unresolved prerequisite results that determine behavior or contracts: the former may permit design ahead of implementation; the latter block the affected design until resolved. Surface those blockers rather than guessing or presenting an incomplete handoff as ready.
+If the selected slice is a design brief or roadmap summary, establish its behavior, acceptance criteria, constraints, exclusions, and verification expectations from the supplied requirements, architecture, and repository before designing its code shape. Compare prerequisite assumptions with the current repository and available evidence, not just issue status. No separate expanded-slice document is required. Distinguish stable prerequisites that are not yet implemented from unresolved prerequisite results that determine behavior or contracts: the former may permit design ahead of implementation; the latter block the affected design until resolved. Surface those blockers rather than guessing or presenting an incomplete handoff as ready.
 
 Locate and fully read the system architecture for system-wide constraints, and read the PRD acceptance criteria relevant to the selected scope. If the architecture doc doesn't exist, stop; offer `/system-architecture` or accept an explicit waiver. Do not reverse-engineer architecture from conversation memory.
 
@@ -38,14 +44,14 @@ If the design requires changing a shared contract or architectural decision, sur
 
 **Error handling strategy per layer**: thrown vs returned, where translation happens
 
-**Test surface and verification**: which units get tested at which boundary, what gets mocked, and executable verification commands with expected results for the scoped acceptance criteria
+**Test surface and verification**: which units get tested at which boundary, what gets mocked, and executable verification commands with required setup and expected results for the scoped acceptance criteria. Convert the issue's verification targets into these checks. Identify tests or fixtures that must be added during implementation; do not imply planned checks already exist.
 
 ## Exit criteria
 
 1. **The cold-agent test**: an agent with only the design and repository can implement the scoped work without reading the PRD, architecture, slice plan, or conversation. For every function introduced or changed within this scope, its signature and doc comment must settle the code-shape decisions needed to implement it. Audit the design and stubs against this test explicitly before presenting.
 2. Every architecture flow covered by this scope is described in the design and maps to a concrete call stack. Out-of-scope flows need no speculative design.
 3. No function body contains logic.
-4. User has reviewed and approved.
+4. User has explicitly reviewed and approved the current design revision. Until then, it is a proposal awaiting review, not an implementation-ready handoff.
 
 ## Failure modes to watch in yourself
 
@@ -56,3 +62,15 @@ If the design requires changing a shared contract or architectural decision, sur
 ## Wrapping up
 
 Use the template in `./templates/design.md` for the selected scope. Produce a standalone handoff: carry the relevant acceptance criteria, constraints, shared contracts, code shape, and verification expectations in the design itself. Do not require the reader to consult upstream documents or conversation history.
+
+### Issue handoff
+
+For issue-based design, update the same issue; do not create a separate implementation issue.
+
+1. **Publish one canonical design revision.** Follow the repository's document convention. If none exists, post the design as a new issue comment and use its permalink. For a repository document, push it and link to its exact commit revision. Any referenced stubs, types, or other artifacts must also be accessible to a cold agent; local-only files are not a handoff. Do not maintain separate copies in the issue body, comments, and repository.
+2. **Make review the next action.** Add or update a **Design handoff** section in the issue body with the current design link, revision identifier (commit or newly published comment), and approval status. Set **Next action** to review that revision. Preserve the issue's outcome, scope, acceptance criteria, and dependency relations. Surface unresolved blockers and do not call a partial design complete. If publication is unavailable, provide the draft and state that the issue handoff is incomplete.
+3. **Wait for explicit approval.** Present the proposal and stop; do not approve your own design, infer approval from the slice plan, or start implementation. When the user approves, record who approved which revision and a link to the approval record in the issue. If approval was given outside GitHub, record that explicit approval on the issue so the next agent does not need the conversation.
+4. **Check implementation prerequisites.** Only set **Next action** to implement the approved design when required capabilities and prerequisite results are available and no relevant blockers remain. Otherwise keep the approved design and name the missing prerequisite as the next action. A stable contract can permit design ahead of implementation; it does not make the dependency available.
+5. **Keep revisions and approval aligned.** Do not silently edit an approved design in place. Publish material changes as a new revision, point the issue to it, and return the next action to review. Prior approval does not authorize changed behavior, contracts, or scope.
+
+A cold implementation agent must be able to identify the exact current design, its approval, and prerequisite status from the issue without searching for an unspecified "latest design" in comments. Issue closure alone is not evidence that a required capability is present in the checkout.
