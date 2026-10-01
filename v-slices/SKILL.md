@@ -11,8 +11,6 @@ Sequence the implementation into the smallest useful set of end-to-end runnable 
 
 Work from the supplied goal, requirements, documents, and relevant codebase context. No particular upstream artifact or workflow is required. Identify missing decisions that prevent credible slicing; do not invent their answers.
 
-Use the planning and collaboration tools defined in the user's agentic context. "Issue" below means an issue or equivalent work item in that system, whether GitHub, Linear, or another tool. Follow its conventions rather than requiring a particular provider, command, or metadata format.
-
 ## Slicing rules
 
 A slice is a meaningful completion checkpoint: a thin path from entry point to exit point through the relevant parts of the system, runnable and verifiable when it lands. Not a layer, not a module, not "the database part". Do not add unrelated layers just to touch the entire architecture.
@@ -44,13 +42,13 @@ Keep later entries concise but understandable without conversation history. Acco
 
 Each slice is a separate issue using `./templates/slice.md`. Restate its outcome, behavioral scope, acceptance criteria, critical constraints, and verification targets. Link to the relevant PRD and architecture sections for context and rationale, and name repository paths and symbols that explain existing behavior. Do not invent upstream documents when none were supplied; identify missing context that blocks design.
 
-All references must be accessible to a cold agent through the shared project context and configured tools. Do not rely on files available only to the author or on conversation memory. Make dependencies and blocking relationships discoverable using the project's supported conventions; if relationship fields are unavailable, describe them clearly in the brief. State the capability or evidence needed, distinguishing stable prerequisites not yet implemented from unresolved results that determine the design.
+All references must be accessible to a cold agent. Do not rely on files available only to the author or on conversation memory. Make dependencies and blocking relationships explicit. State the capability or evidence needed, distinguishing stable prerequisites not yet implemented from unresolved results that determine the design.
 
 For the next or selected slice, check that the issue, its referenced documents, and the repository provide enough context to prepare the program design without this conversation. This is the **design-ready cold-agent test**, not a requirement to specify files, signatures, line estimates, or implementation steps. Keep later issues brief; do not fill the template with speculative detail or empty sections.
 
 Every slice needs concrete, observable verification targets, including relevant failure behavior. Include exact commands and setup only when known; identify planned checks as planned. Program design expands these targets into executable verification commands.
 
-Set **Next action** to prepare the program design, not implement. Record questions for the designer and mark missing evidence or decisions that block affected design. Do not label a blocked slice design-ready. When blocked, make obtaining the missing decision or evidence the next action. Planning approval is not design approval. These next-action recommendations describe the handoff; they do not gate a later explicit user request to implement.
+Set **Next action** to prepare the program design, not implement. Record questions for the designer and mark missing evidence or decisions that block affected design. Do not label a blocked slice design-ready. When blocked, make obtaining the missing decision or evidence the next action. Planning approval is not design approval. The next action describes the handoff; it does not gate a later explicit user request to implement.
 
 Before a later slice enters design, refresh its brief using earlier results. Revisit boundaries and dependencies if those results change the plan; do not preserve obsolete slices just because they were listed upfront.
 
@@ -62,8 +60,8 @@ Before a later slice enters design, refresh its brief using earlier results. Rev
 - **Premature detail**: producing program designs or implementation work orders while slicing. A design brief defines what to prove and where to find context, not how to implement it.
 - **Vague verification**: every slice needs a falsifiable, observable completion target. Deferring commands to program design must not defer deciding what success means.
 - **Hidden scope or context**: a shorter plan must not drop requirements, safety work, or facts needed to understand its checkpoints.
-- **Implementing anyway**: writing "just the first slice" to be helpful. This skill produces the plan and design briefs, not implementation. Present them for review and recommend the next step without imposing a mandatory workflow on later user requests.
+- **Implementing anyway**: writing "just the first slice" to be helpful. This skill produces the plan and design briefs, not implementation. Present them for review.
 
 ## Wrapping up
 
-Present the roadmap and issue briefs for review. When publishing is requested or authorized, create or update one issue per slice using `./templates/slice.md`; otherwise return the briefs without posting. Follow the project's conventions for organizing work, recording dependencies, and sharing context; do not require specific tracker features. Do not create duplicate issues when revising a plan. Recommend `/program-design` for the next design-ready issue, not `/work`.
+Present the roadmap and issue briefs for review. When publishing is requested or authorized, create or update one issue per slice using `./templates/slice.md`; otherwise return the briefs without posting. Do not create duplicate issues when revising a plan.

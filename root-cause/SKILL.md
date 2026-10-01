@@ -23,8 +23,8 @@ Find the root cause of the issue and report like:
 ## §I INPUTS
 
 - Accept an inline problem description, a task or issue identifier, or a link.
-- For a referenced work item, read its description, relevant discussion, and linked evidence using the tools defined in the user's agentic context. Follow the project's conventions rather than requiring a particular tracker or command.
+- For a referenced work item, read its description, relevant discussion, and linked evidence.
 
 ## Wrapping up
 
-Use the template in `./templates/diagnostic.md`. When sharing or filing the diagnostic, adapt it to the project's established reporting location and format so the evidence and conclusions are accessible to the next reader.
+Use the template in `./templates/diagnostic.md`.

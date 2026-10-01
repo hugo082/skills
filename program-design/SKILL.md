@@ -5,9 +5,9 @@ description: Takes requirements, codebase, system architecture, and outlines pro
 
 ## Inputs
 
-Accept inline scope, a task or issue identifier, or a link. For a referenced work item, read its description, relevant discussion, dependencies, and referenced PRD, architecture, and existing design sections. Resolve references in the appropriate project or workspace. Check its intended next action and any recorded approval; do not replace an approved design unless a revision is requested or new evidence requires one.
+Accept inline scope, a task or issue identifier, or a link. For a referenced work item, read its description, relevant discussion, dependencies, and referenced PRD, architecture, and existing design sections. Check its intended next action and any recorded approval; do not replace an approved design unless a revision is requested or new evidence requires one.
 
-Use the tools and conventions defined in the user's agentic context, whether GitHub, Linear, or another system. "Issue" below means the corresponding work item in that system. No particular CLI, API, storage location, or metadata format is required. An issue is not required for standalone design; publication and lifecycle rules below apply only when designing an issue.
+An issue is not required for standalone design; publication and lifecycle rules below apply only when designing an issue.
 
 ## Precondition (hard gate)
 
@@ -17,7 +17,7 @@ If the selected slice is a design brief or roadmap summary, establish its behavi
 
 Locate and fully read the system architecture for system-wide constraints, and read the PRD acceptance criteria relevant to the selected scope. If the architecture doc doesn't exist, stop; offer `/system-architecture` or accept an explicit waiver. Do not reverse-engineer architecture from conversation memory.
 
-Also read the relevant parts of the codebase: existing conventions (error handling style, DI patterns, module boundaries, naming, DDD, coding style) bind this design. Upstream documents are inputs to producing the design, not prerequisites for consuming it.
+Also read the relevant parts of the codebase. Upstream documents are inputs to producing the design, not prerequisites for consuming it.
 
 ## Goal
 
@@ -57,7 +57,6 @@ If the design requires changing a shared contract or architectural decision, sur
 
 - **Pseudo-implementation**: "stub" bodies that sketch the algorithm in comments so detailed they're code with the serial numbers filed off. Doc comments describe _what and why_, not _how step by step_.
 - **Anemic interfaces**: signatures so generic (`process(input: unknown): unknown`) that every real decision is deferred to implementation. Types should carry the design.
-- **Convention drift**: inventing a new error-handling or DI pattern when the repo already has one. Match the codebase unless the design doc explicitly argues for a change.
 
 ## Wrapping up
 
@@ -67,10 +66,10 @@ Use the template in `./templates/design.md` for the selected scope. Produce a st
 
 For issue-based design, update the same issue; do not create a separate implementation issue.
 
-1. **Share one canonical design.** Use the project's established location and sharing conventions. Make the design and supporting artifacts accessible to the next agent, with enough version information to distinguish the reviewed content from later changes. Use the available history or snapshot mechanisms rather than assuming a particular storage or comment model. Avoid independently maintained copies.
-2. **Make the handoff discoverable.** Record the current design reference, review status, blockers, and intended next action in the work item using the project's supported format. The template's **Design handoff** and **Next action** sections express this intent; equivalent fields or conventions are valid. Preserve the outcome, scope, acceptance criteria, and dependency relationships. If sharing is unavailable, provide the draft and state what remains to be shared rather than claiming the handoff is complete.
+1. **Share one canonical design.** Make the design and supporting artifacts accessible to the next agent, with enough version information to distinguish the reviewed content from later changes. Avoid independently maintained copies.
+2. **Make the handoff discoverable.** Record the current design reference, review status, blockers, and intended next action in the work item. Preserve the outcome, scope, acceptance criteria, and dependency relationships. If sharing is unavailable, provide the draft and state what remains to be shared rather than claiming the handoff is complete.
 3. **Present the design for review.** Do not approve your own proposal, infer design approval from the slice plan, or implement as part of this design task. When the user approves, make who approved which design and supporting artifacts discoverable in the shared context. Approval given elsewhere should be recorded so the next agent does not need private conversation history.
 4. **Report prerequisites accurately.** Distinguish an approved design from available implementation prerequisites. State missing capabilities or evidence without discarding approval of an unchanged design. When prerequisites change, refresh their status using actual evidence; do not require redesign or duplicate approval unless the design itself changes.
-5. **Keep changes and approval aligned.** Make material design changes distinguishable from the previously reviewed version and present them for review. Do not imply that prior approval covers changed behavior, contracts, or scope. Use the project's revision and review conventions to preserve this distinction.
+5. **Keep changes and approval aligned.** Make material design changes distinguishable from the previously reviewed version and present them for review. Do not imply that prior approval covers changed behavior, contracts, or scope.
 
 A cold implementation agent must be able to find the current design, understand what was reviewed, and identify remaining prerequisites without reconstructing the conversation. A completed work item alone is not evidence that a required capability is present in the checkout. These are design handoff responsibilities, not an additional gate on a later user-initiated `/work` request.
