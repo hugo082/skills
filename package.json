@@ -1,5 +1,8 @@
 {
   "name": "bighug-skills",
+  "scripts": {
+    "use": "vpx skills add . -g --skill 'orca:wk:prd' 'prd' 'program-design' 'root-cause' 'system-architecture' 'v-slices' 'work' -a claude-code"
+  },
   "devDependencies": {
     "vite-plus": "latest"
   },
