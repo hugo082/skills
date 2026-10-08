@@ -16,8 +16,7 @@
 
 [Write out the constraints and contracts needed to implement this scope:
 payloads, data ownership, error semantics, consistency, compatibility, and
-security requirements as applicable. Upstream documents inform this section,
-but the reader must not need them. Omit irrelevant details.]
+security requirements as applicable. Omit irrelevant details.]
 
 ## File layout
 
@@ -87,5 +86,4 @@ explicit without referring the implementer to another document.]
 ## Deviations
 
 [Anywhere this design deviates from the architecture doc, state the original
-constraint, the departure, and why. Silent deviation is the failure mode;
-flagged deviation is normal.]
+constraint, the departure, and why.]

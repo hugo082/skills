@@ -7,17 +7,17 @@ description: Takes requirements, codebase, system architecture, and outlines pro
 
 Accept inline scope, a task or issue identifier, or a link. For a referenced work item, read its description, relevant discussion, dependencies, and referenced PRD, architecture, and existing design sections. Check its intended next action and any recorded approval; do not replace an approved design unless a revision is requested or new evidence requires one.
 
-An issue is not required for standalone design; publication and lifecycle rules below apply only when designing an issue.
+Publication and lifecycle rules below apply only when designing an issue.
 
 ## Precondition (hard gate)
 
-Establish the design scope: a feature, a named slice, or another explicit unit of work. If a slice plan is supplied, read the selected scope's outcome, dependencies, verification criteria, and open decisions. A slice plan is not required.
+Establish the design scope: a feature, a named slice, or another explicit unit of work. If a slice plan is supplied, read the selected scope's outcome, dependencies, verification criteria, and open decisions.
 
-If the selected slice is a design brief or roadmap summary, establish its behavior, acceptance criteria, constraints, exclusions, and verification expectations from the supplied requirements, architecture, and repository before designing its code shape. Compare prerequisite assumptions with the current repository and available evidence, not just issue status. No separate expanded-slice document is required. Distinguish stable prerequisites that are not yet implemented from unresolved prerequisite results that determine behavior or contracts: the former may permit design ahead of implementation; the latter block the affected design until resolved. Surface those blockers rather than guessing or presenting an incomplete handoff as ready.
+If the selected slice is a design brief or roadmap summary, establish its behavior, acceptance criteria, constraints, exclusions, and verification expectations from the supplied requirements, architecture, and repository before designing its code shape. Compare prerequisite assumptions with the current repository and available evidence, not just issue status. Classify each prerequisite: a stable contract not yet implemented permits design ahead of implementation; an unresolved result that determines behavior or contracts blocks the affected design. List blockers in the design under Design blockers; do not fill the blocked part with a guess.
 
 Locate and fully read the system architecture for system-wide constraints, and read the PRD acceptance criteria relevant to the selected scope. If the architecture doc doesn't exist, stop; offer `/system-architecture` or accept an explicit waiver. Do not reverse-engineer architecture from conversation memory.
 
-Also read the relevant parts of the codebase. Upstream documents are inputs to producing the design, not prerequisites for consuming it.
+Also read the relevant parts of the codebase.
 
 ## Goal
 
@@ -26,15 +26,15 @@ The core rule: signatures yes, bodies no. **If you write a loop, a conditional w
 
 Allowed: type definitions, interfaces, function signatures, doc comments, constants, stubbed bodies that only `throw new Error("not implemented")`, wiring that is pure declaration (route table entries pointing at stub handlers).
 
-This stage is not primarily a dialogue. Produce the design, then present it for review. Ask questions only when the required inputs leave a blocking scope or prerequisite decision unresolved, or the architecture doc genuinely underdetermines a code-level choice. For decisions, present the options with tradeoffs rather than an open-ended question; for missing prerequisite evidence, identify the result needed before the affected design can proceed.
+Produce the design, then present it for review. Ask questions only when the required inputs leave a blocking scope or prerequisite decision unresolved, or the architecture doc underdetermines a code-level choice. For decisions, present the options with tradeoffs; for missing prerequisite evidence, name the result needed before the affected design can proceed.
 
-If the design requires changing a shared contract or architectural decision, surface the change and obtain approval before proceeding with the affected design. Do not silently resolve a system-wide decision locally.
+If the design requires changing a shared contract or architectural decision, surface the change and obtain approval before proceeding with the affected design.
 
 ## Deliverable
 
-**Scope and implementation context**: the outcome, included behavior and acceptance criteria, explicit exclusions, prerequisites, relevant constraints, and shared contracts. Write out the relevant content; references such as "see architecture Flow-3" are not a substitute. The design and repository must contain everything needed to implement this scope.
+**Scope and implementation context**: the outcome, included behavior and acceptance criteria, explicit exclusions, prerequisites, relevant constraints, and shared contracts. Write out the relevant content; references such as "see architecture Flow-3" are not a substitute.
 
-**Type definitions and interfaces** — in TypeScript this can and should be actual compiling code: types, function signatures, stubbed bodies (throw new Error("not implemented")). This is enforcement-by-construction: the design compiles or it doesn't
+**Type definitions and interfaces** — in TypeScript this can and should be actual compiling code: types, function signatures, stubbed bodies (throw new Error("not implemented")). Run the type checker on the stubs before presenting.
 
 **File/module layout**: the tree, and which module owns which responsibility
 
@@ -48,19 +48,16 @@ If the design requires changing a shared contract or architectural decision, sur
 
 ## Exit criteria
 
-1. **The cold-agent test**: an agent with only the design and repository can implement the scoped work without reading the PRD, architecture, slice plan, or conversation. For every function introduced or changed within this scope, its signature and doc comment must settle the code-shape decisions needed to implement it. Audit the design and stubs against this test explicitly before presenting.
-2. Every architecture flow covered by this scope is described in the design and maps to a concrete call stack. Out-of-scope flows need no speculative design.
-3. No function body contains logic.
-4. User has explicitly reviewed and approved the current design revision. Until then, it is a proposal awaiting review, not an implementation-ready handoff.
-
-## Failure modes to watch in yourself
-
-- **Pseudo-implementation**: "stub" bodies that sketch the algorithm in comments so detailed they're code with the serial numbers filed off. Doc comments describe _what and why_, not _how step by step_.
-- **Anemic interfaces**: signatures so generic (`process(input: unknown): unknown`) that every real decision is deferred to implementation. Types should carry the design.
+1. For every function introduced or changed within this scope, its signature and doc comment settle the code-shape decisions needed to implement it. Doc comments describe what and why, not step-by-step how.
+2. No signature uses `unknown`, `any`, or a bare `object` where the design has already decided the shape.
+3. Every acceptance criterion, constraint, and shared contract the implementation needs is written out in the design; no section points the reader to the PRD, architecture, slice plan, or conversation.
+4. Every architecture flow covered by this scope is described in the design and maps to a concrete call stack. Out-of-scope flows need no speculative design.
+5. No function body contains logic.
+6. User has explicitly reviewed and approved the current design revision.
 
 ## Wrapping up
 
-Use the template in `./templates/design.md` for the selected scope. Produce a standalone handoff: carry the relevant acceptance criteria, constraints, shared contracts, code shape, and verification expectations in the design itself. Do not require the reader to consult upstream documents or conversation history.
+Use the template in `./templates/design.md` for the selected scope.
 
 ### Issue handoff
 
@@ -68,8 +65,5 @@ For issue-based design, update the same issue; do not create a separate implemen
 
 1. **Share one canonical design.** Make the design and supporting artifacts accessible to the next agent, with enough version information to distinguish the reviewed content from later changes. Avoid independently maintained copies.
 2. **Make the handoff discoverable.** Record the current design reference, review status, blockers, and intended next action in the work item. Preserve the outcome, scope, acceptance criteria, and dependency relationships. If sharing is unavailable, provide the draft and state what remains to be shared rather than claiming the handoff is complete.
-3. **Present the design for review.** Do not approve your own proposal, infer design approval from the slice plan, or implement as part of this design task. When the user approves, make who approved which design and supporting artifacts discoverable in the shared context. Approval given elsewhere should be recorded so the next agent does not need private conversation history.
-4. **Report prerequisites accurately.** Distinguish an approved design from available implementation prerequisites. State missing capabilities or evidence without discarding approval of an unchanged design. When prerequisites change, refresh their status using actual evidence; do not require redesign or duplicate approval unless the design itself changes.
-5. **Keep changes and approval aligned.** Make material design changes distinguishable from the previously reviewed version and present them for review. Do not imply that prior approval covers changed behavior, contracts, or scope.
-
-A cold implementation agent must be able to find the current design, understand what was reviewed, and identify remaining prerequisites without reconstructing the conversation. A completed work item alone is not evidence that a required capability is present in the checkout. These are design handoff responsibilities, not an additional gate on a later user-initiated `/work` request.
+3. **Present the design for review.** Do not approve your own proposal, infer design approval from the slice plan, or implement as part of this design task. When the user approves, record who approved which design and supporting artifacts in the shared context.
+4. **Keep changes and approval aligned.** Mark material design changes as distinct from the previously reviewed version and present them for review.
