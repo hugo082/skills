@@ -1,8 +1,7 @@
 # <What this slice makes possible or proves>
 
 <!--
-This is a design brief, not an implementation work order. Keep it concise and
-remove empty sections. Restate the slice's acceptance criteria and critical
+Keep it concise and remove empty sections. Restate the slice's acceptance criteria and critical
 constraints; link to upstream context rather than duplicating entire documents.
 All references must be accessible to the next agent.
 Do not invent file layouts, signatures, line estimates, or verification commands.
@@ -13,7 +12,6 @@ obtaining the evidence rather than presenting this slice as design-ready.
 ## Next action
 
 Prepare the program design for this slice.
-This brief requests design, not implementation; a later explicit user request may choose a different next action.
 
 ## Read first
 
@@ -74,7 +72,6 @@ After program design, record a Design handoff that identifies the canonical
 current design and its approval status.
 Update Next action to review the design.
 Record approval and outstanding prerequisites in the handoff.
-This describes the handoff status, not a gate on later user-directed work.
 Keep this issue; do not create a second implementation issue or copy the design
 into several independently maintained locations.
 -->
