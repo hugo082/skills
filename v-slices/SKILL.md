@@ -22,6 +22,13 @@ A slice is a meaningful completion checkpoint: a thin path from entry point to e
 - **Order by risk, respecting dependencies.** Front-load the slices that could falsify the approach (novel integration, uncertain third-party behavior, tricky consistency). Deprioritize mechanical work.
 - **Each slice ends runnable and verifiable.** Include the tests, failure handling, and safety constraints required for its stated outcome. Do not defer those essentials to a generic "hardening" slice.
 
+## Keep the documents current
+
+Create the roadmap document as soon as the scope is established, with one entry per candidate slice; mark unsettled fields `TBD`. Add a brief from `./templates/slice.md` for each slice as its boundary settles, starting with the next or selected one.
+Keep the documents where the user asked. When no location was given, use the scratchpad and, on confirmation, ask where to move them; publishing to issues follows Wrapping up.
+After each review round, update the roadmap and affected briefs before replying: settle `TBD`s, merge or split slices, reorder, and record resolved decisions.
+End each message with the documents' location and a one-line note of what changed in them.
+
 ## Deliverable
 
 Produce a concise roadmap of the whole agreed scope and one design brief per slice using `./templates/slice.md`. Use progressive detail: prepare the next or explicitly selected slice for design; keep later briefs concise until earlier results can inform them.
@@ -63,4 +70,4 @@ Before a later slice enters design, refresh its brief using earlier results. Rev
 
 ## Wrapping up
 
-Present the roadmap and issue briefs for review. When publishing is requested or authorized, create or update one issue per slice using `./templates/slice.md`; otherwise return the briefs without posting. Do not create duplicate issues when revising a plan.
+The final revision of the roadmap and briefs is the deliverable; do not rewrite them from scratch at the end. Run the exit criteria against them. When publishing is requested or authorized, create or update one issue per slice using `./templates/slice.md`; otherwise return the briefs without posting. Do not create duplicate issues when revising a plan.
