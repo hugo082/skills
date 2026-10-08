@@ -31,6 +31,15 @@ The template is available in `templates/architecture.md`.
 
 ## Process
 
+### Keep the document current
+
+Create the architecture document from `./templates/architecture.md` before the first question round. Replace each bracketed placeholder with what is already known from the requirements and codebase, or with `TBD`.
+Keep the document where the user asked. When no location was given, use the scratchpad and, on confirmation, ask where to move it.
+After each round of answers, update the document before asking the next round: settle `TBD`s, add or edit components, contracts, and flows, and record each settled choice in Decisions.
+End each message with the document's location and a one-line note of what changed in it.
+
+### Ask open decisions
+
 Ask only decisions the requirements and codebase leave open. Send every such question whose prerequisites are already settled in one message, numbered, each with your recommended answer. Hold back questions that depend on an answer you don't have yet. Wait for the user's answers before asking more.
 
 Each question should be formatted like so:
@@ -57,4 +66,4 @@ Stop asking when no open decision remains. Present the architecture for review a
 
 ## Wrapping up
 
-Use the template in `./templates/architecture.md`. Never reference any ID/prose from the current conversation, the output should be standalone.
+The final revision of the document is the deliverable; do not rewrite it from scratch at the end. Run the exit criteria against it. Never reference any ID/prose from the current conversation, the output should be standalone.
