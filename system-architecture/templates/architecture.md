@@ -59,9 +59,8 @@ acceptance criterion must appear in at least one flow.]
 ### Cross-flow consistency check
 [For flows sharing a contract or state, explain how their interactions respect the
 same contract semantics, ownership boundaries, component dependency constraints,
-and invariants. Include relevant concurrency and partial-failure cases; individually
-valid flows are not sufficient evidence. Identify any conflicts for resolution before
-approval. If no flows share contracts or state, state that explicitly.]
+and invariants. Include relevant concurrency and partial-failure cases. Identify any
+conflicts for resolution before approval. If no flows share contracts or state, state that explicitly.]
  
 ## Failure & consistency posture
 [Partial-failure behavior, idempotency, retry policy, what state can be
@@ -69,7 +68,6 @@ temporarily inconsistent and for how long.]
  
 ## Decisions
 [Mini-ADRs. For every non-obvious choice: the decision, the alternatives
-considered, why they were rejected. This section is what makes the document
-reviewable rather than merely readable.]
+considered, why they were rejected.]
  
 ## Open questions
