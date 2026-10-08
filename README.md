@@ -15,9 +15,10 @@ vpx skills add https://github.com/hugo082/skills --skill prd
 vpx skills add https://github.com/hugo082/skills --skill root-cause
 vpx skills add https://github.com/hugo082/skills --skill system-architecture
 vpx skills add https://github.com/hugo082/skills --skill program-design
-vpx skills add https://github.com/hugo082/skills --skill v-sclices
+vpx skills add https://github.com/hugo082/skills --skill v-slices
 vpx skills add https://github.com/hugo082/skills --skill work
 vpx skills add https://github.com/hugo082/skills --skill orchestrate
+vpx skills add https://github.com/hugo082/skills --skill orca-wk-prd
 ```
 
 ## Skills index
@@ -31,3 +32,4 @@ vpx skills add https://github.com/hugo082/skills --skill orchestrate
 - [`v-slices`](./v-slices/) — split a task into smaller vertical slices.
 - [`work`](./work/) — working on a task via git best practices and repo conventions.
 - [`orchestrate`](./orchestrate/) — orchestrating multiple sub-tasks via sub-agents.
+- [`orca-wk-prd`](./orca-wk-prd/) — user-invoked `/orca:wk:prd`: run the PRD → architecture → slices → per-slice design and work pipeline as an Orca coordinator, one supervised session per stage.
