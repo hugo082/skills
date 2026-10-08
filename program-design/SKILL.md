@@ -30,6 +30,13 @@ Produce the design, then present it for review. Ask questions only when the requ
 
 If the design requires changing a shared contract or architectural decision, surface the change and obtain approval before proceeding with the affected design.
 
+## Keep the document current
+
+Create the design document from `./templates/design.md` as soon as the scope is established. Replace each bracketed placeholder with what is already known from the requirements, architecture, and codebase, or with `TBD`.
+Keep the document where the user asked. When no location was given, use the scratchpad and, on confirmation, ask where to move it. For issue-based design, the issue handoff below says how to share it.
+Fill the sections in place as you design them. After each review round, update the document before replying: settle `TBD`s, apply the requested changes, record resolved decisions, and move cleared items out of Design blockers.
+End each message with the document's location and a one-line note of what changed in it.
+
 ## Deliverable
 
 **Scope and implementation context**: the outcome, included behavior and acceptance criteria, explicit exclusions, prerequisites, relevant constraints, and shared contracts. Write out the relevant content; references such as "see architecture Flow-3" are not a substitute.
@@ -57,7 +64,7 @@ If the design requires changing a shared contract or architectural decision, sur
 
 ## Wrapping up
 
-Use the template in `./templates/design.md` for the selected scope.
+The final revision of the document is the deliverable; do not rewrite it from scratch at the end. Run the exit criteria against it.
 
 ### Issue handoff
 
