@@ -24,7 +24,7 @@ A slice is a meaningful completion checkpoint: a thin path from entry point to e
 
 ## Deliverable
 
-Use progressive detail: a concise roadmap of the whole agreed scope, followed by an execution-ready description of the next slice. Do not fully specify distant slices before earlier results can inform them.
+Produce a concise roadmap of the whole agreed scope and one design brief per slice using `./templates/slice.md`. These are assignments to prepare a program design, not implementation-ready work orders. Use progressive detail: prepare the next or explicitly selected slice for design; keep later briefs concise until earlier results can inform them.
 
 ### Roadmap
 
@@ -33,30 +33,35 @@ For each slice, briefly state:
 - **Outcome and boundary:** what becomes possible or what uncertainty is resolved, and why this is a separate checkpoint.
 - **Path:** the end-to-end behavior exercised, from entry point to exit point.
 - **Dependencies:** prerequisites, including other slices where needed. Do not imply that sequenced slices are independent.
-- **Verification target:** the observable result that will prove completion. Exact commands may wait until the slice is prepared for execution.
+- **Verification target:** the observable result that will prove completion. Exact commands belong in program design unless already known.
 - **Open decisions:** known unresolved questions; distinguish blockers from details that can be settled later. Omit this field when there are none.
 
 Keep later entries concise but understandable without conversation history. Account for the agreed requirements in the roadmap and state any exclusions explicitly; deferred detail is not deferred scope.
 
-### Next slice
+### Slice issues
 
-Expand only the next slice to execute (or the slice the user explicitly selects). Include:
+Each slice is a separate issue using `./templates/slice.md`. Restate its outcome, behavioral scope, acceptance criteria, critical constraints, and verification targets. Link to the relevant PRD and architecture sections for context and rationale, and name repository paths and symbols that explain existing behavior. Do not invent upstream documents when none were supplied; identify missing context that blocks design.
 
-- Its outcome, path, prerequisites, and the reason for its boundary.
-- The behavior to build, relevant acceptance criteria and constraints, and explicit exclusions.
-- An executable verification command, required setup, and expected result. Identify any checks or fixtures that must be added as part of the slice; do not imply that planned checks already exist.
-- Open decisions, with blockers clearly marked. Do not present a blocked slice as execution-ready or invent missing decisions or commands.
+All references must be accessible to a cold agent. Do not rely on files available only to the author or on conversation memory. Make dependencies and blocking relationships explicit. State the capability or evidence needed, distinguishing stable prerequisites not yet implemented from unresolved results that determine the design.
 
-This description and the repository must be enough to build and prove the slice without reading the conversation. Self-contained does not mean implementation-complete: function signatures and a full program design are not required.
+For the next or selected slice, check that the issue, its referenced documents, and the repository provide enough context to prepare the program design without this conversation. This is the **design-ready cold-agent test**, not a requirement to specify files, signatures, line estimates, or implementation steps. Keep later issues brief; do not fill the template with speculative detail or empty sections.
 
-Before a later slice enters execution, expand it to the same standard using what earlier slices revealed. Revisit boundaries and dependencies if those results change the plan; do not preserve obsolete slices just because they were listed upfront.
+Every slice needs concrete, observable verification targets, including relevant failure behavior. Include exact commands and setup only when known; identify planned checks as planned. Program design expands these targets into executable verification commands.
+
+Set **Next action** to prepare the program design, not implement. Record questions for the designer and mark missing evidence or decisions that block affected design. Do not label a blocked slice design-ready. When blocked, make obtaining the missing decision or evidence the next action. Planning approval is not design approval. The next action describes the handoff; it does not gate a later explicit user request to implement.
+
+Before a later slice enters design, refresh its brief using earlier results. Revisit boundaries and dependencies if those results change the plan; do not preserve obsolete slices just because they were listed upfront.
 
 ## Failure modes to watch in yourself
 
 - **Horizontal slices in disguise**: "S2: the persistence layer" is a layer, not a slice. Every slice's Path must span entry to exit.
 - **Micro-slices**: splitting one coherent outcome solely to meet an estimated diff size, or promoting every test and implementation step into its own checkpoint.
 - **Oversized bundles**: minimizing the slice count by combining unrelated outcomes or accepting unreviewable diffs. Fewer slices are useful only while each remains coherent and verifiable.
-- **Premature detail**: producing execution specifications for the entire roadmap instead of preparing the next slice.
-- **Vague verification**: the next slice needs an executable check and expected result; later slices still need a concrete, observable completion target.
+- **Premature detail**: producing program designs or implementation work orders while slicing. A design brief defines what to prove and where to find context, not how to implement it.
+- **Vague verification**: every slice needs a falsifiable, observable completion target. Deferring commands to program design must not defer deciding what success means.
 - **Hidden scope or context**: a shorter plan must not drop requirements, safety work, or facts needed to understand its checkpoints.
-- **Implementing anyway**: writing "just the first slice" to be helpful. Present the plan for review and approval before implementation.
+- **Implementing anyway**: writing "just the first slice" to be helpful. This skill produces the plan and design briefs, not implementation. Present them for review.
+
+## Wrapping up
+
+Present the roadmap and issue briefs for review. When publishing is requested or authorized, create or update one issue per slice using `./templates/slice.md`; otherwise return the briefs without posting. Do not create duplicate issues when revising a plan.
