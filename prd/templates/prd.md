@@ -33,7 +33,7 @@ Do not include engineering estimates or complexity scores.
 
 Must Have = required for launch/core outcome/compliance.
 Should Have = important, but droppable if the engineering timeline requires it.
-Could Have = optional, considered only if Engineering confirms trivial effort.
+Could Have = nice to have; does not affect the core outcome or launch.
 Won't Have = outside this release; record in Non-goals, not as a launch gate.
 Include only the priority groups that have agreed criteria.]
 
