@@ -11,8 +11,7 @@ during other work and not chased, or this investigation ran and did not
 reach a mechanism. Fill Observed, Expected and Noticed in. Delete Root
 Cause Understanding, Ruled out and Suggested Fixes — an empty heading
 invites the next reader to fill it with a guess. One lead may go under
-Observed, labeled HYPOTHESIS. Do NOT open an investigation only to fill
-this template: a diagnostic is filed at the confidence already held.
+Observed, labeled HYPOTHESIS.
 
 Promote UNTRACED to TRACED in place when the mechanism is established.
 Do not open a second issue.]
@@ -57,18 +56,14 @@ hypothesis and must be labeled as one.]
 
 ## Ruled out
 [TRACED only. Plausible causes investigated and eliminated, each with the
-evidence that eliminated it. Prevents the design session from re-opening
-dead ends. Empty section = the first plausible cause was accepted without
-differential diagnosis — treat that as a red flag.]
+evidence that eliminated it. List at least one; if only one cause was ever
+considered, say so.]
 
 ## Verification criterion
 [The observable condition that will hold when the bug is fixed — a command,
-query, or test and its expected output. Written now, fix-agnostic, so the
-design session inherits it as an acceptance criterion rather than defining
-success after choosing a solution.]
+query, or test and its expected output. Fix-agnostic.]
 
 ## Suggested Fixes
 [TRACED only. Candidate fixes, each tied to the root cause mechanism it
-addresses, with a one-line tradeoff (blast radius, effort, risk). These are
-inputs to the design session, not decisions — do not rank them as if one was
-chosen, and include "do nothing / accept" when it's defensible.]
+addresses, with a one-line tradeoff (blast radius, effort, risk). Do not rank
+them; include "do nothing / accept" when it's defensible.]
