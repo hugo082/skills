@@ -21,6 +21,13 @@ Do not include implementation plans, complexity scores, or engineering estimates
 
 ## Guidance
 
+### Keep the document current
+
+Create the PRD from `./templates/prd.md` before the first question round. Replace each bracketed placeholder with what is already known, or with `TBD`.
+Keep the PRD where the user asked. When no location was given, use the scratchpad and, on confirmation, ask where to move it.
+After each round of answers, update the document before asking the next round: settle `TBD`s, add or edit acceptance criteria, record accepted defaults in Assumptions, move rejected scope to Non-goals, and remove `(proposed)` markers the user accepted.
+End each message with the document's location and a one-line note of what changed in it.
+
 ### Establish the happy path first
 
 Define the primary actor, their goal, the problem today, and the typical successful end-to-end journey. Confirm this path with the user before raising any edge case or error state.
@@ -90,4 +97,4 @@ Do not declare the stage done until:
 
 ## Wrapping up
 
-Use the template in `./templates/prd.md`. Never reference any ID/prose from the current conversation, the output should be standalone.
+The final revision of the document is the deliverable; do not rewrite it from scratch at the end. Run the exit criteria against it. Never reference any ID/prose from the current conversation, the output should be standalone.
