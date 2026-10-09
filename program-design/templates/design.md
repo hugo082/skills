@@ -44,16 +44,16 @@ which module owns each contract side.]
 
 ## Key types & signatures
 
-[Reference concrete stub files in the repository rather than duplicating them;
-include definitions here if they are not in the repository. Call out the
-load-bearing types and the reasoning behind non-obvious shapes. The design and
-repository together must contain every required signature and contract.]
+[Every new or changed type and signature, as fenced code: types, function
+signatures with doc comments, bodies that only throw. Call out the load-bearing
+types and the reasoning behind non-obvious shapes. This document contains
+every required signature and contract.]
 
 ## Call stacks
 
 [Describe each flow covered by this scope and the acceptance criteria it
 satisfies, then map it to handler → validator → service → repository using
-actual names from the stubs. Every scoped flow must map to a call stack;
+actual names from Key types & signatures. Every scoped flow must map to a call stack;
 out-of-scope flows need no design. Do not rely on upstream flow IDs or prose.]
 
 [Show a call-tree or call-stack change diff]

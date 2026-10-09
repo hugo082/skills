@@ -50,7 +50,7 @@ After stage 3, apply the merge gate to the planning PR before creating any slice
 
 ### Per slice, in roadmap order
 
-1. Start the design session in the slice worktree. If it settles `failed` because the brief is obsolete, run a `v-slices` refresh session for that slice in the planning worktree, apply the planning gate, and restart this step. On success verify: design and stubs committed on the slice branch, slice issue's Design handoff and Next action updated. Release the worker.
+1. Start the design session in the slice worktree. If it settles `failed` because the brief is obsolete, run a `v-slices` refresh session for that slice in the planning worktree, apply the planning gate, and restart this step. On success verify: design at the destination with its approval line, slice worktree unchanged, slice issue's Design handoff and Next action updated. Release the worker.
 2. Start the implementation session in the same worktree. On success verify: PR against the default branch attached to the slice issue, checks reported. Release the worker.
 3. Apply the merge gate, then move to the next slice.
 
@@ -70,7 +70,7 @@ Stage-specific content:
 - **PRD:** the feature request; the tracking issue.
 - **Architecture:** PRD path.
 - **Slices:** PRD and architecture paths; the tracking issue. After approval, publish each slice brief as a child issue of the tracking issue titled `Slice <n> - <outcome>`, record each issue in the roadmap, then commit the planning documents on the planning branch and open a PR to the default branch, reporting its link in `worker_done`.
-- **Design:** PRD, architecture, roadmap, and this slice's issue. First compare the brief's boundary, dependencies, and prerequisites against the current default branch; if obsolete, settle failed naming what changed. Otherwise commit the design and stubs on the slice branch and update the slice issue's Design handoff and Next action.
+- **Design:** PRD, architecture, roadmap, and this slice's issue. First compare the brief's boundary, dependencies, and prerequisites against the current default branch; if obsolete, settle failed naming what changed. Otherwise write the design document at the destination and update the slice issue's Design handoff and Next action. Change no repository file and commit nothing.
 - **Work:** the approved design and slice issue; commit on the slice branch; open a PR targeting the default branch; attach it to the slice issue with a completion comment and move the issue to review; the user validates in the session.
 
 Pass a model or effort only when the user named them.

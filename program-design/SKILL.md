@@ -26,6 +26,8 @@ The core rule: signatures yes, bodies no. **If you write a loop, a conditional w
 
 Allowed: type definitions, interfaces, function signatures, doc comments, constants, stubbed bodies that only `throw new Error("not implemented")`, wiring that is pure declaration (route table entries pointing at stub handlers).
 
+All of it goes in the design document, as fenced code. Do not create or change repository files, and do not commit.
+
 Produce the design, then present it for review. Ask questions only when the required inputs leave a blocking scope or prerequisite decision unresolved, or the architecture doc underdetermines a code-level choice. For decisions, present the options with tradeoffs; for missing prerequisite evidence, name the result needed before the affected design can proceed.
 
 If the design requires changing a shared contract or architectural decision, surface the change and obtain approval before proceeding with the affected design.
@@ -41,7 +43,7 @@ End each message with the document's location and a one-line note of what change
 
 **Scope and implementation context**: the outcome, included behavior and acceptance criteria, explicit exclusions, prerequisites, relevant constraints, and shared contracts. Write out the relevant content; references such as "see architecture Flow-3" are not a substitute.
 
-**Type definitions and interfaces** — in TypeScript this can and should be actual compiling code: types, function signatures, stubbed bodies (throw new Error("not implemented")). Run the type checker on the stubs before presenting.
+**Type definitions and interfaces** — fenced code in the document: types, function signatures with doc comments, bodies that only throw.
 
 **File/module layout**: the tree, and which module owns which responsibility
 
@@ -60,7 +62,8 @@ End each message with the document's location and a one-line note of what change
 3. Every acceptance criterion, constraint, and shared contract the implementation needs is written out in the design; no section points the reader to the PRD, architecture, slice plan, or conversation.
 4. Every architecture flow covered by this scope is described in the design and maps to a concrete call stack. Out-of-scope flows need no speculative design.
 5. No function body contains logic.
-6. User has explicitly reviewed and approved the current design revision.
+6. The repository is unchanged.
+7. User has explicitly reviewed and approved the current design revision.
 
 ## Wrapping up
 
