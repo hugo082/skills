@@ -8,41 +8,48 @@ disable-model-invocation: true
 
 A feature request, inline or as an issue identifier or link, plus an optional document destination and an optional tracking issue. Read any referenced work item.
 
+## Tools
+
+Orca's bundled skills are the reference for every Orca command. Load them from the Orca executable resolved per the `orchestration` skill stub:
+
+- `orchestration` for runs, workers, waiting, release, and the placement and recovery references.
+- `orca-cli` for worktree lineage, display names, issue links, and terminal titles.
+- `orca-linear` when the tracking issue lives in Linear.
+
 ## Setup
 
-1. Resolve the Orca executable per the `orchestration` skill stub and run `ORCA skills get orchestration` and `ORCA skills get orca-linear`. Load `--reference references/placement-and-remote.md` before the first slice worktree and `references/recovery-and-cleanup.md` on a failed `worker-start`, an uncertain release, or a live worker found during resume.
-2. Resolve the destination: the prompt, then `AGENTS.md`, `CLAUDE.md`, or the repo convention for product and design documents. It applies to the PRD, architecture, and roadmap. Slice briefs are published as Linear issues. If no destination is found, ask the user and stop.
-3. Resolve the tracking issue: the one given in the prompt or linked to the current worktree (`ORCA linear issue --current --json`). If none, create it with `ORCA linear create --title "<feature>"`, using the team from the repo convention or the user, and link the planning worktree with `ORCA worktree set --worktree active --linear-issue <id> --json`.
-4. Run `ORCA status --json` and create one Run for the feature.
+1. Resolve the document destination: the prompt, then `AGENTS.md`, `CLAUDE.md`, or the repo convention for product and design documents. It applies to the PRD, architecture, and roadmap. If none is found, ask the user and stop.
+2. Resolve the tracking issue: the one given in the prompt or linked to the current worktree. If none exists, create one in the project's issue tracker titled after the feature and link the planning worktree to it.
+3. Create one Run for the feature.
 
 ## Resume
 
 Before starting any stage, inventory:
 
-- `worker-list --include-remote`: a live stage session from a previous invocation is adopted or settled, not duplicated.
+- Live workers from a previous invocation: adopt or settle them, never duplicate them.
 - PRD, architecture, roadmap at the destination, each ending with its approval line.
-- The tracking issue's child issues, and each one's **Next action** and **Design handoff**.
-- Slice worktrees (`ORCA worktree list`), their PRs, and which are merged to main.
+- The tracking issue's child issues, with each one's **Next action** and **Design handoff**.
+- Slice worktrees, their PRs, and which are merged to main.
 
 Start at the first incomplete stage. A document present without an approval line reopens its stage with that document as input.
 
 ## Stages
 
-Serial, one active Dispatch at a time, one fresh session per stage. Stages 1 to 3 run in the current worktree (the planning worktree). Stages 4 and 5 run per slice in that slice's own worktree, created as a child of the planning worktree and based on main.
+Serial, one active Dispatch at a time, one fresh session per stage. Stages 1 to 3 run in the current worktree (the planning worktree). Stages 4 and 5 run per slice in that slice's own worktree.
 
-| #   | Stage        | Skill                 | Placement                                                                                                   | Task title                   |
-| --- | ------------ | --------------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| 1   | PRD          | `prd`                 | `--worktree current`                                                                                        | `PRD`                        |
-| 2   | Architecture | `system-architecture` | `--worktree current`                                                                                        | `Architecture`               |
-| 3   | Slices       | `v-slices`            | `--worktree current`                                                                                        | `Slices`                     |
-| 4   | Slice design | `program-design`      | `--worktree new-child --name <slice-key> --base-branch <main> --display-name "Slice <n> - <slice outcome>"` | `Slice <n> - Design`         |
-| 5   | Slice work   | `work`                | `--worktree id:<slice worktree id>` (fresh terminal)                                                        | `Slice <n> - Implementation` |
+| #   | Stage        | Skill                 | Placement                           | Task and terminal title      |
+| --- | ------------ | --------------------- | ----------------------------------- | ---------------------------- |
+| 1   | PRD          | `prd`                 | planning worktree, fresh terminal   | `PRD`                        |
+| 2   | Architecture | `system-architecture` | planning worktree, fresh terminal   | `Architecture`               |
+| 3   | Slices       | `v-slices`            | planning worktree, fresh terminal   | `Slices`                     |
+| 4   | Slice design | `program-design`      | new slice worktree (see below)      | `Slice <n> - Design`         |
+| 5   | Slice work   | `work`                | same slice worktree, fresh terminal | `Slice <n> - Implementation` |
 
-Pass the task title with `--task-title` on every `worker-start`, and rename the worker terminal to the same title with `ORCA terminal rename --terminal <handle> --title "<title>" --json` once the receipt returns its handle.
+Slice worktree: a child of the planning worktree in Orca lineage, git-based on the repo default branch, named after the slice, display name `Slice <n> - <slice outcome>`, linked to the slice issue.
 
 ### Merge gate
 
-Check whether main contains the PR. If not: release the settled worker, report the state and PR link, tell the user to re-invoke `/orca:wk:prd` after merging, and end the turn.
+Check whether the default branch contains the PR. If not: release the settled worker, report the state and PR link, tell the user to re-invoke `/orca:wk:prd` after merging, and end the turn.
 
 ### Planning gate
 
@@ -50,34 +57,34 @@ After stage 3, apply the merge gate to the planning PR before creating any slice
 
 ### Per slice, in roadmap order
 
-1. Start the design session in a new child worktree of the planning worktree, based on main, named after the slice. Record the worktree id from the receipt and link it to the slice issue with `ORCA worktree set --worktree id:<id> --linear-issue <slice issue> --json`. If the session settles `failed` because the brief is obsolete, run a `v-slices` refresh session for that slice in the planning worktree, apply the planning gate, and restart this step. On success verify: design and stubs committed on the slice branch, slice issue's Design handoff and Next action updated. Release the worker.
-2. Start the implementation session in the same worktree by its exact id selector. On success verify: PR against main attached to the slice issue, checks reported. Release the worker.
+1. Start the design session in the slice worktree. If it settles `failed` because the brief is obsolete, run a `v-slices` refresh session for that slice in the planning worktree, apply the planning gate, and restart this step. On success verify: design and stubs committed on the slice branch, slice issue's Design handoff and Next action updated. Release the worker.
+2. Start the implementation session in the same worktree. On success verify: PR against the default branch attached to the slice issue, checks reported. Release the worker.
 3. Apply the merge gate, then move to the next slice.
 
 ## Task specs
 
-Follow the Orca Task-spec contract: Target, Change, Constraints, Ownership, Observable acceptance. Each spec is self-contained and includes:
+Follow the Orca Task-spec contract. Each spec is self-contained and includes:
 
 - **Skill:** the skill to invoke, with its process and exit criteria.
-- **Context paths:** absolute paths or links to every upstream document and issue the stage consumes, including the tracking issue.
+- **Context:** absolute paths or links to every upstream document and issue the stage consumes, including the tracking issue.
 - **Destination:** the exact path or issue for the output. Write there directly.
-- **Human in the loop:** questions, review rounds, and approval happen with the user in the worker's own terminal. Run `ORCA worktree set --worktree active --unread --json` while waiting on the user. `ask` is for coordination problems only: a missing document, an unreadable path, an unresolved prerequisite from another slice.
+- **Human in the loop:** questions, review rounds, and approval happen with the user in the worker's own terminal. Mark the workspace unread while waiting on the user. `ask` is for coordination problems only: a missing document, an unreadable path, an unresolved prerequisite from another slice.
 - **Approval record:** after approval, append `Approved by <user> on <date>` as the document's last line; for designs, fill the slice issue's Design handoff.
-- **Completion:** `worker_done --outcome succeeded` after approval is recorded and the artifact is at its destination; otherwise `--outcome failed` with the reason in the body.
+- **Completion:** `worker_done` succeeded after approval is recorded and the artifact is at its destination; otherwise failed, with the reason in the body.
 
 Stage-specific content:
 
 - **PRD:** the feature request; the tracking issue.
 - **Architecture:** PRD path.
-- **Slices:** PRD and architecture paths; the tracking issue. After approval, publish each slice brief as a child issue of the tracking issue with `ORCA linear create --title "Slice <n> - <outcome>" --parent <tracking id> --body-file - --json`, record each issue id in the roadmap, then commit the planning documents on the planning branch and open a PR to main, reporting its link in `worker_done`.
-- **Design:** PRD, architecture, roadmap, and this slice's issue (`ORCA linear issue --current --full --json`). First compare the brief's boundary, dependencies, and prerequisites against current main; if obsolete, `worker_done --outcome failed` naming what changed. Otherwise commit the design and stubs on the slice branch and update the slice issue's Design handoff and Next action.
-- **Work:** the approved design and slice issue; commit on the slice branch; open a PR targeting main; follow the `orca-linear` completion flow (attach the PR, one completion comment, review state); the user validates in the session.
+- **Slices:** PRD and architecture paths; the tracking issue. After approval, publish each slice brief as a child issue of the tracking issue titled `Slice <n> - <outcome>`, record each issue in the roadmap, then commit the planning documents on the planning branch and open a PR to the default branch, reporting its link in `worker_done`.
+- **Design:** PRD, architecture, roadmap, and this slice's issue. First compare the brief's boundary, dependencies, and prerequisites against the current default branch; if obsolete, settle failed naming what changed. Otherwise commit the design and stubs on the slice branch and update the slice issue's Design handoff and Next action.
+- **Work:** the approved design and slice issue; commit on the slice branch; open a PR targeting the default branch; attach it to the slice issue with a completion comment and move the issue to review; the user validates in the session.
 
-Pass `--model` or `--effort` only when the user named them.
+Pass a model or effort only when the user named them.
 
 ## After each settlement
 
-Verify the artifact and approval line at the destination before releasing. A `succeeded` report without them reopens the stage with the same inputs. Update the planning worktree card with `worktree set --comment` at each stage boundary.
+Verify the artifact and approval line at the destination before releasing. A succeeded report without them reopens the stage with the same inputs. Update the planning worktree comment at each stage boundary.
 
 ## Exit criteria
 
@@ -87,4 +94,4 @@ Per invocation:
 - Every artifact produced is at the destination with its approval line.
 - The report names, per stage and slice reached, the outcome, the artifact path, issue, or PR, the gate the run stopped at, and any unresolved blocker.
 
-Workflow complete when every slice PR is merged to main, in roadmap order, and every slice issue is in its review or done state.
+Workflow complete when every slice PR is merged to the default branch, in roadmap order, and every slice issue is in its review or done state.
