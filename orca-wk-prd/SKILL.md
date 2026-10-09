@@ -8,19 +8,12 @@ disable-model-invocation: true
 
 A feature request, inline or as an issue identifier or link, plus an optional document destination and an optional tracking issue. Read any referenced work item.
 
-## Tools
-
-Orca's bundled skills are the reference for every Orca command. Load them from the Orca executable resolved per the `orchestration` skill stub:
-
-- `orchestration` for runs, workers, waiting, release, and the placement and recovery references.
-- `orca-cli` for worktree lineage, display names, issue links, and terminal titles.
-- `orca-linear` when the tracking issue lives in Linear.
-
 ## Setup
 
-1. Resolve the document destination: the prompt, then `AGENTS.md`, `CLAUDE.md`, or the repo convention for product and design documents. It applies to the PRD, architecture, and roadmap. If none is found, ask the user and stop.
-2. Resolve the tracking issue: the one given in the prompt or linked to the current worktree. If none exists, create one in the project's issue tracker titled after the feature and link the planning worktree to it.
-3. Create one Run for the feature.
+1. Run `orca skills list` and load the Orca skills this workflow needs: orchestration, worktrees and terminals, and the project's issue tracker.
+2. Resolve the document destination: the prompt, then `AGENTS.md`, `CLAUDE.md`, or the repo convention for product and design documents. It applies to the PRD, architecture, and roadmap. If none is found, ask the user and stop.
+3. Resolve the tracking issue: the one given in the prompt or linked to the current worktree. If none exists, create one in the project's issue tracker titled after the feature and link the planning worktree to it.
+4. Create one Run for the feature.
 
 ## Resume
 
