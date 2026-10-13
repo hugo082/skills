@@ -26,7 +26,8 @@ A slice is a meaningful completion checkpoint: a thin path from entry point to e
 
 Create the roadmap document as soon as the scope is established, with one entry per candidate slice; mark unsettled fields `TBD`. Add a brief from `./templates/slice.md` for each slice as its boundary settles, starting with the next or selected one.
 Keep the documents where the user asked. When no location was given, use the scratchpad and, on confirmation, ask where to move them; publishing to issues follows Wrapping up.
-After each review round, update the roadmap and affected briefs before replying: settle `TBD`s, merge or split slices, reorder, and record resolved decisions.
+After presenting the roadmap for review, edit the documents only to apply a settled decision: an answered question, an accepted recommendation, or a requested change. Leave them unchanged on clarifying questions, pushback, and open discussion.
+Apply each settled decision before replying by rewriting every roadmap entry and brief it affects: settle `TBD`s, merge or split slices, and reorder. The documents read as one current plan, with no question log or revision history.
 End each message with the documents' location and a one-line note of what changed in them.
 
 ## Deliverable

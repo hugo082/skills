@@ -36,7 +36,9 @@ If the design requires changing a shared contract or architectural decision, sur
 
 Create the design document from `./templates/design.md` as soon as the scope is established. Replace each bracketed placeholder with what is already known from the requirements, architecture, and codebase, or with `TBD`.
 Keep the document where the user asked. When no location was given, use the scratchpad and, on confirmation, ask where to move it. For issue-based design, the issue handoff below says how to share it.
-Fill the sections in place as you design them. After each review round, update the document before replying: settle `TBD`s, apply the requested changes, record resolved decisions, and move cleared items out of Design blockers.
+Fill the sections in place as you design them. After presenting the design for review, edit the document only to apply a settled decision: an answered question, an accepted recommendation, or a requested change. Leave it unchanged on clarifying questions, pushback, and open discussion.
+Apply each settled decision before replying by rewriting every section it affects: settle `TBD`s, update signatures and call stacks, and move cleared items out of Design blockers. The document reads as one current design, with no question log or revision history.
+Keep the template headings. Title every subsection with the takeaway it asserts ("Retries live in the job runner, not the handler"), not a topic label ("Retries").
 End each message with the document's location and a one-line note of what changed in it.
 
 ## Deliverable
