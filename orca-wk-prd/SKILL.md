@@ -1,6 +1,6 @@
 ---
 name: orca:wk:prd
-description: Run the PRD-to-release workflow as an Orca coordinator. Sequences prd, research-questions, research, system-architecture, v-slices, then per slice program-design and work, each in its own Orca session, serial, approved by the user inside each session. User-invoked only.
+description: Run the PRD-to-release workflow as an Orca coordinator. Sequences research-questions, research, prd, system-architecture, v-slices, then per slice program-design and work, each in its own Orca session, serial, approved by the user inside each session. User-invoked only.
 disable-model-invocation: true
 ---
 
@@ -11,7 +11,7 @@ A feature request, inline or as an issue identifier or link, plus an optional do
 ## Setup
 
 1. Run `orca skills list` and load the Orca skills this workflow needs: orchestration, worktrees and terminals, and the project's issue tracker.
-2. Resolve the document destination: the prompt or the repo convention for product and design documents. It applies to the PRD, research questions, research, architecture, and roadmap. If none is found, ask the user and stop.
+2. Resolve the document destination: the prompt or the repo convention for product and design documents. It applies to the research questions, research, PRD, architecture, and roadmap. If none is found, ask the user and stop.
 3. Resolve the tracking issue: the one given in the prompt or linked to the current worktree. If none exists, create one in the project's issue tracker titled after the feature and link the planning worktree to it.
 4. Create one Run for the feature.
 
@@ -20,7 +20,7 @@ A feature request, inline or as an issue identifier or link, plus an optional do
 Before starting any stage, inventory:
 
 - Live workers from a previous invocation: adopt or settle them, never duplicate them.
-- PRD, research questions, research, architecture, roadmap at the destination, each ending with its approval line.
+- Research questions, research, PRD, architecture, roadmap at the destination, each ending with its approval line.
 - The tracking issue's child issues, with each one's **Next action** and **Design handoff**.
 - Slice worktrees, their PRs, and which are merged to main.
 
@@ -32,9 +32,9 @@ Serial, one active Dispatch at a time, one fresh session per stage. Stages 1 to 
 
 | #   | Stage              | Skill                 | Placement                           | Task and terminal title      |
 | --- | ------------------ | --------------------- | ----------------------------------- | ---------------------------- |
-| 1   | PRD                | `prd`                 | planning worktree, fresh terminal   | `PRD`                        |
-| 2   | Research questions | `research-questions`  | planning worktree, fresh terminal   | `Research questions`         |
-| 3   | Research           | `research`            | planning worktree, fresh terminal   | `Research`                   |
+| 1   | Research questions | `research-questions`  | planning worktree, fresh terminal   | `Research questions`         |
+| 2   | Research           | `research`            | planning worktree, fresh terminal   | `Research`                   |
+| 3   | PRD                | `prd`                 | planning worktree, fresh terminal   | `PRD`                        |
 | 4   | Architecture       | `system-architecture` | planning worktree, fresh terminal   | `Architecture`               |
 | 5   | Slices             | `v-slices`            | planning worktree, fresh terminal   | `Slices`                     |
 | 6   | Slice design       | `program-design`      | new slice worktree (see below)      | `Slice <n> - Design`         |
@@ -69,9 +69,9 @@ Follow the Orca Task-spec contract. Each spec is self-contained and includes:
 
 Stage-specific content:
 
-- **PRD:** the feature request; the tracking issue.
-- **Research questions:** PRD path; the feature request.
+- **Research questions:** the feature request; the tracking issue.
 - **Research:** the research questions path only. Name no other document, issue, or description of the feature in the spec or the task title.
+- **PRD:** the feature request; research path; the tracking issue.
 - **Architecture:** PRD and research paths.
 - **Slices:** PRD, research, and architecture paths; the tracking issue. After approval, publish each slice brief as a child issue of the tracking issue titled `Slice <n> - <outcome>`, record each issue in the roadmap, then commit the planning documents on the planning branch and open a PR to the default branch, reporting its link in `worker_done`.
 - **Design:** PRD, research, architecture, roadmap, and this slice's issue. First compare the brief's boundary, dependencies, and prerequisites against the current default branch; if obsolete, settle failed naming what changed. Otherwise write the design document at the destination and update the slice issue's Design handoff and Next action. Change no repository file and commit nothing.

@@ -1,15 +1,15 @@
 ---
 name: research-questions
-description: Turn a feature request or PRD into objective questions about how the current system works, for a researcher who will not see the request. Use when the user wants research questions or a research plan before designing a change.
+description: Turn a feature request into objective questions about how the current system works, for a researcher who will not see the request. Use when the user wants research questions or a research plan before designing a change.
 ---
 
 ## Inputs
 
-Accept a feature request, a PRD, a task or issue identifier, or a link. For a referenced work item, read its description, relevant discussion, and linked documents.
+Accept a feature request, a task or issue identifier, or a link. For a referenced work item, read its description, relevant discussion, and linked documents.
 
 ## Goal
 
-Write the questions a researcher must answer about the system as it exists today. The researcher reads only this document: never the request, the PRD, or the issue.
+Write the questions a researcher must answer about the system as it exists today. The researcher reads only this document: never the request or the issue.
 
 Questions are descriptive: what exists, where it lives, how it works, how parts interact, how dependencies behave, and how each area is tested today.
 **Forbidden:** the feature name, requirements, the intended change, and normative phrasing ("should", "would we", "need to", "how do we", "how can we", "what's the best way"). If one appears in your draft, rewrite the question as "how does it work".

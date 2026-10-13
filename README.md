@@ -28,7 +28,7 @@ vpx skills add https://github.com/hugo082/skills --skill orca-wk-prd
 - [`domain-driven-design`](./domain-driven-design/) — foundations and practical patterns for applying DDD in real systems.
 - [`domain-driven-design-for-typescript`](./domain-driven-design-for-typescript/) — opinionated, functional-first DDD implementation structure for modern TypeScript (ESM), dependency-agnostic, and class-free.
 - [`prd`](./prd/) — templates and guidelines for writing Product Requirements Documents.
-- [`research-questions`](./research-questions/) — turn a feature request or PRD into objective questions about how the current system works.
+- [`research-questions`](./research-questions/) — turn a feature request into objective questions about how the current system works.
 - [`research`](./research/) — document how the current system works, answering research questions without knowledge of the planned change.
 - [`root-cause`](./root-cause/) — templates and guidelines for writing root cause diagnostics documents.
 - [`system-architecture`](./system-architecture/) — templates and guidelines for writing system architecture documents based on product requirements.
@@ -36,4 +36,4 @@ vpx skills add https://github.com/hugo082/skills --skill orca-wk-prd
 - [`v-slices`](./v-slices/) — split a task into smaller vertical slices.
 - [`work`](./work/) — working on a task via git best practices and repo conventions.
 - [`orchestrate`](./orchestrate/) — orchestrating multiple sub-tasks via sub-agents.
-- [`orca-wk-prd`](./orca-wk-prd/) — user-invoked `/orca:wk:prd`: run the PRD → research → architecture → slices → per-slice design and work pipeline as an Orca coordinator, one supervised session per stage.
+- [`orca-wk-prd`](./orca-wk-prd/) — user-invoked `/orca:wk:prd`: run the research → PRD → architecture → slices → per-slice design and work pipeline as an Orca coordinator, one supervised session per stage.
