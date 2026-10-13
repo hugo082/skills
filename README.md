@@ -21,6 +21,7 @@ vpx skills add https://github.com/hugo082/skills --skill v-slices
 vpx skills add https://github.com/hugo082/skills --skill work
 vpx skills add https://github.com/hugo082/skills --skill orchestrate
 vpx skills add https://github.com/hugo082/skills --skill orca-wk-prd
+vpx skills add https://github.com/hugo082/skills --skill orca-wk-task
 ```
 
 ## Skills index
@@ -37,3 +38,4 @@ vpx skills add https://github.com/hugo082/skills --skill orca-wk-prd
 - [`work`](./work/) — working on a task via git best practices and repo conventions.
 - [`orchestrate`](./orchestrate/) — orchestrating multiple sub-tasks via sub-agents.
 - [`orca-wk-prd`](./orca-wk-prd/) — user-invoked `/orca:wk:prd`: run the research → PRD → architecture → slices → per-slice design and work pipeline as an Orca coordinator, one supervised session per stage.
+- [`orca-wk-task`](./orca-wk-task/) — user-invoked `/orca:wk:task`: run the research → design → work pipeline for a change that needs no PRD, as an Orca coordinator, one supervised session per stage.
