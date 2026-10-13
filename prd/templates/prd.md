@@ -9,6 +9,19 @@
 [The change in the user's world when this ships. One paragraph. If you can't
 state it without describing the feature, the problem isn't understood yet.]
 
+## Success signal
+
+[What the team reads after release to confirm the Outcome happened. Not an
+acceptance criterion.]
+
+- **Signal:** <usage, adoption, completion, error-rate, latency, or qualitative measure>
+- **Baseline:** <current value, or `unknown`>
+- **Target:** <value or observation that confirms the outcome>
+- **Read at:** <when and where the team reads it>
+
+[Or `None` with the reason the user agreed to, when the change is too small for a
+meaningful signal.]
+
 ## Actors & scenarios
 
 [Who is involved and what they are trying to do.]
@@ -66,11 +79,17 @@ respect, phrased without prescribing the solution.]
 
 ## Assumptions
 
-[Agreed edge-case defaults and other assumptions, with their basis and confirmation
-status. Link accepted default behaviors to their AC IDs. Keep unconfirmed proposals
-clearly labeled and out of agreed requirements; silence is not approval. Record any
+[Accepted edge-case defaults and other confirmed assumptions, with their basis.
+Link accepted default behaviors to their AC IDs. Record only what the user accepted;
+silence is not acceptance. Record any
 unsupported reach/frequency assumptions here. Do not silently assume away significant
 product risks.]
+
+## Deferred to architecture
+
+[Technical questions, constraints, and suggestions raised during the interview,
+recorded as raised. Not requirements. Technical vocabulary is allowed in this section
+only. Omit the section when none were raised.]
 
 ## Open questions
 
