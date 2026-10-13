@@ -48,7 +48,7 @@ Each question should be formatted like so:
 ➡️ <your recommended answer>
 ```
 
-Look up facts from the filesystem and available tools before asking. Ask the user only for context you cannot access, and for product decisions.
+Read the supplied research document fully and take current-system facts from it. Look up facts from the filesystem and available tools before asking. Ask the user only for context you cannot access, and for product decisions.
 
 ### Default routine edge cases; discuss material risks
 
