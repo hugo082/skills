@@ -29,8 +29,7 @@ The research questions document from `./templates/research-questions.md`:
 
 ## Keep the document current
 
-Create the document as soon as you have read the inputs. Keep it where the user asked. When no location was given, use the scratchpad and, on confirmation, ask where to move it.
-After presenting it for review, edit the document only to apply a settled decision: an added, removed, or reworded question, or a requested change. Leave it unchanged on clarifying questions, pushback, and open discussion.
+Create the document as soon as you have read the inputs. Keep it where the user asked. When no location was given, use the scratchpad.
 End each message with the document's location and a one-line note of what changed in it.
 
 ## Exit criteria
@@ -39,7 +38,6 @@ End each message with the document's location and a one-line note of what change
 - No question uses normative phrasing.
 - Every question is answerable without the inputs.
 - Every area the change will likely touch is covered by at least one question, including how it is tested.
-- The user has reviewed and approved the questions.
 
 ## Wrapping up
 

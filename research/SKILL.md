@@ -29,8 +29,8 @@ Cite every claim with a `file:line` range, a documentation URL, or a learning te
 
 ## Keep the document current
 
-Create the document from the template before investigating. Keep it where the user asked. When no location was given, use the scratchpad and, on confirmation, ask where to move it.
-Fill findings in place as evidence arrives. After presenting the document for review, apply follow-up questions and corrections by rewriting every section they affect. The document reads as one current account of the system, with no question log or revision history.
+Create the document from the template before investigating. Keep it where the user asked. When no location was given, use the scratchpad.
+Fill findings in place as evidence arrives. Apply follow-up questions and corrections by rewriting every section they affect. The document reads as one current account of the system, with no question log or revision history.
 End each message with the document's location and a one-line note of what changed in it.
 
 ## Exit criteria
@@ -41,7 +41,6 @@ End each message with the document's location and a one-line note of what change
 - No recommendation, critique, proposed change, or `diff` block appears.
 - The frontmatter commit is the commit the findings were read from.
 - The repository is unchanged.
-- The user has reviewed and approved the document.
 
 ## Wrapping up
 
