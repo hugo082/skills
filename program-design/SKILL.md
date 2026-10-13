@@ -15,7 +15,7 @@ Establish the design scope: a feature, a named slice, or another explicit unit o
 
 If the selected slice is a design brief or roadmap summary, establish its behavior, acceptance criteria, constraints, exclusions, and verification expectations from the supplied requirements, architecture, and repository before designing its code shape. Compare prerequisite assumptions with the current repository and available evidence, not just issue status. Classify each prerequisite: a stable contract not yet implemented permits design ahead of implementation; an unresolved result that determines behavior or contracts blocks the affected design. List blockers in the design under Design blockers; do not fill the blocked part with a guess.
 
-Locate and fully read the system architecture for system-wide constraints, and read the PRD acceptance criteria relevant to the selected scope. If the architecture doc doesn't exist, stop; offer `/system-architecture` or accept an explicit waiver. Do not reverse-engineer architecture from conversation memory.
+Locate and fully read the system architecture for system-wide constraints, and read the PRD acceptance criteria relevant to the selected scope. When no PRD is supplied, establish the outcome, acceptance criteria, and exclusions from the request and confirm them with the user before designing the code shape. If the architecture doc doesn't exist, stop; offer `/system-architecture` or accept an explicit waiver. Do not reverse-engineer architecture from conversation memory.
 
 Read the supplied research document fully, and the parts of the codebase it does not cover.
 
