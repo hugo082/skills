@@ -1,6 +1,6 @@
 ---
 name: orca:wk:prd
-description: Run the PRD-to-release workflow as an Orca coordinator. Sequences prd, system-architecture, v-slices, then per slice program-design and work, each in its own Orca session, serial, approved by the user inside each session. User-invoked only.
+description: Run the PRD-to-release workflow as an Orca coordinator. Sequences prd, research-questions, research, system-architecture, v-slices, then per slice program-design and work, each in its own Orca session, serial, approved by the user inside each session. User-invoked only.
 disable-model-invocation: true
 ---
 
@@ -11,7 +11,7 @@ A feature request, inline or as an issue identifier or link, plus an optional do
 ## Setup
 
 1. Run `orca skills list` and load the Orca skills this workflow needs: orchestration, worktrees and terminals, and the project's issue tracker.
-2. Resolve the document destination: the prompt or the repo convention for product and design documents. It applies to the PRD, architecture, and roadmap. If none is found, ask the user and stop.
+2. Resolve the document destination: the prompt or the repo convention for product and design documents. It applies to the PRD, research questions, research, architecture, and roadmap. If none is found, ask the user and stop.
 3. Resolve the tracking issue: the one given in the prompt or linked to the current worktree. If none exists, create one in the project's issue tracker titled after the feature and link the planning worktree to it.
 4. Create one Run for the feature.
 
@@ -20,7 +20,7 @@ A feature request, inline or as an issue identifier or link, plus an optional do
 Before starting any stage, inventory:
 
 - Live workers from a previous invocation: adopt or settle them, never duplicate them.
-- PRD, architecture, roadmap at the destination, each ending with its approval line.
+- PRD, research questions, research, architecture, roadmap at the destination, each ending with its approval line.
 - The tracking issue's child issues, with each one's **Next action** and **Design handoff**.
 - Slice worktrees, their PRs, and which are merged to main.
 
@@ -28,15 +28,17 @@ Start at the first incomplete stage. A document present without an approval line
 
 ## Stages
 
-Serial, one active Dispatch at a time, one fresh session per stage. Stages 1 to 3 run in the current worktree (the planning worktree). Stages 4 and 5 run per slice in that slice's own worktree.
+Serial, one active Dispatch at a time, one fresh session per stage. Stages 1 to 5 run in the current worktree (the planning worktree). Stages 6 and 7 run per slice in that slice's own worktree.
 
-| #   | Stage        | Skill                 | Placement                           | Task and terminal title      |
-| --- | ------------ | --------------------- | ----------------------------------- | ---------------------------- |
-| 1   | PRD          | `prd`                 | planning worktree, fresh terminal   | `PRD`                        |
-| 2   | Architecture | `system-architecture` | planning worktree, fresh terminal   | `Architecture`               |
-| 3   | Slices       | `v-slices`            | planning worktree, fresh terminal   | `Slices`                     |
-| 4   | Slice design | `program-design`      | new slice worktree (see below)      | `Slice <n> - Design`         |
-| 5   | Slice work   | `work`                | same slice worktree, fresh terminal | `Slice <n> - Implementation` |
+| #   | Stage              | Skill                 | Placement                           | Task and terminal title      |
+| --- | ------------------ | --------------------- | ----------------------------------- | ---------------------------- |
+| 1   | PRD                | `prd`                 | planning worktree, fresh terminal   | `PRD`                        |
+| 2   | Research questions | `research-questions`  | planning worktree, fresh terminal   | `Research questions`         |
+| 3   | Research           | `research`            | planning worktree, fresh terminal   | `Research`                   |
+| 4   | Architecture       | `system-architecture` | planning worktree, fresh terminal   | `Architecture`               |
+| 5   | Slices             | `v-slices`            | planning worktree, fresh terminal   | `Slices`                     |
+| 6   | Slice design       | `program-design`      | new slice worktree (see below)      | `Slice <n> - Design`         |
+| 7   | Slice work         | `work`                | same slice worktree, fresh terminal | `Slice <n> - Implementation` |
 
 Slice worktree: a child of the planning worktree in Orca lineage, git-based on the repo default branch, named after the slice, display name `Slice <n> - <slice outcome>`, linked to the slice issue.
 
@@ -46,7 +48,7 @@ Check whether the default branch contains the PR. If not: release the settled wo
 
 ### Planning gate
 
-After stage 3, apply the merge gate to the planning PR before creating any slice worktree. Skip when the destination is outside the repository and forward links instead.
+After stage 5, apply the merge gate to the planning PR before creating any slice worktree. Skip when the destination is outside the repository and forward links instead.
 
 ### Per slice, in roadmap order
 
@@ -59,7 +61,7 @@ After stage 3, apply the merge gate to the planning PR before creating any slice
 Follow the Orca Task-spec contract. Each spec is self-contained and includes:
 
 - **Skill:** the skill to invoke, with its process and exit criteria.
-- **Context:** absolute paths or links to every upstream document and issue the stage consumes, including the tracking issue.
+- **Context:** absolute paths or links to every upstream document and issue the stage consumes, including the tracking issue, except for Research.
 - **Destination:** the exact path or issue for the output. Write there directly.
 - **Human in the loop:** questions, review rounds, and approval happen with the user in the worker's own terminal. Mark the workspace unread while waiting on the user. `ask` is for coordination problems only: a missing document, an unreadable path, an unresolved prerequisite from another slice.
 - **Approval record:** after approval, append `Approved by <user> on <date>` as the document's last line; for designs, fill the slice issue's Design handoff.
@@ -68,9 +70,11 @@ Follow the Orca Task-spec contract. Each spec is self-contained and includes:
 Stage-specific content:
 
 - **PRD:** the feature request; the tracking issue.
-- **Architecture:** PRD path.
-- **Slices:** PRD and architecture paths; the tracking issue. After approval, publish each slice brief as a child issue of the tracking issue titled `Slice <n> - <outcome>`, record each issue in the roadmap, then commit the planning documents on the planning branch and open a PR to the default branch, reporting its link in `worker_done`.
-- **Design:** PRD, architecture, roadmap, and this slice's issue. First compare the brief's boundary, dependencies, and prerequisites against the current default branch; if obsolete, settle failed naming what changed. Otherwise write the design document at the destination and update the slice issue's Design handoff and Next action. Change no repository file and commit nothing.
+- **Research questions:** PRD path; the feature request.
+- **Research:** the research questions path only. Name no other document, issue, or description of the feature in the spec or the task title.
+- **Architecture:** PRD and research paths.
+- **Slices:** PRD, research, and architecture paths; the tracking issue. After approval, publish each slice brief as a child issue of the tracking issue titled `Slice <n> - <outcome>`, record each issue in the roadmap, then commit the planning documents on the planning branch and open a PR to the default branch, reporting its link in `worker_done`.
+- **Design:** PRD, research, architecture, roadmap, and this slice's issue. First compare the brief's boundary, dependencies, and prerequisites against the current default branch; if obsolete, settle failed naming what changed. Otherwise write the design document at the destination and update the slice issue's Design handoff and Next action. Change no repository file and commit nothing.
 - **Work:** the approved design and slice issue; commit on the slice branch; open a PR targeting the default branch; attach it to the slice issue with a completion comment and move the issue to review; the user validates in the session.
 
 Pass a model or effort only when the user named them.

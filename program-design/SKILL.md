@@ -17,7 +17,7 @@ If the selected slice is a design brief or roadmap summary, establish its behavi
 
 Locate and fully read the system architecture for system-wide constraints, and read the PRD acceptance criteria relevant to the selected scope. If the architecture doc doesn't exist, stop; offer `/system-architecture` or accept an explicit waiver. Do not reverse-engineer architecture from conversation memory.
 
-Also read the relevant parts of the codebase.
+Read the supplied research document fully, and the parts of the codebase it does not cover.
 
 ## Goal
 

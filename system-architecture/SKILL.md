@@ -52,7 +52,7 @@ Each question should be formatted like so:
 ➡️ <your recommended answer>
 ```
 
-Look up facts from the codebase and available tools before asking. Ask the user only for context you cannot access, and for design decisions.
+Read the supplied research document fully. Take current-system facts from it, and inspect the codebase only for what it does not cover. Look up facts before asking. Ask the user only for context you cannot access, and for design decisions.
 
 Stop asking when no open decision remains. Present the architecture for review and do not proceed until the user confirms it.
 
