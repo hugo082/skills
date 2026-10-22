@@ -13,10 +13,17 @@ Carry out the user-requested action autonomously within its scope. A slice label
 
 - Understand the desired outcome and relevant code before changing it.
 - Keep changes cohesive, reviewable, and focused on the requested outcome. Do not expand the scope to unrelated work.
+- When a design term has more than one reading, state the reading you build in your first reply.
 - Surface genuine blockers or consequential unresolved decisions when they prevent credible progress. Ask for the missing information rather than inventing it; do not require a separate planning ceremony.
 
 ## Delivery and verification
 
-- Keep a clear, atomic change history and make the result reviewable.
-- Run the relevant checks and verify the requested behavior. Where automated review or CI is used, inspect its results and address failures caused by the change. Report unavailable or unrun checks explicitly.
-- Summarize what changed, how it was verified, remaining limitations, and where to review the result.
+- Keep a clear, atomic change history.
+- Run the repo's full check command, not a subset.
+- For a user-visible change, run it in the real app and capture before and after screenshots.
+- After the change works, have a sub-agent verify the requested behavior and a UX/UI sub-agent review the full feature lifecycle, including hover and focus states. Fix their findings, then take the final screenshots.
+- Post the screenshots on the PR as one annotated image built and pushed with [`scripts/evidence`](scripts/evidence) (`--help` for the spec).
+- Finish with the branch rebased on the latest `origin/main`, pushed, and a PR open. Check the PR state before each push; when it is merged, branch from `main` and open a new PR.
+- The work is done when every CI check on the PR's head commit is green, or each failing check is shown with log evidence to fail on `main` too. Answer every review comment with a fix or a reply.
+- Report unavailable or unrun checks explicitly.
+- Summarize what changed, how it was verified, remaining limitations, every change made outside the repo, and where to review the result.
