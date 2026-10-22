@@ -3,8 +3,8 @@ name: work
 description: Implement user-requested software changes, verify the result, and deliver reviewable work. Use when the user asks to implement a feature, fix a bug, refactor code, or complete a task or issue.
 ---
 
-**Done is a PR with green CI and every review comment answered.** A
-passing local run is not done.
+**Done is a PR with green CI, every review comment answered, and an
+atomic commit history.** A passing local run is not done.
 
 **No gates.** Do not wait on a slice label, design document, approval
 record, or workflow status. Use existing plans and designs as context.
@@ -21,10 +21,12 @@ record, or workflow status. Use existing plans and designs as context.
 
 ## Build
 
-- Make atomic commits.
+- Commit as you go. History does not need to be clean yet.
 - Run the repo's full check command, not a subset.
 
 ## Verify
+
+**Run verification in a sub-agent, never in the main session.**
 
 **User-visible change → run it in the real app.**
 
@@ -52,6 +54,11 @@ scripts/evidence --help               # image spec
   check is shown with log evidence to fail on `main` too. Not: checks
   pass locally.
 - **Reviews** — every review comment has a fix or a reply.
+- **History** — after the last change, a sub-agent rewrites the branch
+  into atomic commits, never the main session. One logical change per
+  commit, with a message that names it. No fixup, WIP, or review-round
+  commits. Push with `--force-with-lease`; the CI check above applies
+  to the rewritten head.
 
 ## Report
 
