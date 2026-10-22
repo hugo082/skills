@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: docs-only-statuses-page
+expected_outcome: |
+  A docs-only change: docs/statuses.md documents queued, reading and done (the
+  statuses that exist in src/books.js) and what moves a book between them, and the
+  README links it. The agent still runs the full check, delivers on a branch, and
+  reports with the template, without inventing statuses the code does not have.
+context:
+  scaffold_script: place-files.sh

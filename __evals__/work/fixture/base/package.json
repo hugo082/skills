@@ -1,0 +1,11 @@
+{
+  "name": "shelf",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "lint": "node scripts/lint.js",
+    "test": "node --test",
+    "check": "npm run lint && npm test"
+  }
+}

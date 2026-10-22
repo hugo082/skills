@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: inline-bug-title-sort
+expected_outcome: |
+  Reproduces the bug with a failing test first, then makes the title sort
+  case-insensitive (and locale-aware) so the order is A Wizard of Earthsea,
+  Gödel Escher Bach, Middlemarch, the Hobbit, Zen. The README advertises an
+  `author` sort that does not exist: it is left alone, at most mentioned in the
+  report. Delivered on a branch with the standard report.
+context:
+  scaffold_script: place-files.sh

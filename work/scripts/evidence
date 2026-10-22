@@ -1,0 +1,276 @@
+#!/usr/bin/env -S uv run --quiet --script
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["typst>=0.12", "pillow>=10.1"]
+# ///
+"""Build one annotated evidence image for a PR and publish it.
+
+Commands:
+  evidence compose SPEC.json -o OUT.png   build SPEC.typ from the spec, then render it
+  evidence render PAGE.typ -o OUT.png     render a hand-written Typst page
+  evidence push OUT.png --branch evidence/<id> [--path NAME.png]
+
+compose: SPEC.json describes the sheet. Image paths are relative to the spec.
+Annotation coordinates are pixels in the source PNG, before crop.
+
+  {
+    "title": "GG-1234 · Age badge stays visible when Demographics is collapsed",
+    "subtitle": "Grasp Test org, TikTok draft 1878…, local web/app on the main stage, 2026-10-22.",
+    "columns": 2,                          # panels per row (default 2)
+    "width": 1100,                         # sheet width in pt, rendered at 4 px/pt (default 1100)
+    "panels": [
+      {
+        "title": "1 · Collapsed fold hides the badge",
+        "state": "BEFORE",                 # BEFORE | AFTER, shown as a tag
+        "tags": [{"text": "Done when 2", "kind": "done"}],   # kind: done | info | warn
+        "text": "Paragraph under the title. `code` renders as code.",
+        "image": "before.png",
+        "crop": [0, 120, 1440, 700],       # optional [x, y, w, h]
+        "annotations": [
+          {"type": "box", "rect": [40, 300, 420, 64], "label": "missing badge", "label_pos": "right"},
+          {"type": "arrow", "from": [700, 200], "to": [470, 320]},
+          {"type": "marker", "at": [30, 290], "n": 1},
+          {"type": "text", "at": [500, 500], "text": "collapsed"},
+          {"type": "blur", "rect": [900, 20, 300, 40]}
+        ],
+        "code": "PUT /fields/…\\n→ 200",   # optional code block
+        "notes": ["Extra paragraph.", "Not tested: …"],
+        "span": 2                          # optional, columns this panel spans
+      }
+    ]
+  }
+
+  label_pos: above (default) | below | left | right.
+  Every annotation accepts "color" (default #ff2d55). "blur" hides personal data or tokens.
+  A panel without "image" is a text panel (run log, payload, limitations).
+
+render: PAGE.typ is compiled to a single PNG at 288 ppi.
+
+push: commits OUT.png to the branch on origin without touching the working
+tree, then prints the Markdown image line for the PR body or comment.
+"""
+
+import argparse
+import json
+import math
+import os
+import re
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+RED = "#ff2d55"
+PPI = 288
+MARGIN, GUTTER, INSET = 16, 12, 10
+TAGS = {"done": "#1f8a3b", "info": "#2856d9", "warn": "#c2410c", "before": "#d92d4a", "after": "#1f8a3b"}
+
+PREAMBLE = """#set page(width: {width}pt, height: auto, margin: {margin}pt, fill: rgb("#f3f4f8"))
+#set text(font: ("Helvetica Neue", "Helvetica", "Arial", "Inter", "DejaVu Sans"), size: 10.5pt, fill: rgb("#1b1f3b"))
+#set par(leading: 0.55em, spacing: 0.75em)
+#show raw: set text(font: ("Menlo", "DejaVu Sans Mono"), size: 9pt)
+#show raw.where(block: false): it => box(fill: rgb("#eef0f6"), inset: (x: 3pt), outset: (y: 2.5pt), radius: 2pt, it)
+#let tag(c, t) = box(fill: rgb(c), radius: 3pt, inset: (x: 4pt, y: 2pt), baseline: 1.5pt, text(fill: white, size: 8pt, weight: "bold", t)) + h(4pt)
+#let lbl(c, t) = box(fill: rgb(c), radius: 3pt, inset: (x: 5pt, y: 3pt), text(fill: white, size: 9pt, weight: "bold", t))
+"""
+
+
+def typ_str(s):
+    return '"' + s.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n") + '"'
+
+
+def inline(text):
+    """Typst content for plain text, with `backticks` as inline code."""
+    parts = re.split(r"`([^`]+)`", text)
+    out = []
+    for i, part in enumerate(parts):
+        if part:
+            out.append(f"raw({typ_str(part)})" if i % 2 else typ_str(part))
+    return "[" + "".join(f"#{p}" for p in out) + "]"
+
+
+def frame_image(panel, base, assets, index):
+    """Crop and blur the screenshot; return the frame PNG path and the crop box."""
+    from PIL import Image, ImageFilter
+
+    with Image.open(base / panel["image"]) as im:
+        im = im.convert("RGB")
+        for a in panel.get("annotations", []):
+            if a["type"] == "blur":
+                x, y, w, h = a["rect"]
+                im.paste(im.crop((x, y, x + w, y + h)).filter(ImageFilter.GaussianBlur(max(6, h / 3))), (x, y))
+        crop = panel.get("crop", [0, 0, im.width, im.height])
+        cx, cy, cw, ch = crop
+        path = assets / f"panel-{index}.png"
+        im.crop((cx, cy, cx + cw, cy + ch)).save(path)
+    return path, crop
+
+
+def shot(panel, base, inner_w, assets, index):
+    path, (cx, cy, cw, ch) = frame_image(panel, base, assets, index)
+    k = inner_w / cw
+
+    def pt(x, y):
+        return (x - cx) * k, (y - cy) * k
+
+    sw, sh = inner_w, ch * k
+    over = []
+    for a in panel.get("annotations", []):
+        color = a.get("color", RED)
+        kind = a["type"]
+        if kind == "blur":
+            continue
+        if kind == "box":
+            x, y, w, h = a["rect"]
+            l, t = pt(x, y)
+            r, b = pt(x + w, y + h)
+            over.append(
+                f'#place(top + left, dx: {l}pt, dy: {t}pt, rect(width: {r - l}pt, height: {b - t}pt, '
+                f'stroke: 2pt + rgb("{color}"), radius: 3pt))'
+            )
+            if a.get("label"):
+                label = f'lbl("{color}", {inline(a["label"])})'
+                mid = (t + b) / 2 - sh / 2
+                over.append({
+                    "above": f"#place(bottom + left, dx: {l}pt, dy: {t - sh - 4}pt, {label})",
+                    "below": f"#place(top + left, dx: {l}pt, dy: {b + 4}pt, {label})",
+                    "right": f"#place(horizon + left, dx: {r + 5}pt, dy: {mid}pt, {label})",
+                    "left": f"#place(horizon + right, dx: {l - sw - 5}pt, dy: {mid}pt, {label})",
+                }[a.get("label_pos", "above")])
+        elif kind == "arrow":
+            (x1, y1), (x2, y2) = pt(*a["from"]), pt(*a["to"])
+            ang = math.atan2(y2 - y1, x2 - x1)
+            size = 9
+            bx, by = x2 - size * math.cos(ang), y2 - size * math.sin(ang)
+            wing = [(bx + 4.5 * math.sin(ang) * s, by - 4.5 * math.cos(ang) * s) for s in (1, -1)]
+            over.append(
+                f'#place(top + left, line(start: ({x1}pt, {y1}pt), end: ({bx}pt, {by}pt), '
+                f'stroke: (paint: rgb("{color}"), thickness: 2.2pt, cap: "round")))'
+            )
+            pts = ", ".join(f"({px}pt, {py}pt)" for px, py in [(x2, y2), *wing])
+            over.append(f'#place(top + left, polygon(fill: rgb("{color}"), {pts}))')
+        elif kind == "marker":
+            x, y = pt(*a["at"])
+            over.append(
+                f'#place(top + left, dx: {x - 8}pt, dy: {y - 8}pt, circle(radius: 8pt, fill: rgb("{color}"), '
+                f'stroke: 1.5pt + white, align(center + horizon, text(fill: white, size: 9pt, weight: "bold", '
+                f'{inline(str(a["n"]))}))))'
+            )
+        elif kind == "text":
+            x, y = pt(*a["at"])
+            over.append(f'#place(top + left, dx: {x}pt, dy: {y}pt, lbl("{color}", {inline(a["text"])}))')
+        else:
+            sys.exit(f"unknown annotation type: {kind}")
+    return (
+        f"#block(width: {sw}pt, height: {sh}pt)[\n"
+        f'#place(top + left, block(clip: true, radius: 5pt, stroke: 0.6pt + rgb("#d7d9e0"), '
+        f'image({typ_str(str(path.resolve()))}, width: {sw}pt)))\n' + "\n".join(over) + "\n]"
+    )
+
+
+def build_typ(spec, base, assets):
+    width = spec.get("width", 1100)
+    columns = spec.get("columns", 2)
+    col = (width - 2 * MARGIN - (columns - 1) * GUTTER) / columns
+    out = [PREAMBLE.format(width=width, margin=MARGIN)]
+    if spec.get("title"):
+        out.append(f'#text(size: 17pt, weight: "bold", {inline(spec["title"])})')
+    if spec.get("subtitle"):
+        out.append(f'#v(-4pt)\n#text(fill: rgb("#555"), {inline(spec["subtitle"])})')
+    out.append("#v(6pt)")
+    cells = []
+    for index, p in enumerate(spec["panels"], 1):
+        span = p.get("span", 1)
+        inner = span * col + (span - 1) * GUTTER - 2 * INSET
+        body = []
+        if p.get("title"):
+            body.append(f'#text(size: 11.5pt, weight: "bold", {inline(p["title"])})')
+        tags = ""
+        if p.get("state"):
+            tags += f'#tag("{TAGS[p["state"].lower()]}", {inline(p["state"])})'
+        for t in p.get("tags", []):
+            tags += f'#tag("{TAGS[t.get("kind", "info")]}", {inline(t["text"])})'
+        if tags or p.get("text"):
+            body.append(tags + (f"#{inline(p['text'])}" if p.get("text") else ""))
+        if p.get("image"):
+            body.append(shot(p, base, inner, assets, index))
+        if p.get("code"):
+            body.append(
+                f'#block(fill: rgb("#10142b"), radius: 5pt, inset: 9pt, width: 100%, '
+                f'text(fill: rgb("#e6e9ff"), raw({typ_str(p["code"])}, block: true)))'
+            )
+        body += [f"#{inline(n)}" for n in p.get("notes", [])]
+        panel = f'block(fill: white, radius: 8pt, inset: {INSET}pt, width: 100%, stroke: 0.5pt + rgb("#e3e5ec"))[\n' + "\n\n".join(body) + "\n]"
+        cells.append(f"grid.cell(colspan: {span}, {panel})" if span > 1 else panel)
+    out.append(f"#grid(columns: ({', '.join(['1fr'] * columns)}), gutter: {GUTTER}pt,\n" + ",\n".join(cells) + "\n)")
+    return "\n".join(out)
+
+
+def render(page, out):
+    import typst
+
+    typst.compile(str(page), output=str(out), format="png", ppi=PPI, root="/")
+    print(out)
+
+
+def compose(spec_path, out):
+    spec_path = Path(spec_path)
+    page = spec_path.with_suffix(".typ")
+    assets = spec_path.with_name(f"{spec_path.stem}-assets")
+    assets.mkdir(exist_ok=True)
+    page.write_text(build_typ(json.loads(spec_path.read_text()), spec_path.parent, assets))
+    render(page, out)
+
+
+def git(*args, env=None, input=None):
+    return subprocess.run(
+        ["git", *args], check=True, capture_output=True, text=True, env=env, input=input
+    ).stdout.strip()
+
+
+def push(image, branch, path):
+    path = path or Path(image).name
+    remote = git("remote", "get-url", "origin")
+    m = re.search(r"github\.com[:/](.+?)(?:\.git)?$", remote)
+    if not m:
+        sys.exit(f"origin is not a GitHub remote: {remote}")
+    repo = m.group(1)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        env = {**os.environ, "GIT_INDEX_FILE": str(Path(tmp) / "index")}
+        parents = []
+        if git("ls-remote", "--heads", "origin", branch):
+            git("fetch", "-q", "origin", f"refs/heads/{branch}")
+            parent = git("rev-parse", "FETCH_HEAD")
+            parents = ["-p", parent]
+            git("read-tree", parent, env=env)
+        blob = git("hash-object", "-w", str(image))
+        git("update-index", "--add", "--cacheinfo", f"100644,{blob},{path}", env=env)
+        tree = git("write-tree", env=env)
+        commit = git("commit-tree", tree, *parents, input=f"evidence: {path}\n")
+        git("push", "-q", "origin", f"{commit}:refs/heads/{branch}")
+    print(f"![{Path(path).stem}](https://github.com/{repo}/blob/{branch}/{path}?raw=true)")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = parser.add_subparsers(dest="cmd", required=True)
+    for name in ("compose", "render"):
+        c = sub.add_parser(name)
+        c.add_argument("source")
+        c.add_argument("-o", "--out", default="evidence.png")
+    p = sub.add_parser("push")
+    p.add_argument("image")
+    p.add_argument("--branch", required=True)
+    p.add_argument("--path")
+    args = parser.parse_args()
+    if args.cmd == "compose":
+        compose(args.source, args.out)
+    elif args.cmd == "render":
+        render(args.source, args.out)
+    else:
+        push(args.image, args.branch, args.path)
+
+
+if __name__ == "__main__":
+    main()

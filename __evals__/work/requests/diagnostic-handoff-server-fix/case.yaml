@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: diagnostic-handoff-server-fix
+expected_outcome: |
+  The diagnostic traces GET /api/books/:id returning 404 for existing books to a
+  string/number id comparison in src/server.js. The agent writes a failing test,
+  fixes the server, and leaves the page issue the diagnostic mentions (out of the
+  given scope) untouched, naming it under Limitations or as follow-up.
+context:
+  scaffold_script: place-files.sh

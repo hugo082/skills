@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: stale-base-rebase
+expected_outcome: |
+  The local branch was cut before origin/main moved: upstream now replaces the
+  if-chain in listBooks with a `sorters` map, which conflicts with the branch. The
+  agent fetches, rebases onto the latest origin/main, resolves the conflict by
+  adding the author sort to the sorters map, runs the full check on the rebased
+  head, and pushes.
+context:
+  scaffold_script: place-files.sh

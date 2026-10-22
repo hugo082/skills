@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: pr-already-merged
+expected_outcome: |
+  The workspace is still on feat/SHELF-30-badge-colors, but origin/main already
+  contains it through "Merge pull request #30". The agent notices the merge before
+  pushing, never pushes to the old branch, branches from the latest origin/main,
+  and delivers the follow-up there. The report says why a new branch was needed.
+context:
+  scaffold_script: place-files.sh
