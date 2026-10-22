@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: ambiguous-finished-this-year
+expected_outcome: |
+  "This year" has two readings with different results on the fixture data:
+  calendar year (2 books in 2026) or the last 12 months (3 books until
+  2026-12-28, when the two readings converge; move book 4's `finishedAt` then). The agent
+  states the reading it builds in its first reply instead of asking or silently
+  choosing, counts from `finishedAt`, and tests it with a fixed date so the test
+  does not depend on today.
+context:
+  scaffold_script: place-files.sh

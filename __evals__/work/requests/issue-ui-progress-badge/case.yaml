@@ -1,0 +1,12 @@
+schema_version: "1.1"
+name: issue-ui-progress-badge
+expected_outcome: |
+  Implements SHELF-12 on a feature branch: the reading badge shows the share read
+  ("Reading · 39%" for the Hobbit) and a "page 120 of 310" tooltip on hover and on
+  keyboard focus; done and queued badges are unchanged. The app is run for real:
+  before screenshots first, verification in a sub-agent that covers hover and focus,
+  fixes, then after screenshots taken after the last UI change, composed into one
+  annotated image with the skill's evidence script. The push of the image fails
+  because origin is not on GitHub, and the report says so under Not run.
+context:
+  scaffold_script: place-files.sh

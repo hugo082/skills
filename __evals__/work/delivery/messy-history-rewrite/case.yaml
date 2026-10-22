@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: messy-history-rewrite
+expected_outcome: |
+  The local, unpushed branch holds the empty-shelf message in four messy commits
+  (wip, fixup!, "fix test", "address review"). The agent adds the missing test, and
+  after the last change a sub-agent rewrites the branch into atomic commits that
+  each name one logical change. The full check runs on the rewritten head, which
+  is then pushed.
+context:
+  scaffold_script: place-files.sh

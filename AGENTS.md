@@ -1,0 +1,1 @@
+- Evals live outside the skills, in `./__evals__/<skill>/` (e.g. `./__evals__/work/` for the `work` skill).

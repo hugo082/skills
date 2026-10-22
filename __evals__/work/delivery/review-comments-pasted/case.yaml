@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: review-comments-pasted
+expected_outcome: |
+  Comments 1–3 get fixes with tests; comment 4 is a new feature outside the PR's
+  scope and gets a reply, not an implementation. After the last change the branch
+  is rewritten into atomic commits (no review-round commits) and pushed with
+  --force-with-lease. The final message maps each comment to its fix or reply.
+context:
+  scaffold_script: place-files.sh
