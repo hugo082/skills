@@ -55,10 +55,12 @@ scripts/evidence --help               # image spec
   pass locally.
 - **Reviews** — every review comment has a fix or a reply.
 - **History** — after the last change, a sub-agent rewrites the branch
-  into atomic commits, never the main session. One logical change per
-  commit, with a message that names it. No fixup, WIP, or review-round
-  commits. Push with `--force-with-lease`; the CI check above applies
-  to the rewritten head.
+  into atomic commits, never the main session. Rewrite only the commits
+  after the head of the previous rewrite; with no previous rewrite,
+  start from the merge base. One logical change per commit, with a
+  message that names it. No fixup, WIP, or review-round commits. Push
+  with `--force-with-lease`; the CI check above applies to the
+  rewritten head.
 
 ## Report
 
