@@ -49,10 +49,10 @@ automation `orchestrate - <outcome>` exists:
 orca orchestration run-create --objective "<outcome>"
 orca automations create --name "orchestrate - <outcome>" --provider claude \
   --workspace path:<planning worktree> --fresh-session --disabled \
-  --trigger "*/5 * * * *" --precheck-timeout 300 \
+  --trigger "*/10 * * * *" --precheck-timeout 600 \
   --prompt "/orchestrate round <run id> <input>"
 orca automations edit <automation id> --enabled \
-  --precheck "<skill dir>/scripts/round-due.sh <absolute orca path> <run id> <automation id> 290 10"
+  --precheck "<skill dir>/scripts/round-due.sh <absolute orca path> <run id> <automation id> 590 10"
 orca automations run <automation id>
 ```
 
@@ -237,9 +237,9 @@ Before ending a round:
 - State complete → the round automation disabled.
 
 Write the report to the planning worktree's Orca comment, then end
-the round with `orca terminal close`. A question awaits the user →
-disable the round automation and end the turn without closing; once
-answered, enable it again.
+the round with `orca terminal close --terminal "$ORCA_TERMINAL_HANDLE"
+--tab`. A question awaits the user → disable the round automation and
+end the turn without closing; once answered, enable it again.
 
 ```
 ## <outcome>
