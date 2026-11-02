@@ -113,7 +113,7 @@ replying to the worker.
 
 One fresh session per worker. The planning worktree is the current
 worktree. Each task worktree is a child of the planning worktree in
-Orca lineage, git-based on the default branch, named after the task,
+Orca lineage, git-based on the task's base, named after the task,
 display name `<task id> - <goal>`, linked to the task issue.
 
 | Worker             | Skill                | Placement                          | Title                          |
@@ -134,7 +134,7 @@ Roadmap.
 **Per task kind.**
 
 - **Change** → Design, then Work. Done when its PR is merged and its
-  issue is closed.
+  issue is closed. Merged always means merged into the default branch.
 - **Research** → Research questions, then Research. Done when the
   research is published.
 - **Monitor** → observe the signal until the done signal holds or the
@@ -145,7 +145,12 @@ Roadmap.
 
 **Ready.** A task is ready when every dependency is done and,
 destination inside the repository, the planning PR that added it is
-merged. Start every ready task.
+merged. For a change task with a base, a change dependency whose
+Work settled succeeded counts as done. Start every ready task.
+
+**Base.** No unmerged dependency → the default branch. Otherwise the
+branch of the unmerged dependency that contains every other
+dependency; no such branch → no base yet.
 
 **Worker constraints.** Write the size rule and settings into the
 spec as values.
@@ -159,10 +164,11 @@ spec as values.
   planning PR and open a planning PR.
 - **Design** — the input is the confirmed requirements, with no
   confirmation round; the architecture is explicitly waived. Obsolete
-  against the default branch or over the size rule → settle failed
+  against the task's base or over the size rule → settle failed
   naming what changed or the split.
-- **Work** — target the PR at the default branch and link it to the
-  task issue. Merge only when the merge policy says so.
+- **Work** — rebase on the task's base, not the default branch, and
+  target the PR at it; link the PR to the task issue. Merge only when
+  the merge policy says so and the base is the default branch.
 - **Monitor, operation** — record the result on the task issue.
 
 ## After each settlement
@@ -171,7 +177,12 @@ spec as values.
   same inputs.
 - Release the worker.
 - Check open PRs' merge state.
-- On merge: close the task issue.
+- On merge: close the task issue, and retarget PRs based on its
+  branch to the default branch.
+- A task's branch merges or gets new commits → a fresh Work session
+  for every open task PR that depends on it, directly or
+  transitively. New review comments on an open task PR → a fresh
+  Work session in its task worktree.
 - Update the planning worktree comment.
 
 **Waiting on merges.** No task ready and PRs await merge → report the
@@ -196,7 +207,7 @@ Final message:
 <one row per task reached>
 
 ### Waiting on the user
-<questions, and PRs to merge, or "none">
+<questions, and PRs to merge, bases first, or "none">
 
 ### Blockers
 <each unresolved blocker, or "none">
