@@ -7,9 +7,10 @@ disable-model-invocation: true
 **Done is every acceptance criterion in the input covered by a merged
 change task, and every task in the roadmap done.**
 
-This session writes no document, reads no code, and runs no build,
-test, or CI watch. For an approval, read only the sections the
-decision needs. Never read whole documents, diffs, or transcripts.
+This session writes no document other than decision log rows, reads
+no code, and runs no build, test, or CI watch. For an approval, read
+only the sections the decision needs. Never read whole documents,
+diffs, or transcripts.
 
 **State lives in the tracker and at the document destination**, never
 only in this session.
@@ -40,8 +41,8 @@ interview the user to fill them.
 
 At the start of each turn, inventory pending `ask` messages (answer
 them first), the Run's live workers (adopt them, never duplicate),
-documents at the destination, the tracking issue's roadmap and
-decision comments, every task issue's state, and every task PR and its base.
+documents at the destination, the decision log, the tracking issue's
+roadmap, every task issue's state, and every task PR and its base.
 
 ## Set up
 
@@ -55,9 +56,14 @@ if none exists.
    convention. None found → ask the user and end the turn.
 3. Resolve the tracking issue: the one given in the input; otherwise
    create one in the project's tracker titled after the outcome.
-4. The planning worktree's Orca comment holds the Report's Tasks
+4. Decision log: `<planning worktree>/decisions-<run id>.tsv`. Every
+   decision in the Run, by you or a worker, including each user
+   answer, is one row appended only with `scripts/log-decision.sh`;
+   `references/decision-log.tsv` shows the rows. Publish it at the
+   document destination like the other documents.
+5. The planning worktree's Orca comment holds the Report's Tasks
    table.
-5. Create one Run for the input.
+6. Create one Run for the input.
 
 ## Continuous discovery
 
@@ -96,27 +102,28 @@ Every task spec carries this contract, addressed to the worker:
 
 - **Destination** — the exact path, Artifact, or issue for the
   output. Writing it there is an allowed repository change.
-- **Decisions** — take every decision yourself and record each with
-  its basis in the output. `ask` the coordinator only for an **input
-  decision**: one that changes the input's outcome, acceptance
-  criteria, exclusions, or constraints, or that is irreversible.
+- **Decisions** — take every decision yourself and log each with the
+  log script; appending to the decision log is an allowed change
+  outside your worktree. Answers to your `ask` are already logged.
+  `ask` the coordinator only for an **input decision**: one that
+  changes the input's outcome, acceptance criteria, exclusions, or
+  constraints, or that is irreversible.
 - **Approval** — where the skill requires user approval, `ask` the
   coordinator; its reply is that approval.
 - **Completion** — `worker_done` succeeded once the output is
   published and, where required, approved; otherwise failed, with
-  the reason in the body. The summary names the output location, the
-  decisions taken, follow-ups, and any open blocker.
+  the reason in the body. The summary names the output location,
+  follow-ups, and any open blocker.
 
 Answer each `ask`:
 
 - **Approval request** → check against the input's acceptance
-  criteria, exclusions, and constraints, and the recorded decisions.
+  criteria, exclusions, and constraints, and the decision log.
   Reply approved, or with the required changes.
 - **Input decision** → ask the user in this session, numbered, each
   with your recommended answer, batching every pending question.
 
-Record every answer as a comment on the tracking issue before
-replying to the worker.
+Log the answer under the asking worker's task before replying.
 
 ## Run tasks
 
@@ -161,8 +168,9 @@ Work settled succeeded counts as done. Start every ready task.
 branch of the unmerged dependency that contains every other
 dependency; no such branch → no base yet.
 
-**Worker constraints.** Write the size rule and settings into the
-spec as values.
+**Worker constraints.** Write the size rule, settings, and the
+absolute paths of the decision log and `scripts/log-decision.sh` into
+the spec as values.
 
 - **Roadmap** — publish without confirmation: the DAG in the
   tracking issue body, mapping each acceptance criterion to the
@@ -211,6 +219,7 @@ Before ending a turn:
 - Every closed task issue with no live worker has its PR merged or
   closed and its task worktree removed.
 - Every task an issue in the tracker.
+- The decision log published at the destination with every row.
 
 Final message:
 

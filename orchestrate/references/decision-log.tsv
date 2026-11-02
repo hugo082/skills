@@ -1,0 +1,5 @@
+ts	task	decision	why	evidence
+2026-11-02T09:14:00Z	coordinator	split the export into two change tasks, API first then UI	the UI needs the new endpoint deployed before it can be tested	tracking issue body, ENG-412, ENG-413
+2026-11-02T10:02:00Z	ENG-412 Design	paginate the export endpoint with a cursor, not offsets	rows are inserted during export and offsets would skip them	docs/designs/ENG-412.md#pagination
+2026-11-02T11:30:00Z	ENG-412 Design	user: keep CSV as the only format for now	asked as an input decision, it changes the exclusions	ENG-412 Design ask
+2026-11-02T15:47:00Z	ENG-412 Work	cap export size at 100k rows	the worker times out above that in staging	PR #231, src/export/limits.ts:12
