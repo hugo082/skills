@@ -1,6 +1,6 @@
 ---
 name: orchestrate
-description: Deliver a detailed input end to end as a long-running Orca coordinator. Researches the system, discovers a roadmap DAG of tasks, and grows it as tasks settle; runs each task in its own Orca session, one PR per implementation session; publishes the roadmap and documents to the project's tracker.
+description: Deliver a detailed input end to end as an Orca coordinator that runs in rounds, each a fresh session. Researches the system, discovers a roadmap DAG of tasks, and grows it as tasks settle; runs each task in its own Orca session, one PR per implementation session; publishes the roadmap and documents to the project's tracker.
 disable-model-invocation: true
 ---
 
@@ -28,7 +28,7 @@ A document, issue identifier or link, or inline prompt.
   respect.
 
 Any item missing → reply with the missing items, create nothing (no
-Run, issue, worktree, or document), and end the turn. Do not
+Run, automation, issue, worktree, or document), and end the turn. Do not
 interview the user to fill them.
 
 **Settings.** From the input; otherwise the default:
@@ -37,33 +37,53 @@ interview the user to fill them.
 - **Grouping** — how tasks are grouped in the tracker. Default:
   milestones by outcome, tasks as issues.
 
+## Rounds
+
+Prompt `/orchestrate round <run id> <input>` → a round; it skips the
+stop gate. Any other prompt → bootstrap: run the stop gate, then the
+commands below, skipping `run-create` when a Run with objective
+`<outcome>` exists, and `automations create` and `edit` when the
+automation `orchestrate - <outcome>` exists:
+
+```
+orca orchestration run-create --objective "<outcome>"
+orca automations create --name "orchestrate - <outcome>" --provider claude \
+  --workspace path:<planning worktree> --fresh-session --disabled \
+  --trigger "*/5 * * * *" --precheck-timeout 300 \
+  --prompt "/orchestrate round <run id> <input>"
+orca automations edit <automation id> --enabled \
+  --precheck "<skill dir>/scripts/round-due.sh <absolute orca path> <run id> <automation id> 290 10"
+orca automations run <automation id>
+```
+
+Reply with the Run and automation ids, and end the turn.
+
 ## Resume
 
-At the start of each turn, inventory pending `ask` messages (answer
-them first), the Run's live workers (adopt them, never duplicate),
-documents at the destination, the decision log, the tracking issue's
-roadmap, every task issue's state, and every task PR and its base.
+At the start of each round, run `orca orchestration run-use --id
+<run id>` and `orca orchestration check`, then inventory pending
+`ask` messages (answer them first), the Run's live workers (adopt
+them, never duplicate), documents at the destination, the decision
+log, the tracking issue's roadmap, every task issue's state, and
+every task PR and its base. Then apply After each settlement's PR
+rules.
 
 ## Set up
-
-Reuse the tracking issue and Run found in Resume; create each only
-if none exists.
 
 1. Run `orca skills list` and load the Orca skills this workflow
    needs: orchestration, worktrees and terminals, and the project's
    issue tracker.
-2. Resolve the document destination: the input or the repo
-   convention. None found → ask the user and end the turn.
-3. Resolve the tracking issue: the one given in the input; otherwise
-   create one in the project's tracker titled after the outcome.
+2. Resolve the tracking issue: the one found in Resume or given in
+   the input; otherwise create one in the project's tracker titled
+   after the outcome.
+3. Resolve the document destination: the input or the repo
+   convention. None found → ask the user as an input decision and
+   end the round.
 4. Decision log: `<planning worktree>/decisions-<run id>.tsv`. Every
    decision in the Run, by you or a worker, including each user
    answer, is one row appended only with `scripts/log-decision.sh`;
    `references/decision-log.tsv` shows the rows. Publish it at the
    document destination like the other documents.
-5. The planning worktree's Orca comment holds the Report's Tasks
-   table.
-6. Create one Run for the input.
 
 ## Continuous discovery
 
@@ -205,23 +225,21 @@ the spec as values.
   Work session in its task worktree.
 - Update the planning worktree comment.
 
-**Waiting on merges.** No task ready and PRs await merge → report the
-waiting PRs to the user and check merge state every 10 minutes,
-applying the settlement rules on each merge. Do not end the turn
-unless a question awaits the user.
-
 ## Report
 
-Before ending a turn:
+Before ending a round:
 
-- Every worker settled and released, or waiting on a question to the
-  user; no reclaimable terminal.
+- Every settled worker released; no reclaimable terminal.
 - Every closed task issue with no live worker has its PR merged or
   closed and its task worktree removed.
 - Every task an issue in the tracker.
 - The decision log published at the destination with every row.
+- State complete → the round automation disabled.
 
-Final message:
+Write the report to the planning worktree's Orca comment, then end
+the round with `orca terminal close`. A question awaits the user →
+disable the round automation and end the turn without closing; once
+answered, enable it again.
 
 ```
 ## <outcome>
