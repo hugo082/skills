@@ -36,7 +36,17 @@ interview the user to fill them.
 - **Grouping** — how tasks are grouped in the tracker. Default:
   milestones by outcome, tasks as issues.
 
+## Resume
+
+At the start of each turn, inventory pending `ask` messages (answer
+them first), the Run's live workers (adopt them, never duplicate),
+documents at the destination, the tracking issue's roadmap and
+decision comments, every task issue's state, and every task PR and its base.
+
 ## Set up
+
+Reuse the tracking issue and Run found in Resume; create each only
+if none exists.
 
 1. Run `orca skills list` and load the Orca skills this workflow
    needs: orchestration, worktrees and terminals, and the project's
@@ -75,8 +85,7 @@ Run a Roadmap worker after:
 
 - A change task's Work settles with follow-ups.
 - A research, monitor, or operation task settles.
-- A Design settles failed because the task is obsolete or exceeds
-  the size rule.
+- Any worker other than Roadmap settles failed.
 
 One Roadmap worker at a time, batching the results that arrived
 meanwhile.
@@ -173,8 +182,11 @@ spec as values.
 
 ## After each settlement
 
-- Output missing at its destination → reopen the worker with the
-  same inputs.
+- Output missing at its destination → reopen the worker once with
+  the same inputs; missing again → failed.
+- A Roadmap worker fails, or a task fails again after a Roadmap
+  worker handled its earlier failure → record the blocker on the task
+  issue and ask the user as an input decision.
 - Release the worker.
 - Check open PRs' merge state.
 - On merge: close the task issue, and retarget PRs based on its
@@ -192,15 +204,16 @@ unless a question awaits the user.
 
 ## Report
 
-Before ending a turn: every worker settled and released; no
-reclaimable terminal; every task an issue in the tracker.
+Before ending a turn: every worker settled and released, or waiting
+on a question to the user; no reclaimable terminal; every task an
+issue in the tracker.
 
 Final message:
 
 ```
 ## <outcome>
 
-**State:** complete | running | waiting on merge | waiting on user | blocked
+**State:** complete | running | waiting on user | blocked
 
 ### Tasks
 | Task | Kind | State | Issue | PR |
@@ -216,6 +229,5 @@ Final message:
 **States:**
 - **complete** — done holds and no follow-up is outside the roadmap.
 - **running** — tasks in flight.
-- **waiting on merge** — no task ready; PRs await merge.
 - **waiting on user** — a question awaits the user.
 - **blocked** — no task can progress without an unresolved blocker.
