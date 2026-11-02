@@ -103,7 +103,7 @@ Roadmap step splits it before work starts.
 One fresh session per step. Planning steps run in the current
 worktree (the planning worktree). A change task runs in its own
 worktree: a child of the planning worktree in Orca lineage, git-based
-on the default branch, named after the task, display name
+on its base branch (see Stacking), named after the task, display name
 `<task id> - <goal>`, linked to the task issue.
 
 | Step               | Skill                | Placement                          | Title                          |
@@ -113,6 +113,7 @@ on the default branch, named after the task, display name
 | Roadmap            | `v-slices`           | planning worktree                  | `Roadmap`                      |
 | Design             | `program-design`     | new task worktree                  | `<task id> - Design`           |
 | Work               | `work`               | same task worktree, fresh terminal | `<task id> - Implementation`   |
+| Restack            | `work`               | same task worktree, fresh terminal | `<task id> - Restack`          |
 | Monitor, operation | none                 | planning worktree                  | `<task id> - <goal>`           |
 
 **Start.**
@@ -125,8 +126,9 @@ on the default branch, named after the task, display name
 
 **Per task kind.**
 
-- **Change** → Design, Work, merge per the merge policy. Done when
-  its PR is merged and its issue is closed.
+- **Change** → Design, Work, merge per the merge policy. Shipped
+  when its PR is open with green CI. Done when its PR is merged and
+  its issue is closed.
 - **Research** → Research questions, then Research. Done when the
   research is published.
 - **Monitor** → observe the named signal until the done signal holds
@@ -135,9 +137,22 @@ on the default branch, named after the task, display name
 - **Operation** → run the named action. Done when its done signal is
   recorded on the issue.
 
-**Ready and parallel.** A task is ready when every dependency is done
-and no in-flight task changes a part it changes or observes. Start
+**Ready and parallel.** A task is ready when every dependency is done,
+or shipped for a change task depending on a change task, and no
+in-flight task changes a part it changes or observes. Start
 every ready task, up to the concurrency cap.
+
+**Stacking.** A change task's base branch:
+
+- Every change dependency merged → the default branch.
+- One change dependency shipped, not merged → that dependency's
+  branch.
+- Two or more change dependencies shipped, not merged → not ready
+  until at most one remains unmerged.
+
+A base PR merges → Restack each PR stacked on it onto the default
+branch. A base PR gets new commits → Restack each PR stacked on it
+onto the new head. The user merges stacks bottom-up.
 
 **Roadmap updates.** Run a Roadmap step after:
 
@@ -149,7 +164,8 @@ every ready task, up to the concurrency cap.
 One Roadmap step at a time, batching the results that arrived
 meanwhile.
 
-**Waiting on merges.** No task ready and PRs await merge → report the
+**Waiting on merges.** No task ready and only merges unblock the
+rest → report the
 waiting PRs to the user and check their merge state every 10
 minutes. Do not end the turn unless a question awaits the user.
 
@@ -198,17 +214,21 @@ Per step:
 - **Design** — the input as the confirmed requirements, with no
   confirmation round; research, roadmap, and the task issue; the
   size rule. The architecture is explicitly waived. First compare the
-  brief's boundary, dependencies, and prerequisites against the
-  current default branch; obsolete or over the size rule → settle
+  brief's boundary, dependencies, and prerequisites against its base
+  branch; obsolete or over the size rule → settle
   failed naming what changed or the split. Otherwise write the design
   at the destination and, after approval, update the task issue's
   Design handoff and Next action. Change no repository file and
   commit nothing.
-- **Work** — the approved design and the task issue. Commit on the
-  task branch, open a PR targeting the default branch, attach it to
+- **Work** — the approved design, the task issue, and the base
+  branch. Commit on the task branch, open a PR targeting the base
+  branch, name the PR it stacks on in the description, attach it to
   the task issue with a completion comment, and move the issue to
   review. Merge only when the merge policy says so. Out-of-scope
   findings and deferred work go in the follow-ups, never in the PR.
+- **Restack** — the task's PR, its new base, and the base PR.
+  Rebase the task branch onto the new base, retarget the PR to it,
+  and keep CI green. Change nothing else.
 - **Monitor and operation** — the task issue; the signal or action,
   the done signal, and the deadline. Record the result on the task
   issue.
@@ -255,8 +275,11 @@ Final message:
 | Task | Kind | State | Issue | PR |
 <one row per task reached>
 
+### Merge order
+<open PRs, bottom-up per stack, or "none">
+
 ### Waiting on the user
-<questions and PRs to merge, or "none">
+<questions, or "none">
 
 ### Blockers
 <each unresolved blocker, or "none">
@@ -266,6 +289,7 @@ Final message:
 - **complete** — every task done, every acceptance criterion covered
   by a merged change task, no follow-up outside the roadmap.
 - **running** — tasks in flight.
-- **waiting on merge** — no task ready; PRs await merge.
+- **waiting on merge** — no task ready; only merges unblock the
+  rest.
 - **waiting on user** — a question awaits the user.
 - **blocked** — no task can progress without an unresolved blocker.
