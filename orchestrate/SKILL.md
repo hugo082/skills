@@ -130,7 +130,7 @@ display name `<task id> - <goal>`, linked to the task issue.
 | Research questions | `research-questions` | planning worktree                  | `<topic> - Research questions` |
 | Research           | `research`           | planning worktree                  | `Research <n>`                 |
 | Roadmap            | `v-slices`           | planning worktree                  | `Roadmap`                      |
-| Design             | `program-design`     | new task worktree                  | `<task id> - Design`           |
+| Design             | `program-design`     | task worktree, created if none     | `<task id> - Design`           |
 | Work               | `work`               | same task worktree, fresh terminal | `<task id> - Implementation`   |
 | Monitor, operation | none                 | planning worktree                  | `<task id> - <goal>`           |
 
@@ -182,8 +182,8 @@ spec as values.
 
 ## After each settlement
 
-- Output missing at its destination → reopen the worker once with
-  the same inputs; missing again → failed.
+- Output missing at its destination → dispatch a fresh worker once
+  with the same inputs; missing again → failed.
 - A Roadmap worker fails, or a task fails again after a Roadmap
   worker handled its earlier failure → record the blocker on the task
   issue and ask the user as an input decision.
@@ -204,9 +204,13 @@ unless a question awaits the user.
 
 ## Report
 
-Before ending a turn: every worker settled and released, or waiting
-on a question to the user; no reclaimable terminal; every task an
-issue in the tracker.
+Before ending a turn:
+
+- Every worker settled and released, or waiting on a question to the
+  user; no reclaimable terminal.
+- Every closed task issue with no live worker has its PR merged or
+  closed and its task worktree removed.
+- Every task an issue in the tracker.
 
 Final message:
 
