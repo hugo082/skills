@@ -39,30 +39,47 @@ interview the user to fill them.
 
 ## Rounds
 
-Prompt `/orchestrate round <run id> <input>` → a round; it skips the
-stop gate. Any other prompt → bootstrap: run the stop gate, then the
-commands below, skipping `run-create` when a Run with objective
-`<outcome>` exists, and `automations create` and `edit` when the
-automation `orchestrate - <outcome>` exists:
+Prompt `/orchestrate round <run id> <front handle> <input>` → a
+round; it skips the stop gate. In the front, prompts follow Front.
+Any other prompt → bootstrap. No `$ORCA_TERMINAL_HANDLE` → reply "run
+from an Orca terminal" and end the turn. Otherwise run the stop gate,
+then the commands below, front handle = `$ORCA_TERMINAL_HANDLE`,
+skipping `run-create` when a Run with objective `<outcome>` exists,
+and `automations create` when the automation `orchestrate -
+<outcome>` exists:
 
 ```
 orca orchestration run-create --objective "<outcome>"
 orca automations create --name "orchestrate - <outcome>" --provider claude \
   --workspace path:<planning worktree> --fresh-session --disabled \
   --trigger "*/10 * * * *" --precheck-timeout 600 \
-  --prompt "/orchestrate round <run id> <input>"
+  --prompt "/orchestrate round <run id> <front handle> <input>"
 orca automations edit <automation id> --enabled \
+  --prompt "/orchestrate round <run id> <front handle> <input>" \
   --precheck "<skill dir>/scripts/round-due.sh <absolute orca path> <run id> <automation id> 590 10"
 orca automations run <automation id>
 ```
 
 Reply with the Run and automation ids, and end the turn.
 
+## Front
+
+After bootstrap, this session is the front. It never dispatches or
+coordinates.
+
+- Prompt starting `[round]` → relay it to the user; send nothing.
+- User answer or instruction → `orca orchestration send --to
+  run:<run id> --subject user --body "<message>"`, naming the question
+  number it answers.
+
 ## Resume
 
 At the start of each round, run `orca orchestration run-use --id
 <run id>` and `orca orchestration check`, then inventory pending
-`ask` messages (answer them first), the Run's live workers (adopt
+`ask` messages (answer them first), messages with subject `user`
+(log each; an answer → reply to its `ask` or apply it; any other
+instruction → an input change, applied through a Roadmap worker), the
+Run's live workers (adopt
 them, never duplicate), documents at the destination, the decision
 log, the tracking issue's roadmap, every task issue's state, and
 every task PR and its base. Then apply After each settlement's PR
@@ -140,8 +157,9 @@ Answer each `ask`:
 - **Approval request** → check against the input's acceptance
   criteria, exclusions, and constraints, and the decision log.
   Reply approved, or with the required changes.
-- **Input decision** → ask the user in this session, numbered, each
-  with your recommended answer, batching every pending question.
+- **Input decision** → add it to Waiting on the user with a number,
+  your recommended answer, and its `ask` message id. Reply to the
+  `ask` once the user's answer arrives.
 
 Log the answer under the asking worker's task before replying.
 
@@ -236,10 +254,12 @@ Before ending a round:
 - The decision log published at the destination with every row.
 - State complete → the round automation disabled.
 
-Write the report to the planning worktree's Orca comment, then end
-the round with `orca terminal close --terminal "$ORCA_TERMINAL_HANDLE"
---tab`. A question awaits the user → disable the round automation and
-end the turn without closing; once answered, enable it again.
+Write the report to the planning worktree's Orca comment. Its State,
+Waiting on the user, or Blockers differ from the previous report →
+send those three sections to the front with `orca terminal send
+--terminal <front handle> --text "[round] <sections>" --enter`; send
+fails → the comment only. Then end the round with `orca terminal close --terminal "$ORCA_TERMINAL_HANDLE"
+--tab`.
 
 ```
 ## <outcome>
