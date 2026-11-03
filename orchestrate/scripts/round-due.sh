@@ -5,7 +5,7 @@
 # from the Run (under 60 minutes old) is newer than its own latest message, or
 # no round for <idle minutes>.
 # Waits while another round of the automation runs. Not due: <wait seconds>
-# pass with neither. Closes the tabs of completed rounds.
+# pass with neither. When due, closes the tabs of completed rounds first.
 set -euo pipefail
 
 usage() {
@@ -20,6 +20,7 @@ stamp="${XDG_STATE_HOME:-$HOME/.local/state}/orchestrate/$run.last-round"
 mkdir -p "$(dirname "$stamp")"
 
 due() {
+	reap "$runs" || true
 	touch "$stamp"
 	exit 0
 }
@@ -40,7 +41,6 @@ reap() {
 deadline=$(($(date +%s) + wait))
 while [ "$(date +%s)" -lt "$deadline" ]; do
 	runs=$("$orca" automations runs --id "$automation" --limit 20 --json)
-	reap "$runs"
 	since=$((($(date +%s) - 3 * 3600) * 1000))
 	running=$(jq --argjson since "$since" \
 		'[.result.runs[] | select(.status == "running" and (.startedAt // 0) > $since)] | length' <<<"$runs")
