@@ -56,7 +56,7 @@ orca automations create --name "orchestrate - <outcome>" --provider claude \
   --prompt "/orchestrate round <run id> <front handle> <input>"
 orca automations edit <automation id> --enabled \
   --prompt "/orchestrate round <run id> <front handle> <input>" \
-  --precheck "<skill dir>/scripts/round-due.sh <absolute orca path> <run id> <automation id> 590 10"
+  --precheck "<skill dir>/scripts/round-due.sh <absolute orca path> <run id> <automation id> 590 60"
 orca automations run <automation id>
 ```
 
