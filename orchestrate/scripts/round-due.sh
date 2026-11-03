@@ -3,7 +3,7 @@
 # Usage: round-due.sh <orca executable> <run id> <automation id> <wait seconds> <idle minutes>
 # Due: unread mail in the Run's inbox, or no round for <idle minutes>.
 # Waits while another round of the automation runs. Not due: <wait seconds>
-# pass with neither.
+# pass with neither. Closes the tabs of completed rounds.
 set -euo pipefail
 
 usage() {
@@ -22,16 +22,27 @@ due() {
 	exit 0
 }
 
-round_running() {
-	local since=$((($(date +%s) - 3 * 3600) * 1000))
-	[ "$("$orca" automations runs --id "$automation" --limit 20 --json |
-		jq --argjson since "$since" \
-			'[.result.runs[] | select(.status == "running" and (.startedAt // 0) > $since)] | length')" -gt 0 ]
+# Closes the tab of every completed round still open.
+reap() {
+	local workspace ptys
+	workspace=$(jq -r '.result.runs[0].workspaceId // empty' <<<"$1")
+	ptys=$(jq -c '[.result.runs[] | select(.status == "completed" and .terminalPtyId != null) | .terminalPtyId]' <<<"$1")
+	[ -n "$workspace" ] && [ "$ptys" != "[]" ] || return 0
+	"$orca" terminal list --worktree "id:$workspace" --json |
+		jq -r --argjson ptys "$ptys" '.result.terminals[] | select(.ptyId as $p | $ptys | index($p)) | .handle' |
+		while read -r handle; do
+			"$orca" terminal close --terminal "$handle" --tab --json >/dev/null || true
+		done
 }
 
 deadline=$(($(date +%s) + wait))
 while [ "$(date +%s)" -lt "$deadline" ]; do
-	if ! round_running; then
+	runs=$("$orca" automations runs --id "$automation" --limit 20 --json)
+	reap "$runs"
+	since=$((($(date +%s) - 3 * 3600) * 1000))
+	running=$(jq --argjson since "$since" \
+		'[.result.runs[] | select(.status == "running" and (.startedAt // 0) > $since)] | length' <<<"$runs")
+	if [ "$running" -eq 0 ]; then
 		unread=$("$orca" orchestration inbox --terminal "run:$run" --limit 50 --json |
 			jq '[.result.messages[] | select(.handled == false and .type != "heartbeat")] | length')
 		[ "$unread" -eq 0 ] || due

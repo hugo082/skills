@@ -258,8 +258,7 @@ Write the report to the planning worktree's Orca comment. Its State,
 Waiting on the user, or Blockers differ from the previous report →
 send those three sections to the front with `orca terminal send
 --terminal <front handle> --text "[round] <sections>" --enter`; send
-fails → the comment only. Then end the round with `orca terminal close --terminal "$ORCA_TERMINAL_HANDLE"
---tab`.
+fails → the comment only. Leave the round's terminal open.
 
 ```
 ## <outcome>
