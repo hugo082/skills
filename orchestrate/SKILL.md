@@ -15,6 +15,12 @@ diffs, or transcripts.
 **State lives in the tracker and at the document destination**, never
 only in this session.
 
+## Project context
+
+Before anything else, run `<skill dir>/scripts/overlay.sh orchestrate`.
+Its output, when not empty, overrides this skill's generic tool
+choices.
+
 ## Read the input
 
 A document, issue identifier or link, or inline prompt.
