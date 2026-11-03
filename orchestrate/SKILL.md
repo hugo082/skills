@@ -45,11 +45,13 @@ interview the user to fill them.
 
 ## Rounds
 
-Prompt `/orchestrate round <run id> <front handle> <input>` → a
+Prompt `/orchestrate round <run id> <front pane> <input>` → a
 round; it skips the stop gate. In the front, prompts follow Front.
 Any other prompt → bootstrap. No `$ORCA_TERMINAL_HANDLE` → reply "run
 from an Orca terminal" and end the turn. Otherwise run the stop gate,
-then the commands below, front handle = `$ORCA_TERMINAL_HANDLE`,
+then the commands below, front pane = `<tabId>:<leafId>` of the row
+whose `handle` is `$ORCA_TERMINAL_HANDLE` in `orca terminal list
+--worktree path:<planning worktree> --json`,
 skipping `run-create` when a Run with objective `<outcome>` exists,
 and `automations create` when the automation `orchestrate -
 <outcome>` exists:
@@ -59,9 +61,9 @@ orca orchestration run-create --objective "<outcome>"
 orca automations create --name "orchestrate - <outcome>" --provider claude \
   --workspace path:<planning worktree> --fresh-session --disabled \
   --trigger "*/10 * * * *" \
-  --prompt "/orchestrate round <run id> <front handle> <input>"
+  --prompt "/orchestrate round <run id> <front pane> <input>"
 orca automations edit <automation id> --enabled --precheck-timeout 600 \
-  --prompt "/orchestrate round <run id> <front handle> <input>" \
+  --prompt "/orchestrate round <run id> <front pane> <input>" \
   --precheck "<skill dir>/scripts/round-due.sh <absolute orca path> <run id> <automation id> 590 60"
 orca automations run <automation id>
 ```
@@ -263,11 +265,21 @@ Before ending a round:
 - The decision log published at the destination with every row.
 - State complete → the round automation disabled.
 
-Write the report to the planning worktree's Orca comment. Its State,
-Waiting on the user, or Blockers differ from the previous report →
-send those three sections to the front with `orca terminal send
---terminal <front handle> --text "[round] <sections>" --enter`; send
-fails → the comment only. Leave the round's terminal open.
+Write the report to the planning worktree's Orca comment. Then
+deliver to the front: its State, Waiting on the user, and Blockers
+sections differ from the content of
+`${XDG_STATE_HOME:-$HOME/.local/state}/orchestrate/<run id>.front`
+(missing file → they differ) →
+
+1. Front handle = the `handle` of the row whose `<tabId>:<leafId>`
+   is the front pane in `orca terminal list --worktree
+   path:<planning worktree> --json`. No such row → skip delivery.
+2. `orca terminal send --terminal <front handle> --text "[round]
+   <sections>" --enter --json`.
+3. Receipt `accepted: true` → overwrite that file with the three
+   sections. Send failed → leave the file unchanged.
+
+Leave the round's terminal open.
 
 ```
 ## <outcome>
