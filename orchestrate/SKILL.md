@@ -52,9 +52,9 @@ and `automations create` when the automation `orchestrate -
 orca orchestration run-create --objective "<outcome>"
 orca automations create --name "orchestrate - <outcome>" --provider claude \
   --workspace path:<planning worktree> --fresh-session --disabled \
-  --trigger "*/10 * * * *" --precheck-timeout 600 \
+  --trigger "*/10 * * * *" \
   --prompt "/orchestrate round <run id> <front handle> <input>"
-orca automations edit <automation id> --enabled \
+orca automations edit <automation id> --enabled --precheck-timeout 600 \
   --prompt "/orchestrate round <run id> <front handle> <input>" \
   --precheck "<skill dir>/scripts/round-due.sh <absolute orca path> <run id> <automation id> 590 60"
 orca automations run <automation id>
