@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Precheck of the orchestrate round automation: exit 0 when a round is due.
 # Usage: round-due.sh <orca executable> <run id> <automation id> <wait seconds> <idle minutes>
-# Due: unread mail in the Run's inbox, or no round for <idle minutes>.
+# Due: unread mail in the Run's inbox, a stale worker whose latest message
+# from the Run (under 60 minutes old) is newer than its own latest message, or
+# no round for <idle minutes>.
 # Waits while another round of the automation runs. Not due: <wait seconds>
 # pass with neither. Closes the tabs of completed rounds.
 set -euo pipefail
@@ -46,6 +48,20 @@ while [ "$(date +%s)" -lt "$deadline" ]; do
 		unread=$("$orca" orchestration inbox --terminal "run:$run" --limit 50 --json |
 			jq '[.result.messages[] | select(.handled == false and .type != "heartbeat")] | length')
 		[ "$unread" -eq 0 ] || due
+		stale=$("$orca" orchestration worker-list --run "$run" --limit 100 --json |
+			jq -c '[.result.workers[] | select((.attention // []) | index("stale")) | "dispatch:\(.dispatchId)"]')
+		if [ "$stale" != "[]" ]; then
+			stuck=$("$orca" orchestration inbox --limit 200 --full --json |
+				jq --arg run "$run" --argjson stale "$stale" --argjson now "$(date +%s)" '
+					[.result.messages[] | select(.run_id == $run)] as $m
+					| [$stale[] as $d
+						| ([$m[] | select(.from_handle == "run:\($run)" and .to_handle == $d)] | max_by(.sequence)) as $out
+						| ([$m[] | select(.from_handle == $d)] | max_by(.sequence)) as $in
+						| select($out != null and ($in == null or $out.sequence > $in.sequence)
+							and ($now - ($out.created_at | fromdateiso8601)) < 3600)]
+					| length')
+			[ "$stuck" -eq 0 ] || due
+		fi
 		[ -n "$(find "$stamp" -mmin -"$idle" 2>/dev/null)" ] || due
 	fi
 	sleep 5

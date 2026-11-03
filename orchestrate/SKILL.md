@@ -78,7 +78,10 @@ At the start of each round, run `orca orchestration run-use --id
 <run id>` and `orca orchestration check`, then inventory pending
 `ask` messages (answer them first), messages with subject `user`
 (log each; an answer → reply to its `ask` or apply it; any other
-instruction → an input change, applied through a Roadmap worker), the
+instruction → an input change, applied through a Roadmap worker),
+workers `stale` in `worker-list` whose latest message from the Run is
+newer than their own (resend it with `orca orchestration send --to
+dispatch:<id>`), the
 Run's live workers (adopt
 them, never duplicate), documents at the destination, the decision
 log, the tracking issue's roadmap, every task issue's state, and
