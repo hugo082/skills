@@ -3,7 +3,7 @@
 # The comment is the report text followed by one declaration line:
 #   <!-- orchestrate {"v":1,...} -->
 # Usage:
-#   note.sh declare <worktree selector> <declaration json>   replace the declaration
+#   note.sh declare <worktree selector> <declaration json>   replace the declaration, stamping updatedAt
 #   note.sh text <worktree selector> <text>                  replace the report text
 # The worktree selector is any `orca worktree set --worktree` selector, e.g. path:<path>.
 # Uses $ORCA, or `orca` on PATH.
@@ -27,7 +27,8 @@ block=$(printf '%s' "$current" | perl -0ne 'my @all = /(<!-- orchestrate .*? -->
 
 case "$mode" in
 	declare)
-		declaration=$(printf '%s' "$value" | jq -ce 'if type == "object" and .v == 1 and (.role == "planning" or .role == "task") and (.runId | type) == "string" then . else error("a declaration needs v 1, role planning or task, and runId") end') ||
+		# Stamps updatedAt (UTC, ISO 8601) so readers know how fresh the declaration is.
+		declaration=$(printf '%s' "$value" | jq -ce 'if type == "object" and .v == 1 and (.role == "planning" or .role == "task") and (.runId | type) == "string" then . + {updatedAt: (now | todate)} else error("a declaration needs v 1, role planning or task, and runId") end') ||
 			usage
 		# Escapes > so a value holding --> cannot end the HTML comment early.
 		block="<!-- orchestrate ${declaration//>/\\u003e} -->"

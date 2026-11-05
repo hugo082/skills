@@ -24,7 +24,8 @@
       ],
       "blockers": [
         "<each unresolved blocker>"
-      ]
+      ],
+      "updatedAt": "<set by note.sh declare: when the declaration was written, UTC ISO 8601; leave it out>"
     },
     "task": {
       "v": 1,
@@ -38,7 +39,8 @@
         "kind": "<the task's kind: change, research, monitor, or operation>",
         "goal": "<the task's goal>",
         "url": "<the task issue's URL>"
-      }
+      },
+      "updatedAt": "<set by note.sh declare: when the declaration was written, UTC ISO 8601; leave it out>"
     }
   },
   "examples": {
