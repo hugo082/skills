@@ -1,0 +1,18 @@
+{
+  "planning": {
+    "v": 1,
+    "role": "planning",
+    "runId": "run_65e12ee6f931",
+    "outcome": "Export orders as CSV for account admins",
+    "tracking": { "provider": "linear", "id": "ENG-400", "url": "https://linear.app/acme/issue/ENG-400" }
+  },
+  "task": {
+    "v": 1,
+    "role": "task",
+    "runId": "run_65e12ee6f931",
+    "outcome": "Export orders as CSV for account admins",
+    "tracking": { "provider": "linear", "id": "ENG-400", "url": "https://linear.app/acme/issue/ENG-400" },
+    "planningWorktreePath": "/home/ubuntu/orca/workspaces/acme/export-orders",
+    "task": { "id": "ENG-412", "goal": "Paginated export endpoint", "url": "https://linear.app/acme/issue/ENG-412" }
+  }
+}

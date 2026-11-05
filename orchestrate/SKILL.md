@@ -112,6 +112,13 @@ rules.
    answer, is one row appended only with `scripts/log-decision.sh`;
    `references/decision-log.tsv` shows the rows. Publish it at the
    document destination like the other documents.
+5. Declare the Run on its worktrees, every round:
+   `scripts/note.sh declare path:<worktree> '<declaration>'` for the
+   planning worktree and every task worktree of the Run.
+   `references/declaration.json` shows both declarations; tracking is
+   the tracking issue. It writes only the hidden declaration line of
+   the worktree's Orca comment, which the Orca orchestrate plugin
+   reads.
 
 ## Continuous discovery
 
@@ -179,7 +186,8 @@ Log the answer under the asking worker's task before replying.
 One fresh session per worker. The planning worktree is the current
 worktree. Each task worktree is a child of the planning worktree in
 Orca lineage, git-based on the task's base, named after the task,
-display name `<task id> - <goal>`, linked to the task issue.
+display name `<task id> - <goal>`, linked to the task issue, and
+declared with `scripts/note.sh` before its first worker starts.
 
 | Worker             | Skill                | Placement                          | Title                          |
 | ------------------ | -------------------- | ---------------------------------- | ------------------------------ |
@@ -265,7 +273,9 @@ Before ending a round:
 - The decision log published at the destination with every row.
 - State complete → the round automation disabled.
 
-Write the report to the planning worktree's Orca comment. Then
+Write the report to the planning worktree's Orca comment with
+`scripts/note.sh text path:<planning worktree> "<report>"`, which
+keeps the declaration. Then
 deliver to the front: its State, Waiting on the user, and Blockers
 sections differ from the content of
 `${XDG_STATE_HOME:-$HOME/.local/state}/orchestrate/<run id>.front`

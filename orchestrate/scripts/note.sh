@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Write one part of an orchestrate worktree's Orca comment, keeping the other part.
+# The comment is the report text followed by the declaration: one hidden line
+#   <!-- orchestrate {"v":1,...} -->
+# that tools such as the Orca orchestrate plugin read to tell what the worktree is in
+# the Run; Orca hides it when it renders the comment. references/declaration.json shows it.
+# Usage:
+#   note.sh declare <worktree selector> <declaration json>   replace the declaration
+#   note.sh text <worktree selector> <text>                  replace the report text
+# The worktree selector is any `orca worktree set --worktree` selector, e.g. path:<path>.
+# Uses $ORCA, or `orca` on PATH. Writes nothing when the comment would not change.
+set -euo pipefail
+
+usage() {
+	printf 'usage: note.sh declare|text <worktree selector> <declaration json|text>\n' >&2
+	exit 1
+}
+
+[ "$#" -eq 3 ] && [ -n "$2" ] || usage
+mode=$1 worktree=$2 value=$3
+orca=${ORCA:-orca}
+
+current=$("$orca" worktree show --worktree "$worktree" --json | jq -r '.result.worktree.comment // ""')
+
+# Splits the comment into the text before the declaration and the declaration line.
+text=$(printf '%s' "$current" | sed '/^<!-- orchestrate .* -->$/d')
+block=$(printf '%s' "$current" | grep -E '^<!-- orchestrate .* -->$' | tail -n 1 || true)
+
+case "$mode" in
+	declare)
+		declaration=$(printf '%s' "$value" | jq -ce 'if type == "object" and .v == 1 and (.role == "planning" or .role == "task") and (.runId | type) == "string" then . else error("a declaration needs v 1, role planning or task, and runId") end') ||
+			usage
+		# Escapes > so a value holding --> cannot end the HTML comment early.
+		block="<!-- orchestrate ${declaration//>/\\u003e} -->"
+		;;
+	text) text=$value ;;
+	*) usage ;;
+esac
+
+# Trailing newlines of the text are dropped so repeated writes stay identical.
+text=$(printf '%s' "$text")
+if [ -n "$text" ] && [ -n "$block" ]; then
+	next=$(printf '%s\n\n%s' "$text" "$block")
+else
+	next="$text$block"
+fi
+
+[ "$next" != "$current" ] || exit 0
+"$orca" worktree set --worktree "$worktree" --comment "$next" --json >/dev/null
