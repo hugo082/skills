@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 # Write one part of an orchestrate worktree's Orca comment, keeping the other part.
-# The comment is the report text followed by the declaration: one hidden line
+# The comment is the report text followed by one declaration line:
 #   <!-- orchestrate {"v":1,...} -->
-# that tools such as the Orca orchestrate plugin read to tell what the worktree is in
-# the Run; Orca hides it when it renders the comment. references/declaration.json shows it.
 # Usage:
 #   note.sh declare <worktree selector> <declaration json>   replace the declaration
 #   note.sh text <worktree selector> <text>                  replace the report text
 # The worktree selector is any `orca worktree set --worktree` selector, e.g. path:<path>.
-# Uses $ORCA, or `orca` on PATH. Writes nothing when the comment would not change.
+# Uses $ORCA, or `orca` on PATH.
 set -euo pipefail
 
 usage() {

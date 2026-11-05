@@ -12,9 +12,6 @@ no code, and runs no build, test, or CI watch. For an approval, read
 only the sections the decision needs. Never read whole documents,
 diffs, or transcripts.
 
-**State lives in the tracker and at the document destination**, never
-only in this session.
-
 ## Project context
 
 Before anything else, run `<skill dir>/scripts/overlay.sh orchestrate`.
@@ -23,9 +20,7 @@ choices.
 
 ## Read the input
 
-A document, issue identifier or link, or inline prompt.
-
-**Stop gate.** The input states:
+**Stop gate.** The input (a document, issue, or prompt) states:
 
 - **Outcome** — what changes for whom.
 - **Acceptance criteria** — externally observable, each testable.
@@ -116,14 +111,12 @@ rules.
    `scripts/note.sh declare path:<worktree> '<declaration>'` for the
    planning worktree and every task worktree of the Run.
    `references/declaration.json` shows both declarations; tracking is
-   the tracking issue. It writes only the hidden declaration line of
-   the worktree's Orca comment, which the Orca orchestrate plugin
-   reads.
+   the tracking issue.
 
 ## Continuous discovery
 
 **The roadmap is a DAG.** Nodes are tasks; an edge from A to B means
-B waits on A. No cycles. Every edge is a blocking relation in the
+B waits on A. Every edge is a blocking relation in the
 tracker.
 
 Each task states:
@@ -138,9 +131,8 @@ Each task states:
 **Size rule.** A change task is one PR from one worktree, implemented
 in one `work` session, with one design approval.
 
-**You discover the roadmap** from the input and research, and grow it
-from every settled task's results and follow-ups. Each change to the
-roadmap goes through a Roadmap worker. The user does not approve it.
+Each change to the roadmap goes through a Roadmap worker; the user
+does not approve it.
 
 Run a Roadmap worker after:
 
@@ -187,7 +179,8 @@ One fresh session per worker. The planning worktree is the current
 worktree. Each task worktree is a child of the planning worktree in
 Orca lineage, git-based on the task's base, named after the task,
 display name `<task id> - <goal>`, linked to the task issue, and
-declared with `scripts/note.sh` before its first worker starts.
+declared with `scripts/note.sh declare` (task declaration) before its
+first worker starts.
 
 | Worker             | Skill                | Placement                          | Title                          |
 | ------------------ | -------------------- | ---------------------------------- | ------------------------------ |
@@ -260,7 +253,7 @@ the spec as values.
   for every open task PR that depends on it, directly or
   transitively. New review comments on an open task PR → a fresh
   Work session in its task worktree.
-- Update the planning worktree comment.
+- Update the planning worktree comment with `scripts/note.sh text`.
 
 ## Report
 
@@ -274,8 +267,7 @@ Before ending a round:
 - State complete → the round automation disabled.
 
 Write the report to the planning worktree's Orca comment with
-`scripts/note.sh text path:<planning worktree> "<report>"`, which
-keeps the declaration. Then
+`scripts/note.sh text path:<planning worktree> "<report>"`. Then
 deliver to the front: its State, Waiting on the user, and Blockers
 sections differ from the content of
 `${XDG_STATE_HOME:-$HOME/.local/state}/orchestrate/<run id>.front`
