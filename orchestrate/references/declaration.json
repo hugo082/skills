@@ -1,0 +1,112 @@
+{
+  "fields": {
+    "planning": {
+      "v": 1,
+      "role": "planning",
+      "runId": "<the Run id from `orca orchestration run-create`>",
+      "outcome": "<the input's outcome>",
+      "tracking": {
+        "kind": "<issue | project: what tracks the Run>",
+        "provider": "<the tracker: linear, github, ...>",
+        "id": "<the tracker's key for it: issue identifier, issue number, or project slug>",
+        "url": "<its URL>"
+      },
+      "state": "<the report's State: complete | running | waiting on user | blocked>",
+      "waitingOnUser": [
+        {
+          "n": "<its number in the report>",
+          "question": "<what the user must answer or do: a question, or a PR to merge>",
+          "link": "<optional: the URL of what it decides, such as the PR or the design>",
+          "choices": [
+            "<optional: the possible answers, the recommended one first>"
+          ]
+        }
+      ],
+      "blockers": [
+        "<each unresolved blocker>"
+      ],
+      "updatedAt": "<set by note.sh declare: when the declaration was written, UTC ISO 8601; leave it out>"
+    },
+    "task": {
+      "v": 1,
+      "role": "task",
+      "runId": "<as in planning>",
+      "outcome": "<as in planning>",
+      "tracking": "<as in planning>",
+      "planningWorktreePath": "<the planning worktree's absolute path on this host>",
+      "task": {
+        "id": "<the task issue's identifier>",
+        "kind": "<the task's kind: change, research, monitor, or operation>",
+        "goal": "<the task's goal>",
+        "url": "<the task issue's URL>"
+      },
+      "updatedAt": "<set by note.sh declare: when the declaration was written, UTC ISO 8601; leave it out>"
+    }
+  },
+  "examples": {
+    "planning, tracked by a Linear issue": {
+      "v": 1,
+      "role": "planning",
+      "runId": "run_65e12ee6f931",
+      "outcome": "Export orders as CSV for account admins",
+      "tracking": {
+        "kind": "issue",
+        "provider": "linear",
+        "id": "ENG-400",
+        "url": "https://linear.app/acme/issue/ENG-400"
+      },
+      "state": "waiting on user",
+      "waitingOnUser": [
+        {
+          "n": 1,
+          "question": "Include archived orders in the export?",
+          "link": "https://linear.app/acme/issue/ENG-412",
+          "choices": [
+            "No, active orders only",
+            "Yes, with an archived column"
+          ]
+        },
+        {
+          "n": 2,
+          "question": "Merge the paginated export endpoint PR",
+          "link": "https://github.com/acme/orders/pull/88"
+        }
+      ],
+      "blockers": []
+    },
+    "planning, tracked by a Linear project": {
+      "v": 1,
+      "role": "planning",
+      "runId": "run_7056bbd97381",
+      "outcome": "Move the orders API to typed clients with no change for users",
+      "tracking": {
+        "kind": "project",
+        "provider": "linear",
+        "id": "orders-api-typed-clients-1cb07669993d",
+        "url": "https://linear.app/acme/project/orders-api-typed-clients-1cb07669993d/overview"
+      },
+      "state": "running",
+      "waitingOnUser": [],
+      "blockers": []
+    },
+    "task": {
+      "v": 1,
+      "role": "task",
+      "runId": "run_65e12ee6f931",
+      "outcome": "Export orders as CSV for account admins",
+      "tracking": {
+        "kind": "issue",
+        "provider": "linear",
+        "id": "ENG-400",
+        "url": "https://linear.app/acme/issue/ENG-400"
+      },
+      "planningWorktreePath": "/home/ubuntu/orca/workspaces/acme/export-orders",
+      "task": {
+        "id": "ENG-412",
+        "kind": "change",
+        "goal": "Paginated export endpoint",
+        "url": "https://linear.app/acme/issue/ENG-412"
+      }
+    }
+  }
+}

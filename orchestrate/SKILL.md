@@ -12,9 +12,6 @@ no code, and runs no build, test, or CI watch. For an approval, read
 only the sections the decision needs. Never read whole documents,
 diffs, or transcripts.
 
-**State lives in the tracker and at the document destination**, never
-only in this session.
-
 ## Project context
 
 Before anything else, run `<skill dir>/scripts/overlay.sh orchestrate`.
@@ -23,9 +20,7 @@ choices.
 
 ## Read the input
 
-A document, issue identifier or link, or inline prompt.
-
-**Stop gate.** The input states:
+**Stop gate.** The input (a document, issue, or prompt) states:
 
 - **Outcome** — what changes for whom.
 - **Acceptance criteria** — externally observable, each testable.
@@ -112,11 +107,17 @@ rules.
    answer, is one row appended only with `scripts/log-decision.sh`;
    `references/decision-log.tsv` shows the rows. Publish it at the
    document destination like the other documents.
+5. Declare the Run on its worktrees, every round:
+   `scripts/note.sh declare path:<worktree> '<declaration>'` for the
+   planning worktree and every task worktree of the Run. The
+   planning declaration carries the latest report's State, Waiting
+   on the user, and Blockers. `references/declaration.json`
+   describes both declarations, with examples.
 
 ## Continuous discovery
 
 **The roadmap is a DAG.** Nodes are tasks; an edge from A to B means
-B waits on A. No cycles. Every edge is a blocking relation in the
+B waits on A. Every edge is a blocking relation in the
 tracker.
 
 Each task states:
@@ -131,9 +132,8 @@ Each task states:
 **Size rule.** A change task is one PR from one worktree, implemented
 in one `work` session, with one design approval.
 
-**You discover the roadmap** from the input and research, and grow it
-from every settled task's results and follow-ups. Each change to the
-roadmap goes through a Roadmap worker. The user does not approve it.
+Each change to the roadmap goes through a Roadmap worker; the user
+does not approve it.
 
 Run a Roadmap worker after:
 
@@ -169,7 +169,8 @@ Answer each `ask`:
   criteria, exclusions, and constraints, and the decision log.
   Reply approved, or with the required changes.
 - **Input decision** → add it to Waiting on the user with a number,
-  your recommended answer, and its `ask` message id. Reply to the
+  its `ask` message id, a link to what it decides when there is one,
+  and the choices, your recommended answer first. Reply to the
   `ask` once the user's answer arrives.
 
 Log the answer under the asking worker's task before replying.
@@ -179,7 +180,9 @@ Log the answer under the asking worker's task before replying.
 One fresh session per worker. The planning worktree is the current
 worktree. Each task worktree is a child of the planning worktree in
 Orca lineage, git-based on the task's base, named after the task,
-display name `<task id> - <goal>`, linked to the task issue.
+display name `<task id> - <goal>`, linked to the task issue, and
+declared with `scripts/note.sh declare` (task declaration) before its
+first worker starts.
 
 | Worker             | Skill                | Placement                          | Title                          |
 | ------------------ | -------------------- | ---------------------------------- | ------------------------------ |
@@ -252,7 +255,7 @@ the spec as values.
   for every open task PR that depends on it, directly or
   transitively. New review comments on an open task PR → a fresh
   Work session in its task worktree.
-- Update the planning worktree comment.
+- Update the planning worktree comment with `scripts/note.sh text`.
 
 ## Report
 
@@ -265,7 +268,10 @@ Before ending a round:
 - The decision log published at the destination with every row.
 - State complete → the round automation disabled.
 
-Write the report to the planning worktree's Orca comment. Then
+Write the report to the planning worktree's Orca comment with
+`scripts/note.sh text path:<planning worktree> "<report>"`, and
+declare the planning worktree with the report's State, Waiting on
+the user, and Blockers. Then
 deliver to the front: its State, Waiting on the user, and Blockers
 sections differ from the content of
 `${XDG_STATE_HOME:-$HOME/.local/state}/orchestrate/<run id>.front`
