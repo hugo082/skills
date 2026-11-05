@@ -87,7 +87,8 @@ newer than their own (resend it with `orca orchestration send --to
 dispatch:<id>`), the
 Run's live workers (adopt
 them, never duplicate), documents at the destination, the decision
-log, the roadmap read from the tracker, every task issue's state, and
+log, the roadmap in the tracker (every task issue, its state, and its
+blocking relations), and
 every task PR and its base. Then apply After each settlement's PR
 rules.
 
@@ -119,8 +120,7 @@ rules.
 **The roadmap is a DAG.** Nodes are tasks; an edge from A to B means
 B waits on A. It exists only as the tracker's state: one issue per
 task, a sub-issue of the tracking issue, grouped per the grouping
-setting (project, milestones); every edge a blocking relation. No
-document, issue description, or comment holds the roadmap.
+setting; every edge a blocking relation.
 
 Each task states:
 
@@ -214,8 +214,8 @@ Roadmap.
   recorded on the issue.
 
 **Ready.** A task is ready when every dependency is done and,
-destination inside the repository, the planning PR that added it is
-merged. For a change task with a base, a change dependency whose
+destination inside the repository, the planning PR holding the
+documents it depends on is merged. For a change task with a base, a change dependency whose
 Work settled succeeded counts as done. Start every ready task.
 
 **Base.** No unmerged dependency → the default branch. Otherwise the
@@ -226,13 +226,13 @@ dependency; no such branch → no base yet.
 absolute paths of the decision log and `scripts/log-decision.sh` into
 the spec as values.
 
-- **Roadmap** — apply without confirmation, in the tracker only:
-  create, update, or close one issue per task, set its grouping,
-  parent, and blocking relations; each change task issue names the
-  acceptance criteria it covers. Never write the roadmap into the
-  tracking issue's description or a comment. Research, monitor, and
-  operation task issues name their question, signal, or action. Destination inside the
-  repository → commit the documents produced since the last
+- **Roadmap** — without confirmation, make the tracker match the
+  roadmap. Each issue states its task's kind, goal, done signal, and
+  deadline for a monitor; a change task issue also names the
+  acceptance criteria it covers; research, monitor, and operation
+  task issues name their question, signal, or action. Write the
+  roadmap nowhere else: no roadmap document, no tracking issue
+  description, no comment. Destination inside the repository → commit the documents produced since the last
   planning PR and open a planning PR.
 - **Design** — the input is the confirmed requirements, with no
   confirmation round; the architecture is explicitly waived. Obsolete
@@ -267,7 +267,7 @@ Before ending a round:
 - Every settled worker released; no reclaimable terminal.
 - Every closed task issue with no live worker has its PR merged or
   closed and its task worktree removed.
-- Every task an issue in the tracker.
+- Every acceptance criterion named by a change task issue.
 - The decision log published at the destination with every row.
 - State complete → the round automation disabled.
 
