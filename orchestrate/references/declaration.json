@@ -21,6 +21,7 @@
       "planningWorktreePath": "<the planning worktree's absolute path on this host>",
       "task": {
         "id": "<the task issue's identifier>",
+        "kind": "<the task's kind: change, research, monitor, or operation>",
         "goal": "<the task's goal>",
         "url": "<the task issue's URL>"
       }
@@ -53,7 +54,7 @@
       "outcome": "Export orders as CSV for account admins",
       "tracking": { "kind": "issue", "provider": "linear", "id": "ENG-400", "url": "https://linear.app/acme/issue/ENG-400" },
       "planningWorktreePath": "/home/ubuntu/orca/workspaces/acme/export-orders",
-      "task": { "id": "ENG-412", "goal": "Paginated export endpoint", "url": "https://linear.app/acme/issue/ENG-412" }
+      "task": { "id": "ENG-412", "kind": "change", "goal": "Paginated export endpoint", "url": "https://linear.app/acme/issue/ENG-412" }
     }
   }
 }
