@@ -110,8 +110,8 @@ rules.
 5. Declare the Run on its worktrees, every round:
    `scripts/note.sh declare path:<worktree> '<declaration>'` for the
    planning worktree and every task worktree of the Run.
-   `references/declaration.json` shows both declarations; tracking is
-   the tracking issue.
+   `references/declaration.json` describes both declarations, with
+   examples.
 
 ## Continuous discovery
 
