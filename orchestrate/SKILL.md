@@ -297,7 +297,7 @@ Leave the round's terminal open.
 
 ### Tasks
 | Task | Kind | State | Issue | PR |
-<one row per task reached>
+<one row per task non-completed; group completed ones on the same row; issues and PRs show "and X others" after 5 items.>
 
 ### Waiting on the user
 <questions, and PRs to merge, bases first, or "none">
