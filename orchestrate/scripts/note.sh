@@ -22,9 +22,10 @@ orca=${ORCA:-orca}
 
 current=$("$orca" worktree show --worktree "$worktree" --json | jq -r '.result.worktree.comment // ""')
 
-# Splits the comment into the text before the declaration and the declaration line.
-text=$(printf '%s' "$current" | sed '/^<!-- orchestrate .* -->$/d')
-block=$(printf '%s' "$current" | grep -E '^<!-- orchestrate .* -->$' | tail -n 1 || true)
+# Splits the comment into the report text and the last declaration; one written by hand
+# may span several lines.
+text=$(printf '%s' "$current" | perl -0pe 's/<!-- orchestrate .*? -->\n?//gs')
+block=$(printf '%s' "$current" | perl -0ne 'my @all = /(<!-- orchestrate .*? -->)/gs; print $all[-1] if @all')
 
 case "$mode" in
 	declare)
