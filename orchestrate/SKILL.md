@@ -1,6 +1,6 @@
 ---
 name: orchestrate
-description: Deliver a detailed input end to end as an Orca coordinator that runs in rounds, each a fresh session. Researches the system, discovers a roadmap DAG of tasks, and grows it as tasks settle; runs each task in its own Orca session, one PR per implementation session; publishes the roadmap and documents to the project's tracker.
+description: Deliver a detailed input end to end as an Orca coordinator that runs in rounds, each a fresh session. Researches the system, discovers a roadmap DAG of tasks, and grows it as tasks settle; runs each task in its own Orca session, one PR per implementation session; the roadmap lives only as the tracker's state.
 disable-model-invocation: true
 ---
 
@@ -87,7 +87,8 @@ newer than their own (resend it with `orca orchestration send --to
 dispatch:<id>`), the
 Run's live workers (adopt
 them, never duplicate), documents at the destination, the decision
-log, the tracking issue's roadmap, every task issue's state, and
+log, the roadmap in the tracker (every task issue, its state, and its
+blocking relations), and
 every task PR and its base. Then apply After each settlement's PR
 rules.
 
@@ -117,8 +118,9 @@ rules.
 ## Continuous discovery
 
 **The roadmap is a DAG.** Nodes are tasks; an edge from A to B means
-B waits on A. Every edge is a blocking relation in the
-tracker.
+B waits on A. It exists only as the tracker's state: one issue per
+task, a sub-issue of the tracking issue, grouped per the grouping
+setting; every edge a blocking relation.
 
 Each task states:
 
@@ -212,8 +214,8 @@ Roadmap.
   recorded on the issue.
 
 **Ready.** A task is ready when every dependency is done and,
-destination inside the repository, the planning PR that added it is
-merged. For a change task with a base, a change dependency whose
+destination inside the repository, the planning PR holding the
+documents it depends on is merged. For a change task with a base, a change dependency whose
 Work settled succeeded counts as done. Start every ready task.
 
 **Base.** No unmerged dependency → the default branch. Otherwise the
@@ -224,12 +226,13 @@ dependency; no such branch → no base yet.
 absolute paths of the decision log and `scripts/log-decision.sh` into
 the spec as values.
 
-- **Roadmap** — publish without confirmation: the DAG in the
-  tracking issue body, mapping each acceptance criterion to the
-  change tasks that cover it; one issue per task, grouped per the
-  grouping setting. Research, monitor, and operation tasks name
-  their question, signal, or action. Destination inside the
-  repository → commit the documents produced since the last
+- **Roadmap** — without confirmation, make the tracker match the
+  roadmap. Each issue states its task's kind, goal, done signal, and
+  deadline for a monitor; a change task issue also names the
+  acceptance criteria it covers; research, monitor, and operation
+  task issues name their question, signal, or action. Write the
+  roadmap nowhere else: no roadmap document, no tracking issue
+  description, no comment. Destination inside the repository → commit the documents produced since the last
   planning PR and open a planning PR.
 - **Design** — the input is the confirmed requirements, with no
   confirmation round; the architecture is explicitly waived. Obsolete
@@ -264,7 +267,7 @@ Before ending a round:
 - Every settled worker released; no reclaimable terminal.
 - Every closed task issue with no live worker has its PR merged or
   closed and its task worktree removed.
-- Every task an issue in the tracker.
+- Every acceptance criterion named by a change task issue.
 - The decision log published at the destination with every row.
 - State complete → the round automation disabled.
 
@@ -294,7 +297,7 @@ Leave the round's terminal open.
 
 ### Tasks
 | Task | Kind | State | Issue | PR |
-<one row per task reached>
+<one row per task non-completed; group completed ones on the same row; issues and PRs show "and X others" after 5 items.>
 
 ### Waiting on the user
 <questions, and PRs to merge, bases first, or "none">
