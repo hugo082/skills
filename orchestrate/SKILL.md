@@ -1,6 +1,6 @@
 ---
 name: orchestrate
-description: Deliver a detailed input end to end as an Orca coordinator that runs in rounds, each a fresh session. Researches the system, discovers a roadmap DAG of tasks, and grows it as tasks settle; runs each task in its own Orca session, one PR per implementation session; publishes the roadmap and documents to the project's tracker.
+description: Deliver a detailed input end to end as an Orca coordinator that runs in rounds, each a fresh session. Researches the system, discovers a roadmap DAG of tasks, and grows it as tasks settle; runs each task in its own Orca session, one PR per implementation session; the roadmap lives only as the tracker's state.
 disable-model-invocation: true
 ---
 
@@ -87,7 +87,7 @@ newer than their own (resend it with `orca orchestration send --to
 dispatch:<id>`), the
 Run's live workers (adopt
 them, never duplicate), documents at the destination, the decision
-log, the tracking issue's roadmap, every task issue's state, and
+log, the roadmap read from the tracker, every task issue's state, and
 every task PR and its base. Then apply After each settlement's PR
 rules.
 
@@ -117,8 +117,10 @@ rules.
 ## Continuous discovery
 
 **The roadmap is a DAG.** Nodes are tasks; an edge from A to B means
-B waits on A. Every edge is a blocking relation in the
-tracker.
+B waits on A. It exists only as the tracker's state: one issue per
+task, a sub-issue of the tracking issue, grouped per the grouping
+setting (project, milestones); every edge a blocking relation. No
+document, issue description, or comment holds the roadmap.
 
 Each task states:
 
@@ -224,11 +226,12 @@ dependency; no such branch → no base yet.
 absolute paths of the decision log and `scripts/log-decision.sh` into
 the spec as values.
 
-- **Roadmap** — publish without confirmation: the DAG in the
-  tracking issue body, mapping each acceptance criterion to the
-  change tasks that cover it; one issue per task, grouped per the
-  grouping setting. Research, monitor, and operation tasks name
-  their question, signal, or action. Destination inside the
+- **Roadmap** — apply without confirmation, in the tracker only:
+  create, update, or close one issue per task, set its grouping,
+  parent, and blocking relations; each change task issue names the
+  acceptance criteria it covers. Never write the roadmap into the
+  tracking issue's description or a comment. Research, monitor, and
+  operation task issues name their question, signal, or action. Destination inside the
   repository → commit the documents produced since the last
   planning PR and open a planning PR.
 - **Design** — the input is the confirmed requirements, with no
