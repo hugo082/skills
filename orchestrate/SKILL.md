@@ -109,9 +109,10 @@ rules.
    document destination like the other documents.
 5. Declare the Run on its worktrees, every round:
    `scripts/note.sh declare path:<worktree> '<declaration>'` for the
-   planning worktree and every task worktree of the Run.
-   `references/declaration.json` describes both declarations, with
-   examples.
+   planning worktree and every task worktree of the Run. The
+   planning declaration carries the latest report's State, Waiting
+   on the user, and Blockers. `references/declaration.json`
+   describes both declarations, with examples.
 
 ## Continuous discovery
 
@@ -168,7 +169,8 @@ Answer each `ask`:
   criteria, exclusions, and constraints, and the decision log.
   Reply approved, or with the required changes.
 - **Input decision** → add it to Waiting on the user with a number,
-  your recommended answer, and its `ask` message id. Reply to the
+  its `ask` message id, a link to what it decides when there is one,
+  and the choices, your recommended answer first. Reply to the
   `ask` once the user's answer arrives.
 
 Log the answer under the asking worker's task before replying.
@@ -267,7 +269,9 @@ Before ending a round:
 - State complete → the round automation disabled.
 
 Write the report to the planning worktree's Orca comment with
-`scripts/note.sh text path:<planning worktree> "<report>"`. Then
+`scripts/note.sh text path:<planning worktree> "<report>"`, and
+declare the planning worktree with the report's State, Waiting on
+the user, and Blockers. Then
 deliver to the front: its State, Waiting on the user, and Blockers
 sections differ from the content of
 `${XDG_STATE_HOME:-$HOME/.local/state}/orchestrate/<run id>.front`
