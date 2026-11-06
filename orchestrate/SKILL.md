@@ -44,32 +44,24 @@ This session is the Run's coordinator: Orca wakes it with every
 message to the Run. The planning worktree is the current worktree.
 
 - Prompt `/orchestrate resume <run id>` → `orca orchestration run-use
-  --id <run id>`, Wake step 1, Resume, then Wake steps 3–5.
+  --id <run id>`, then Resume.
 - Any other prompt → the stop gate, then `orca orchestration
-  run-create --objective "<outcome>"`, Set up, First tasks in Run
-  tasks, then Wake steps 4–5.
+  run-create --objective "<outcome>"`, Set up, and First tasks in Run
+  tasks.
 
-## Wake
+## Messages
 
-Handle each wake — Orca's mail notice or a user message — then end
-the turn:
+- `question` → Answer each `ask`.
+- `worker_done` → After each settlement.
+- `escalation` with `stopReason` → as a `stopped` line.
+- `tick` → its mail-doctor lines and the PR rules.
+- `resume` → Resume.
+- A user message → log it; an answer → reply to its `ask`; any other
+  instruction → an input change, applied through a Roadmap worker.
 
-1. `orca orchestration check`; handle the whole batch:
-   - `question` → Answer each `ask`.
-   - `worker_done` → After each settlement.
-   - `escalation` with `stopReason` → as a `stopped` line.
-   - `tick` → its mail-doctor lines, then the PR rules.
-   - `resume` → Resume.
-2. A user message → log it; an answer → reply to its `ask`; any
-   other instruction → an input change, applied through a Roadmap
-   worker.
-3. Start every ready task.
-4. Report.
-5. State not complete → `scripts/tick.sh start <run id> <planning
-   worktree>`, then `scripts/compact.sh <run id> 8`.
-
-Send and reply only with `scripts/send.sh`. Exit 3 → the recipient
-was not woken; handle it as an `undelivered` line.
+Use `scripts/send.sh to|reply` instead of `orca orchestration
+send|reply`; call every other Orca command directly. `send.sh` exit 3
+→ the recipient was not woken; handle it as an `undelivered` line.
 
 **Mail-doctor lines** (`scripts/mail-doctor.sh <run id>`):
 
@@ -84,11 +76,12 @@ was not woken; handle it as an `undelivered` line.
 
 ## Resume
 
-Run `scripts/mail-doctor.sh <run id>` and handle its lines, then
-inventory the Run's live workers in `worker-list` (adopt them, never
-duplicate), documents at the destination, the decision log, the
-roadmap in the tracker (every task issue, its state, and its blocking
-relations), and every task PR and its base. Then apply the PR rules.
+Handle the Run's unread messages per Messages and the lines of
+`scripts/mail-doctor.sh <run id>`, then inventory the Run's live
+workers in `worker-list` (adopt them, never duplicate), documents at
+the destination, the decision log, the roadmap in the tracker (every
+task issue, its state, and its blocking relations), and every task
+PR and its base. Then apply the PR rules.
 
 ## Set up
 
@@ -211,7 +204,7 @@ Roadmap.
 **Ready.** A task is ready when every dependency is done and,
 destination inside the repository, the planning PR holding the
 documents it depends on is merged. For a change task with a base, a change dependency whose
-Work settled succeeded counts as done.
+Work settled succeeded counts as done. Start every ready task.
 
 **Base.** No unmerged dependency → the default branch. Otherwise the
 branch of the unmerged dependency that contains every other
@@ -259,14 +252,16 @@ the spec as values.
 
 ## Report
 
-Before ending a turn:
+Before ending a turn in a Run:
 
 - Every settled worker released; no reclaimable terminal.
 - Every closed task issue with no live worker has its PR merged or
   closed and its task worktree removed.
 - Every acceptance criterion named by a change task issue.
 - The decision log published at the destination with every row.
-- State complete → `scripts/tick.sh stop <run id>`.
+- State complete → `scripts/tick.sh stop <run id>`; otherwise
+  `scripts/tick.sh start <run id> <planning worktree>` and
+  `scripts/compact.sh <run id> 8` ran.
 
 Write the report to the planning worktree's Orca comment with
 `scripts/note.sh text path:<planning worktree> "<report>"`, and
