@@ -179,17 +179,18 @@ planning worktree in Orca lineage, git-based on the task's base,
 named after the task, display name `<task id> - <goal>`, linked to
 the task issue, and declared before its first worker starts.
 
-| Worker             | Skill                | Placement                          | Title                          |
-| ------------------ | -------------------- | ---------------------------------- | ------------------------------ |
-| Research questions | `research-questions` | planning worktree                  | `<topic> - Research questions` |
-| Research           | `research`           | planning worktree                  | `Research <n>`                 |
-| Roadmap            | `v-slices`           | planning worktree                  | `Roadmap`                      |
-| Design             | `program-design`     | task worktree, created if none     | `<task id> - Design`           |
-| Work               | `work`               | same task worktree, fresh terminal | `<task id> - Implementation`   |
-| Monitor, operation | none                 | planning worktree                  | `<task id> - <goal>`           |
+| Worker             | Skill                | Placement                          | Title                                      |
+| ------------------ | -------------------- | ---------------------------------- | ------------------------------------------ |
+| Research questions | `research-questions` | planning worktree                  | `<task id> - <topic> - Research questions` |
+| Research           | `research`           | planning worktree                  | `Research <n>`                             |
+| Roadmap            | `v-slices`           | planning worktree                  | `<tracking issue id> - Roadmap`            |
+| Design             | `program-design`     | task worktree, created if none     | `<task id> - Design`                       |
+| Work               | `work`               | same task worktree, fresh terminal | `<task id> - Implementation`               |
+| Monitor, operation | none                 | planning worktree                  | `<task id> - <goal>`                       |
 
-A Research spec and title name only the research questions path,
-nothing about the change.
+For First tasks, `<task id>` is the tracking issue's id. A Research
+spec and title name only the research questions path, nothing about
+the change.
 
 **First tasks.** Research questions, then Research, on the input; then
 Roadmap.
