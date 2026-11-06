@@ -56,8 +56,13 @@ message to the Run. The planning worktree is the current worktree.
 - `escalation` with `stopReason` → as a `stopped` line.
 - `tick` → its mail-doctor lines and the PR rules.
 - `resume` → Resume.
-- A user message → log it; an answer → reply to its `ask`; any other
-  instruction → an input change, applied through a Roadmap worker.
+- A user message, or a line `<item id>: <answer>` of an `answers`
+  message:
+  - an answer → log it, then `scripts/send.sh reply <item id>
+    "<answer>"` when the item is an `ask`;
+  - a merge item's new PR state → the PR rules;
+  - any other instruction → log it; an input change, applied through
+    a Roadmap worker.
 
 Use `scripts/send.sh to|reply` instead of `orca orchestration
 send|reply`; call every other Orca command directly. `send.sh` exit 3
