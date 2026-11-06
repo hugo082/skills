@@ -289,5 +289,6 @@ report; otherwise with one line naming what changed.
 **States:**
 - **complete** — done holds and no follow-up is outside the roadmap.
 - **running** — tasks in flight.
-- **waiting on user** — a question awaits the user.
+- **waiting on user** — progress needs an item in Waiting on the user:
+  an answer or a merge.
 - **blocked** — no task can progress without an unresolved blocker.
