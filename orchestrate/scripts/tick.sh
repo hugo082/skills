@@ -3,9 +3,10 @@
 # Usage:
 #   tick.sh start <run id> <planning worktree>   start the ticker unless it runs
 #   tick.sh stop <run id>                         stop it
-# Every 10 min the ticker mails the Run a "tick" when the repository's pull requests
+# Every 10 min the ticker mails the Run a "tick" when one of the Run's pull requests
 # changed (state, commits, reviews, comments), the mail-doctor.sh report changed, or
 # 60 min passed since the last tick. The body names the reasons and holds the report.
+# Run's pull requests: those of the worktrees declaring the Run.
 set -euo pipefail
 
 usage() {
@@ -51,12 +52,33 @@ esac
 # loop; TICK_INTERVAL overrides the 10 min, in seconds.
 worktree=$3
 last=$(date +%s)
+
+# Prints the Run's pull requests as a JSON array; fails when GitHub cannot be read.
+run_prs() {
+	local branch view
+	"$orca" worktree list --limit 500 --json |
+		jq -r --arg run "$run" '.result.worktrees[]
+			| select((.comment // "") | [scan("<!-- orchestrate ([\\s\\S]*?) -->")] | last
+				| (.[0] // "{}") | try fromjson catch {} | .runId == $run)
+			| .branch // empty | select(. != "") | sub("^refs/heads/"; "")' |
+		while read -r branch; do
+			view=$(cd "$worktree" && gh pr view "$branch" --json number,state,updatedAt 2>&1 </dev/null) || {
+				case "$view" in *"no pull requests found"*) continue ;; esac
+				return 1
+			}
+			printf '%s\n' "$view"
+		done | jq -sc 'sort_by(.number)'
+}
+
 while sleep "${TICK_INTERVAL:-600}"; do
 	reasons=()
-	prs=$(cd "$worktree" && gh pr list --state all --limit 50 --json number,state,updatedAt 2>/dev/null |
-		jq -c 'sort_by(.number)') || prs=""
+	prs=$(run_prs) || prs=""
 	if [ -n "$prs" ] && [ "$prs" != "$(cat "$state/$run.tick.prs" 2>/dev/null)" ]; then
-		[ -f "$state/$run.tick.prs" ] && reasons+=("pull requests changed")
+		if [ -f "$state/$run.tick.prs" ]; then
+			changed=$(jq -nr --argjson new "$prs" --argjson old "$(cat "$state/$run.tick.prs")" \
+				'$new - $old | map("#\(.number)") | join(" ")')
+			[ -z "$changed" ] || reasons+=("pull requests changed: $changed")
+		fi
 		printf '%s' "$prs" >"$state/$run.tick.prs"
 	fi
 	report=$("$here/mail-doctor.sh" "$run" 2>&1) || true
