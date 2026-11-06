@@ -6,10 +6,10 @@
       "runId": "<the Run id from `orca orchestration run-create`>",
       "outcome": "<the input's outcome>",
       "tracking": {
-        "kind": "<issue | project: what tracks the Run>",
+        "kind": "<issue | project | milestone: what tracks the Run>",
         "provider": "<the tracker: linear, github, ...>",
-        "id": "<the tracker's key for it: issue identifier, issue number, or project slug>",
-        "url": "<its URL>"
+        "id": "<the issue identifier, issue number, or project slug; a milestone: its name>",
+        "url": "<its URL; a Linear milestone: https://linear.app/<workspace>/project/<project slug>/overview#milestone-<milestone uuid>>"
       },
       "state": "<the report's State: complete | running | waiting on user | blocked>",
       "waitingOnUser": [

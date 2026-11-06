@@ -36,7 +36,8 @@ interview the user to fill them.
 
 - **Merge policy** — who merges PRs. Default: the user.
 - **Grouping** — how tasks are grouped in the tracker. Default:
-  milestones by outcome, tasks as issues.
+  milestones by outcome, unless a milestone tracks the Run; tasks as
+  issues.
 
 ## Invocation
 
@@ -93,8 +94,9 @@ PR and its base. Then apply the PR rules.
 1. Run `orca skills list` and load the Orca skills this workflow
    needs: orchestration, worktrees and terminals, and the project's
    issue tracker.
-2. Resolve the tracking issue: the one given in the input; otherwise
-   create one in the project's tracker titled after the outcome.
+2. Resolve what tracks the Run (issue, project, or milestone): the one
+   given in the input; otherwise create a tracking issue in the
+   project's tracker titled after the outcome.
 3. Resolve the document destination: the input or the repo
    convention. None found → ask the user as an input decision.
 4. Decision log: `<planning worktree>/decisions-<run id>.tsv`. Every
@@ -112,8 +114,8 @@ PR and its base. Then apply the PR rules.
 
 **The roadmap is a DAG.** Nodes are tasks; an edge from A to B means
 B waits on A. It exists only as the tracker's state: one issue per
-task, a sub-issue of the tracking issue, grouped per the grouping
-setting; every edge a blocking relation.
+task, a sub-issue of the tracking issue or in the tracking project or
+milestone, grouped per the grouping setting; every edge a blocking relation.
 
 Each task states:
 
@@ -179,17 +181,18 @@ planning worktree in Orca lineage, git-based on the task's base,
 named after the task, display name `<task id> - <goal>`, linked to
 the task issue, and declared before its first worker starts.
 
-| Worker             | Skill                | Placement                          | Title                          |
-| ------------------ | -------------------- | ---------------------------------- | ------------------------------ |
-| Research questions | `research-questions` | planning worktree                  | `<topic> - Research questions` |
-| Research           | `research`           | planning worktree                  | `Research <n>`                 |
-| Roadmap            | `v-slices`           | planning worktree                  | `Roadmap`                      |
-| Design             | `program-design`     | task worktree, created if none     | `<task id> - Design`           |
-| Work               | `work`               | same task worktree, fresh terminal | `<task id> - Implementation`   |
-| Monitor, operation | none                 | planning worktree                  | `<task id> - <goal>`           |
+| Worker             | Skill                | Placement                          | Title                                      |
+| ------------------ | -------------------- | ---------------------------------- | ------------------------------------------ |
+| Research questions | `research-questions` | planning worktree                  | `<task id> - <topic> - Research questions` |
+| Research           | `research`           | planning worktree                  | `Research <n>`                             |
+| Roadmap            | `v-slices`           | planning worktree                  | `<tracking issue id> - Roadmap`            |
+| Design             | `program-design`     | task worktree, created if none     | `<task id> - Design`                       |
+| Work               | `work`               | same task worktree, fresh terminal | `<task id> - Implementation`               |
+| Monitor, operation | none                 | planning worktree                  | `<task id> - <goal>`                       |
 
-A Research spec and title name only the research questions path,
-nothing about the change.
+For First tasks, `<task id>` is the tracking issue's id. A Research
+spec and title name only the research questions path, nothing about
+the change.
 
 **First tasks.** Research questions, then Research, on the input; then
 Roadmap.
