@@ -15,10 +15,12 @@
       "waitingOnUser": [
         {
           "n": "<its number in the report>",
-          "question": "<what the user must answer or do: a question, or a PR to merge>",
-          "link": "<optional: the URL of what it decides, such as the PR or the design>",
+          "id": "<stays the same across reports: question → its ask message id, or a slug for a question of your own | merge → the PR's URL>",
+          "kind": "<question: an input decision to answer | merge: a PR the user merges>",
+          "question": "<what the user must answer or do>",
+          "link": "<question, optional: the URL of what it decides, such as the design | merge: the PR's URL>",
           "choices": [
-            "<optional: the possible answers, the recommended one first>"
+            "<question only, optional: the possible answers, the recommended one first>"
           ]
         }
       ],
@@ -59,6 +61,8 @@
       "waitingOnUser": [
         {
           "n": 1,
+          "id": "msg_b569e0b750be",
+          "kind": "question",
           "question": "Include archived orders in the export?",
           "link": "https://linear.app/acme/issue/ENG-412",
           "choices": [
@@ -68,6 +72,8 @@
         },
         {
           "n": 2,
+          "id": "https://github.com/acme/orders/pull/88",
+          "kind": "merge",
           "question": "Merge the paginated export endpoint PR",
           "link": "https://github.com/acme/orders/pull/88"
         }

@@ -1,6 +1,6 @@
 ---
 name: orchestrate
-description: Deliver a detailed input end to end as an Orca coordinator that runs in rounds, each a fresh session. Researches the system, discovers a roadmap DAG of tasks, and grows it as tasks settle; runs each task in its own Orca session, one PR per implementation session; the roadmap lives only as the tracker's state.
+description: Deliver a detailed input end to end as the Orca coordinator of one Run. Researches the system, discovers a roadmap DAG of tasks, and grows it as tasks settle; runs each task in its own Orca worker, one PR per implementation worker; the roadmap lives only as the tracker's state.
 disable-model-invocation: true
 ---
 
@@ -29,7 +29,7 @@ choices.
   respect.
 
 Any item missing → reply with the missing items, create nothing (no
-Run, automation, issue, worktree, or document), and end the turn. Do not
+Run, issue, worktree, or document), and end the turn. Do not
 interview the user to fill them.
 
 **Settings.** From the input; otherwise the default:
@@ -38,82 +38,75 @@ interview the user to fill them.
 - **Grouping** — how tasks are grouped in the tracker. Default:
   milestones by outcome, tasks as issues.
 
-## Rounds
+## Invocation
 
-Prompt `/orchestrate round <run id> <front pane> <input>` → a
-round; it skips the stop gate. In the front, prompts follow Front.
-Any other prompt → bootstrap. No `$ORCA_TERMINAL_HANDLE` → reply "run
-from an Orca terminal" and end the turn. Otherwise run the stop gate,
-then the commands below, front pane = `<tabId>:<leafId>` of the row
-whose `handle` is `$ORCA_TERMINAL_HANDLE` in `orca terminal list
---worktree path:<planning worktree> --json`,
-skipping `run-create` when a Run with objective `<outcome>` exists,
-and `automations create` when the automation `orchestrate -
-<outcome>` exists:
+This session is the Run's coordinator: Orca wakes it with every
+message to the Run. The planning worktree is the current worktree.
 
-```
-orca orchestration run-create --objective "<outcome>"
-orca automations create --name "orchestrate - <outcome>" --provider claude \
-  --workspace path:<planning worktree> --fresh-session --disabled \
-  --trigger "*/10 * * * *" \
-  --prompt "/orchestrate round <run id> <front pane> <input>"
-orca automations edit <automation id> --enabled --precheck-timeout 600 \
-  --prompt "/orchestrate round <run id> <front pane> <input>" \
-  --precheck "<skill dir>/scripts/round-due.sh <absolute orca path> <run id> <automation id> 590 60"
-orca automations run <automation id>
-```
+- Prompt `/orchestrate resume <run id>` → `orca orchestration run-use
+  --id <run id>`, then Resume.
+- Any other prompt → the stop gate, then `orca orchestration
+  run-create --objective "<outcome>"`, Set up, and First tasks in Run
+  tasks.
 
-Reply with the Run and automation ids, and end the turn.
+## Messages
 
-## Front
+- `question` → Answer each `ask`.
+- `worker_done` → After each settlement.
+- `escalation` with `stopReason` → as a `stopped` line.
+- `tick` → its mail-doctor lines and the PR rules.
+- `resume` → Resume.
+- A user message, or a line `<item id>: <answer>` of an `answers`
+  message:
+  - an answer → log it, then `scripts/send.sh reply <item id>
+    "<answer>"` when the item is an `ask`;
+  - a merge item's new PR state → the PR rules;
+  - any other instruction → log it; an input change, applied through
+    a Roadmap worker.
 
-After bootstrap, this session is the front. It never dispatches or
-coordinates.
+Use `scripts/send.sh to|reply` instead of `orca orchestration
+send|reply`; call every other Orca command directly. `send.sh` exit 3
+→ the recipient was not woken; handle it as an `undelivered` line.
 
-- Prompt starting `[round]` → relay it to the user; send nothing.
-- User answer or instruction → `orca orchestration send --to
-  run:<run id> --subject user --body "<message>"`, naming the question
-  number it answers.
+**Mail-doctor lines** (`scripts/mail-doctor.sh <run id>`):
+
+- `undelivered` to `run:` → `orca orchestration run-use --id <run
+  id>`.
+- `undelivered` to a Dispatch, or `terminal-worker` → `orca
+  orchestration worker-stop` it, then `worker-start --retry-of
+  <dispatch id>` with the same spec.
+- `unanswered` → answer it, unless it is in Waiting on the user.
+- `stopped` → send the worker its next step.
+- `stale` → resend it the Run's latest message to it.
 
 ## Resume
 
-At the start of each round, run `orca orchestration run-use --id
-<run id>` and `orca orchestration check`, then inventory pending
-`ask` messages (answer them first), messages with subject `user`
-(log each; an answer → reply to its `ask` or apply it; any other
-instruction → an input change, applied through a Roadmap worker),
-workers `stale` in `worker-list` whose latest message from the Run is
-newer than their own (resend it with `orca orchestration send --to
-dispatch:<id>`), the
-Run's live workers (adopt
-them, never duplicate), documents at the destination, the decision
-log, the roadmap in the tracker (every task issue, its state, and its
-blocking relations), and
-every task PR and its base. Then apply After each settlement's PR
-rules.
+Handle the Run's unread messages per Messages and the lines of
+`scripts/mail-doctor.sh <run id>`, then inventory the Run's live
+workers in `worker-list` (adopt them, never duplicate), documents at
+the destination, the decision log, the roadmap in the tracker (every
+task issue, its state, and its blocking relations), and every task
+PR and its base. Then apply the PR rules.
 
 ## Set up
 
 1. Run `orca skills list` and load the Orca skills this workflow
    needs: orchestration, worktrees and terminals, and the project's
    issue tracker.
-2. Resolve the tracking issue: the one found in Resume or given in
-   the input; otherwise create one in the project's tracker titled
-   after the outcome.
+2. Resolve the tracking issue: the one given in the input; otherwise
+   create one in the project's tracker titled after the outcome.
 3. Resolve the document destination: the input or the repo
-   convention. None found → ask the user as an input decision and
-   end the round.
+   convention. None found → ask the user as an input decision.
 4. Decision log: `<planning worktree>/decisions-<run id>.tsv`. Every
    decision in the Run, by you or a worker, including each user
    answer, is one row appended only with `scripts/log-decision.sh`;
    `references/decision-log.tsv` shows the rows. Publish it at the
    document destination like the other documents.
-5. Declare the Run on its worktrees, every round:
-   `scripts/note.sh declare path:<worktree> '<declaration>'` for the
-   planning worktree and every task worktree of the Run. The
-   planning declaration carries the latest report's State, Waiting
-   on the user, and Blockers. `references/declaration.json`
-   describes both declarations, with examples.
+5. Declare the Run on its worktrees with `scripts/note.sh declare
+   path:<worktree> '<declaration>'`: the planning worktree in every
+   Report, each task worktree before its first worker starts.
+   `references/declaration.json` describes both declarations, with
+   examples.
 
 ## Continuous discovery
 
@@ -160,6 +153,8 @@ Every task spec carries this contract, addressed to the worker:
   constraints, or that is irreversible.
 - **Approval** — where the skill requires user approval, `ask` the
   coordinator; its reply is that approval.
+- **Turns** — wait for CI and other checks inside your turn; end a
+  turn only after `ask` or `worker_done`.
 - **Completion** — `worker_done` succeeded once the output is
   published and, where required, approved; otherwise failed, with
   the reason in the body. The summary names the output location,
@@ -179,12 +174,10 @@ Log the answer under the asking worker's task before replying.
 
 ## Run tasks
 
-One fresh session per worker. The planning worktree is the current
-worktree. Each task worktree is a child of the planning worktree in
-Orca lineage, git-based on the task's base, named after the task,
-display name `<task id> - <goal>`, linked to the task issue, and
-declared with `scripts/note.sh declare` (task declaration) before its
-first worker starts.
+One fresh session per worker. Each task worktree is a child of the
+planning worktree in Orca lineage, git-based on the task's base,
+named after the task, display name `<task id> - <goal>`, linked to
+the task issue, and declared before its first worker starts.
 
 | Worker             | Skill                | Placement                          | Title                          |
 | ------------------ | -------------------- | ---------------------------------- | ------------------------------ |
@@ -198,7 +191,7 @@ first worker starts.
 A Research spec and title name only the research questions path,
 nothing about the change.
 
-**Start.** Research questions, then Research, on the input; then
+**First tasks.** Research questions, then Research, on the input; then
 Roadmap.
 
 **Per task kind.**
@@ -251,6 +244,9 @@ the spec as values.
   worker handled its earlier failure → record the blocker on the task
   issue and ask the user as an input decision.
 - Release the worker.
+
+**PR rules.**
+
 - Check open PRs' merge state.
 - On merge: close the task issue, and retarget PRs based on its
   branch to the default branch.
@@ -258,37 +254,26 @@ the spec as values.
   for every open task PR that depends on it, directly or
   transitively. New review comments on an open task PR → a fresh
   Work session in its task worktree.
-- Update the planning worktree comment with `scripts/note.sh text`.
 
 ## Report
 
-Before ending a round:
+Before ending a turn in a Run:
 
 - Every settled worker released; no reclaimable terminal.
 - Every closed task issue with no live worker has its PR merged or
   closed and its task worktree removed.
 - Every acceptance criterion named by a change task issue.
 - The decision log published at the destination with every row.
-- State complete → the round automation disabled.
+- State complete → `scripts/tick.sh stop <run id>`; otherwise
+  `scripts/tick.sh start <run id> <planning worktree>` and
+  `scripts/compact.sh <run id> 8` ran.
 
 Write the report to the planning worktree's Orca comment with
 `scripts/note.sh text path:<planning worktree> "<report>"`, and
 declare the planning worktree with the report's State, Waiting on
-the user, and Blockers. Then
-deliver to the front: its State, Waiting on the user, and Blockers
-sections differ from the content of
-`${XDG_STATE_HOME:-$HOME/.local/state}/orchestrate/<run id>.front`
-(missing file → they differ) →
-
-1. Front handle = the `handle` of the row whose `<tabId>:<leafId>`
-   is the front pane in `orca terminal list --worktree
-   path:<planning worktree> --json`. No such row → skip delivery.
-2. `orca terminal send --terminal <front handle> --text "[round]
-   <sections>" --enter --json`.
-3. Receipt `accepted: true` → overwrite that file with the three
-   sections. Send failed → leave the file unchanged.
-
-Leave the round's terminal open.
+the user, and Blockers. One of these three differs from the
+planning declaration before this write → end the turn with the
+report; otherwise with one line naming what changed.
 
 ```
 ## <outcome>
@@ -309,5 +294,6 @@ Leave the round's terminal open.
 **States:**
 - **complete** — done holds and no follow-up is outside the roadmap.
 - **running** — tasks in flight.
-- **waiting on user** — a question awaits the user.
+- **waiting on user** — progress needs an item in Waiting on the user:
+  an answer or a merge.
 - **blocked** — no task can progress without an unresolved blocker.
