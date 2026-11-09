@@ -181,14 +181,14 @@ planning worktree in Orca lineage, git-based on the task's base,
 named after the task, display name `<task id> - <goal>`, linked to
 the task issue, and declared before its first worker starts.
 
-| Worker             | Skill                | Placement                          | Title                                      |
-| ------------------ | -------------------- | ---------------------------------- | ------------------------------------------ |
-| Research questions | `research-questions` | planning worktree                  | `<task id> - <topic> - Research questions` |
-| Research           | `research`           | planning worktree                  | `Research <n>`                             |
-| Roadmap            | `v-slices`           | planning worktree                  | `<tracking issue id> - Roadmap`            |
-| Design             | `program-design`     | task worktree, created if none     | `<task id> - Design`                       |
-| Work               | `work`               | same task worktree, fresh terminal | `<task id> - Implementation`               |
-| Monitor, operation | none                 | planning worktree                  | `<task id> - <goal>`                       |
+| Worker             | Skill                | Model    | Placement                          | Title                                      |
+| ------------------ | -------------------- | -------- | ---------------------------------- | ------------------------------------------ |
+| Research questions | `research-questions` | `opus`   | planning worktree                  | `<task id> - <topic> - Research questions` |
+| Research           | `research`           | `sonnet` | planning worktree                  | `Research <n>`                             |
+| Roadmap            | `v-slices`           | `opus`   | planning worktree                  | `<tracking issue id> - Roadmap`            |
+| Design             | `program-design`     | `opus`   | task worktree, created if none     | `<task id> - Design`                       |
+| Work               | `work`               | `sonnet` | same task worktree, fresh terminal | `<task id> - Implementation`               |
+| Monitor, operation | none                 | `sonnet` | planning worktree                  | `<task id> - <goal>`                       |
 
 For First tasks, `<task id>` is the tracking issue's id. A Research
 spec and title name only the research questions path, nothing about
