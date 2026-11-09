@@ -113,9 +113,10 @@ path:<worktree> '<declaration>'`: the planning worktree in every
 ## Continuous discovery
 
 **The roadmap is a DAG.** Nodes are tasks; an edge from A to B means
-B waits on A. It exists only as the tracker's state: one issue per
-task, a sub-issue of the tracking issue or in the tracking project or
-milestone, grouped per the grouping setting; every edge a blocking relation.
+B waits on A. Tasks and edges exist only as the tracker's state: one
+issue per task, a sub-issue of the tracking entity, grouped per the grouping setting; every edge a
+blocking relation. Work not yet specified exists only as decision log
+rows.
 
 Each task states:
 
@@ -129,6 +130,17 @@ Each task states:
 **Size rule.** A change task is one PR from one worktree, implemented
 in one `work` session, with one design approval.
 
+**Not yet specified.** Work toward the outcome whose goal or done
+signal cannot be stated yet gets no task: log it with decision `not
+yet specified: <work>` and the tasks it waits on as evidence. Once
+every task it waits on is done, log `specified: <work>` naming the new
+tasks, or `out of scope: <work>`, with `<work>` repeated verbatim. A
+`not yet specified` row is open while no later row repeats its
+`<work>`.
+
+**Out of scope.** Log work outside the input's outcome or inside its
+exclusions with decision `out of scope: <work>` and the reason as why.
+
 Each change to the roadmap goes through a Roadmap worker; the user
 does not approve it.
 
@@ -137,6 +149,7 @@ Run a Roadmap worker after:
 - A change task's Work settles with follow-ups.
 - A research, monitor, or operation task settles.
 - Any worker other than Roadmap settles failed.
+- Every task an open `not yet specified` row waits on is done.
 
 One Roadmap worker at a time, batching the results that arrived
 meanwhile.
@@ -220,13 +233,16 @@ dependency; no such branch → no base yet.
 
 **Worker constraints.** Write the size rule, settings, and the
 absolute paths of the decision log and `scripts/log-decision.sh` into
-the spec as values.
+the spec as values. A Roadmap spec also carries the not yet specified
+and out of scope rules and the open `not yet specified` rows.
 
 - **Roadmap** — without confirmation, make the tracker match the
   roadmap. Each issue states its task's kind, goal, done signal, and
   deadline for a monitor; a change task issue also names the
   acceptance criteria it covers; research, monitor, and operation
-  task issues name their question, signal, or action. Write the
+  task issues name their question, signal, or action. A task found
+  out of scope → close its issue as canceled with the reason, remove
+  its blocking relations, and log `out of scope: <task>`. Write the
   roadmap nowhere else: no roadmap document, no tracking issue
   description, no comment. Destination inside the repository → commit the documents produced since the last
   planning PR and open a planning PR.
@@ -284,8 +300,11 @@ report; otherwise with one line naming what changed.
 **State:** complete | running | waiting on user | blocked
 
 ### Tasks
-| Task | Kind | State | Issue | PR |
-<one row per task non-completed; group completed ones on the same row; issues and PRs show "and X others" after 5 items.>
+| Task | Kind | State | PR |
+<one row per task non-completed; group completed ones on the same row; tasks and PRs show "and X others" after 5 items.>
+
+### Not yet specified
+<each open `not yet specified` work and the tasks it waits on, or "none">
 
 ### Waiting on the user
 <questions, and PRs to merge, bases first, or "none">
@@ -296,7 +315,8 @@ report; otherwise with one line naming what changed.
 
 **States:**
 
-- **complete** — done holds and no follow-up is outside the roadmap.
+- **complete** — done holds, no `not yet specified` row is open, and
+  every follow-up is in the roadmap or logged out of scope.
 - **running** — tasks in flight.
 - **waiting on user** — progress needs an item in Waiting on the user:
   an answer or a merge.
