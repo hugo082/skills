@@ -54,12 +54,12 @@ scripts/evidence --help               # image spec
   check is shown with log evidence to fail on `main` too. Not: checks
   pass locally.
 - **Reviews** — every review comment has a fix or a reply.
-- **History** — after the last change, a `sonnet` sub-agent rewrites the branch
-  into atomic commits, never the main session. Rewrite only the commits
-  after the head of the previous rewrite; with no previous rewrite,
-  start from the merge base. One logical change per commit, with a
-  message that names it. No fixup, WIP, or review-round commits. Push
-  with `--force-with-lease`; the CI check above applies to the
+- **History** — after the last change, a `sonnet` sub-agent rewrites
+  the branch into atomic commits, never the main session. Rewrite only
+  the commits after the head of the previous rewrite; with no previous
+  rewrite, start from the merge base. One logical change per commit,
+  with a message that names it. No fixup, WIP, or review-round commits.
+  Push with `--force-with-lease`; the CI check above applies to the
   rewritten head.
 
 ## Report
