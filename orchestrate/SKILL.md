@@ -45,9 +45,9 @@ This session is the Run's coordinator: Orca wakes it with every
 message to the Run. The planning worktree is the current worktree.
 
 - Prompt `/orchestrate resume <run id>` → `orca orchestration run-use
-  --id <run id>`, then Resume.
+--id <run id>`, then Resume.
 - Any other prompt → the stop gate, then `orca orchestration
-  run-create --objective "<outcome>"`, Set up, and First tasks in Run
+run-create --objective "<outcome>"`, Set up, and First tasks in Run
   tasks.
 
 ## Messages
@@ -60,7 +60,7 @@ message to the Run. The planning worktree is the current worktree.
 - A user message, or a line `<item id>: <answer>` of an `answers`
   message:
   - an answer → log it, then `scripts/send.sh reply <item id>
-    "<answer>"` when the item is an `ask`;
+"<answer>"` when the item is an `ask`;
   - a merge item's new PR state → the PR rules;
   - any other instruction → log it; an input change, applied through
     a Roadmap worker.
@@ -72,10 +72,10 @@ send|reply`; call every other Orca command directly. `send.sh` exit 3
 **Mail-doctor lines** (`scripts/mail-doctor.sh <run id>`):
 
 - `undelivered` to `run:` → `orca orchestration run-use --id <run
-  id>`.
+id>`.
 - `undelivered` to a Dispatch, or `terminal-worker` → `orca
-  orchestration worker-stop` it, then `worker-start --retry-of
-  <dispatch id>` with the same spec.
+orchestration worker-stop` it, then `worker-start --retry-of
+<dispatch id>` with the same spec.
 - `unanswered` → answer it, unless it is in Waiting on the user.
 - `stopped` → send the worker its next step.
 - `stale` → resend it the Run's latest message to it.
@@ -105,7 +105,7 @@ PR and its base. Then apply the PR rules.
    `references/decision-log.tsv` shows the rows. Publish it at the
    document destination like the other documents.
 5. Declare the Run on its worktrees with `scripts/note.sh declare
-   path:<worktree> '<declaration>'`: the planning worktree in every
+path:<worktree> '<declaration>'`: the planning worktree in every
    Report, each task worktree before its first worker starts.
    `references/declaration.json` describes both declarations, with
    examples.
@@ -181,14 +181,14 @@ planning worktree in Orca lineage, git-based on the task's base,
 named after the task, display name `<task id> - <goal>`, linked to
 the task issue, and declared before its first worker starts.
 
-| Worker             | Skill                | Model    | Placement                          | Title                                      |
-| ------------------ | -------------------- | -------- | ---------------------------------- | ------------------------------------------ |
-| Research questions | `research-questions` | `opus`   | planning worktree                  | `<task id> - <topic> - Research questions` |
-| Research           | `research`           | `sonnet` | planning worktree                  | `Research <n>`                             |
-| Roadmap            | `v-slices`           | `opus`   | planning worktree                  | `<tracking issue id> - Roadmap`            |
-| Design             | `program-design`     | `opus`   | task worktree, created if none     | `<task id> - Design`                       |
-| Work               | `work`               | `sonnet` | same task worktree, fresh terminal | `<task id> - Implementation`               |
-| Monitor, operation | none                 | `sonnet` | planning worktree                  | `<task id> - <goal>`                       |
+| Worker             | Skill                | Model              | Placement                          | Title                                      |
+| ------------------ | -------------------- | ------------------ | ---------------------------------- | ------------------------------------------ |
+| Research questions | `research-questions` | `opus`             | planning worktree                  | `<task id> - <topic> - Research questions` |
+| Research           | `research`           | `sonnet`           | planning worktree                  | `Research <n>`                             |
+| Roadmap            | `v-slices`           | `opus`             | planning worktree                  | `<tracking issue id> - Roadmap`            |
+| Design             | `program-design`     | `opus`             | task worktree, created if none     | `<task id> - Design`                       |
+| Work               | `work`               | `sonnet`           | same task worktree, fresh terminal | `<task id> - Implementation`               |
+| Monitor, operation | none                 | `opus` or `sonnet` | planning worktree                  | `<task id> - <goal>`                       |
 
 For First tasks, `<task id>` is the tracking issue's id. A Research
 spec and title name only the research questions path, nothing about
@@ -295,6 +295,7 @@ report; otherwise with one line naming what changed.
 ```
 
 **States:**
+
 - **complete** — done holds and no follow-up is outside the roadmap.
 - **running** — tasks in flight.
 - **waiting on user** — progress needs an item in Waiting on the user:
