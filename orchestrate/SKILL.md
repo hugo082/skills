@@ -14,9 +14,12 @@ diffs, or transcripts.
 
 ## Project context
 
-Before anything else, run `<skill dir>/scripts/overlay.sh orchestrate`.
-Its output, when not empty, overrides this skill's generic tool
-choices.
+Before anything else, run `<skill dir>/scripts/overlay.sh orchestrate
+<planning worktree>`. The overlay it prints overrides this skill's
+generic tool choices. Exit 1 → reply with its error, create nothing,
+and end the turn. Else log `overlay: <path>` or `overlay: none`,
+`tracking entity: <entity>`, and
+`document destination: <destination>`.
 
 ## Read the input
 
@@ -47,8 +50,7 @@ message to the Run. The planning worktree is the current worktree.
 - Prompt `/orchestrate resume <run id>` → `orca orchestration run-use
 --id <run id>`, then Resume.
 - Any other prompt → the stop gate, then `orca orchestration
-run-create --objective "<outcome>"`, Set up, and First tasks in Run
-  tasks.
+run-create --objective "<outcome>"`, then Set up.
 
 ## Messages
 
@@ -95,15 +97,14 @@ PR and its base. Then apply the PR rules.
    needs: orchestration, worktrees and terminals, and the project's
    issue tracker.
 2. Resolve what tracks the Run (issue, project, or milestone): the one
-   given in the input; otherwise create a tracking issue in the
+   given in the input; otherwise a new tracking issue in the
    project's tracker titled after the outcome.
 3. Resolve the document destination: the input or the repo
    convention. None found → ask the user as an input decision.
 4. Decision log: `<planning worktree>/decisions-<run id>.tsv`. Every
    decision in the Run, by you or a worker, including each user
    answer, is one row appended only with `scripts/log-decision.sh`;
-   `references/decision-log.tsv` shows the rows. Publish it at the
-   document destination like the other documents.
+   `references/decision-log.tsv` shows the rows.
 5. Declare the Run on its worktrees with `scripts/note.sh declare
 path:<worktree> '<declaration>'`: the planning worktree in every
    Report, each task worktree before its first worker starts.

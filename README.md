@@ -26,7 +26,7 @@ vpx skills add https://github.com/hugo082/skills --skill orca-wk-task
 
 ## Project overlays
 
-Skills stay tool-agnostic. Per-project knowledge (tracker, logs, conventions) lives outside the skills, in `~/.claude/skill-overlays/<owner>-<repo>/<skill>/SKILL.md`, where `<owner>-<repo>` comes from `git remote get-url origin` (e.g. `~/.claude/skill-overlays/grasp-gg-poc.grasp.gg/orchestrate/SKILL.md`). A skill that supports overlays runs its `scripts/overlay.sh <skill>` first, which prints that file when it exists and nothing otherwise. Supported so far: `orchestrate`.
+Skills stay tool-agnostic. Per-project knowledge (tracker, logs, conventions) lives outside the skills, in `~/.claude/skill-overlays/<owner>-<repo>/<skill>/SKILL.md`, where `<owner>-<repo>` comes from `git remote get-url origin` (e.g. `~/.claude/skill-overlays/grasp-gg-poc.grasp.gg/orchestrate/SKILL.md`). A skill that supports overlays runs its `scripts/overlay.sh <skill> <repo path>` first, which prints `overlay: <file>` and that file when it exists, `overlay: none (<file>)` otherwise, and exits 1 when `<repo path>` is not a git repository with an origin remote. Supported so far: `orchestrate`.
 
 ## Skills index
 
