@@ -2,8 +2,8 @@
 name: work
 description: Implement user-requested software changes, verify the result, and deliver reviewable work. Use when the user asks to implement a feature, fix a bug, refactor code, or complete a task or issue.
 ---
-**Done is a PR with green CI, every review comment answered, and an
-atomic commit history.** A passing local run is not done.
+**Done is a PR with green CI, passing verification, every review
+comment answered, and an atomic commit history.** A passing local run is not done.
 
 **No gates.** Do not wait on a slice label, design document, approval
 record, or workflow status. Use existing plans and designs as context.
@@ -25,7 +25,7 @@ in your first reply.
 
 ## Verify
 
-**Run verification in a** `sonnet` **sub-agent, never in the main session. Use the** `verify` **command.**
+**Run verification in a** `sonnet` **sub-agent, never in the main session. Use the** `verify` **skill.**
 
 **User-visible change → run it in the real app.**
 
@@ -55,6 +55,8 @@ scripts/evidence --help               # image spec
 - **CI** — every check on the PR's head commit is green, or each failing
 check is shown with log evidence to fail on `main` too. Not: checks
 pass locally.
+- **Verification** — every verification step passes on the final
+code, and the evidence image is on the PR.
 - **Reviews** — every review comment has a fix or a reply.
 - **History** — after the last change, a `sonnet` sub-agent rewrites
 the branch into atomic commits, never the main session. Rewrite only
