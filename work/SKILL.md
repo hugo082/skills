@@ -30,6 +30,9 @@ record, or workflow status. Use existing plans and designs as context.
 
 **User-visible change → run it in the real app.**
 
+A verification step cannot run (no signed-in session, missing
+credentials) → ask for what it needs. Never skip it.
+
 1. Capture before screenshots.
 2. Verify the requested behavior.
 3. Review the full feature lifecycle, including hover and focus states.
