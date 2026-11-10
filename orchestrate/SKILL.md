@@ -129,7 +129,8 @@ Each task states:
 - **Deadline** — monitor tasks only.
 
 **Size rule.** A change task is one PR from one worktree, implemented
-in one `work` session, with one design approval.
+in one `work` session, with one design approval. Its real-app
+verification and evidence belong to that PR, never to another task.
 
 **Not yet specified.** Work toward the outcome whose goal or done
 signal cannot be stated yet gets no task: log it with decision `not
@@ -166,7 +167,9 @@ Every task spec carries this contract, addressed to the worker:
   outside your worktree. Answers to your `ask` are already logged.
   `ask` the coordinator only for an **input decision**: one that
   changes the input's outcome, acceptance criteria, exclusions, or
-  constraints, or that is irreversible.
+  constraints, or that is irreversible. A step the skill requires that
+  cannot run is an input decision: `ask` for what it needs; never
+  skip it.
 - **Approval** — where the skill requires user approval, `ask` the
   coordinator; its reply is that approval.
 - **Turns** — wait for CI and other checks inside your turn; end a
