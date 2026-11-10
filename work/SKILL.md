@@ -56,7 +56,7 @@ scripts/evidence --help               # image spec
 check is shown with log evidence to fail on `main` too. Not: checks
 pass locally.
 - **Verification** — every verification step passes on the final
-code, and the evidence image is on the PR.
+code.
 - **Reviews** — every review comment has a fix or a reply.
 - **History** — after the last change, a `sonnet` sub-agent rewrites
 the branch into atomic commits, never the main session. Rewrite only
