@@ -2,9 +2,8 @@
 name: work
 description: Implement user-requested software changes, verify the result, and deliver reviewable work. Use when the user asks to implement a feature, fix a bug, refactor code, or complete a task or issue.
 ---
-
-**Done is a PR with green CI, every review comment answered, and an
-atomic commit history.** A passing local run is not done.
+**Done is a PR with green CI, passing verification, every review
+comment answered, and an atomic commit history.** A passing local run is not done.
 
 **No gates.** Do not wait on a slice label, design document, approval
 record, or workflow status. Use existing plans and designs as context.
@@ -12,9 +11,9 @@ record, or workflow status. Use existing plans and designs as context.
 ## Read the request
 
 - Work item referenced → read its description, discussion, linked
-  context, and dependencies.
+context, and dependencies.
 - Design term with more than one reading → state the reading you build
-  in your first reply.
+in your first reply.
 - Missing information blocks progress → ask. Do not invent it.
 
 **Scope is the request.** Do not expand it to unrelated work.
@@ -26,23 +25,26 @@ record, or workflow status. Use existing plans and designs as context.
 
 ## Verify
 
-**Run verification in a sub-agent, never in the main session.**
+**Run verification in a** `sonnet` **sub-agent, never in the main session. Use the** `verify` **skill.**
 
 **User-visible change → run it in the real app.**
+
+A verification step cannot run (no signed-in session, missing
+credentials) → ask for what it needs. Never skip it.
 
 1. Capture before screenshots.
 2. Verify the requested behavior.
 3. Review the full feature lifecycle, including hover and focus states.
-4. Fix the findings.
+4. Report the findings to the main session.
 5. Capture the final after screenshots.
 
 ## Deliver
 
 - Rebase on the latest `origin/main`, push, and open a PR.
 - PR already merged → never push to its branch. Branch from `main` and
-  open a new PR.
+open a new PR.
 - Post the screenshots on the PR as one annotated image built and pushed
-  with [`scripts/evidence`](scripts/evidence):
+with [`scripts/evidence`](scripts/evidence):
 
 ```bash
 scripts/evidence --help               # image spec
@@ -51,16 +53,18 @@ scripts/evidence --help               # image spec
 ## Finish
 
 - **CI** — every check on the PR's head commit is green, or each failing
-  check is shown with log evidence to fail on `main` too. Not: checks
-  pass locally.
+check is shown with log evidence to fail on `main` too. Not: checks
+pass locally.
+- **Verification** — every verification step passes on the final
+code.
 - **Reviews** — every review comment has a fix or a reply.
 - **History** — after the last change, a `sonnet` sub-agent rewrites
-  the branch into atomic commits, never the main session. Rewrite only
-  the commits after the head of the previous rewrite; with no previous
-  rewrite, start from the merge base. One logical change per commit,
-  with a message that names it. No fixup, WIP, or review-round commits.
-  Push with `--force-with-lease`; the CI check above applies to the
-  rewritten head.
+the branch into atomic commits, never the main session. Rewrite only
+the commits after the head of the previous rewrite; with no previous
+rewrite, start from the merge base. One logical change per commit,
+with a message that names it. No fixup, WIP, or review-round commits.
+Push with `--force-with-lease`; the CI check above applies to the
+rewritten head.
 
 ## Report
 
