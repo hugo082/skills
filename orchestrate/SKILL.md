@@ -158,7 +158,6 @@ Write these into the spec as values, addressed to the worker:
   published with its task log, the log linked from the task's item,
   and, where required, approved; otherwise failed, with the reason in the body. The summary names
   the output location, follow-ups, and any open blocker.
-- **Settings** and the **size rule**.
 
 ### Per worker
 
@@ -192,14 +191,20 @@ Orca wakes this session with every message to the Run. Use
 `scripts/send.sh to|reply` instead of `orca orchestration send|reply`; exit 3 means the recipient was not woken: handle it as
 an `undelivered` line. Call every other Orca command directly.
 
-| Event                                                                 | Action                                                                                                                                                                                                                                           |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `question`                                                            | Answer the `ask`.                                                                                                                                                                                                                                |
-| `worker_done`                                                         | Settlement.                                                                                                                                                                                                                                      |
-| `escalation` with `stopReason`                                        | As a `stopped` line.                                                                                                                                                                                                                             |
-| `tick`                                                                | Its mail-doctor lines, then the PR rules.                                                                                                                                                                                                        |
-| `resume`                                                              | Handle the Run's unread messages and the lines of `scripts/mail-doctor.sh <run id>`; adopt the live workers in `worker-list` (never duplicate them); read the Run log, the tracker's roadmap, and every task PR and its base; then the PR rules. |
-| User message, or a line `<item id>: <answer>` of an `answers` message | An answer → log it, then `scripts/send.sh reply <item id> "<answer>"` when the item is an `ask`. A merge item's new PR state → the PR rules. Any other instruction → log it; an input change goes to a Roadmap worker.                           |
+- `question` → answer the `ask`.
+- `worker_done` → Settlement.
+- `escalation` with `stopReason` → as a `stopped` line.
+- `tick` → its mail-doctor lines.
+- `resume` → handle the Run's unread messages and the lines of
+  `scripts/mail-doctor.sh <run id>`; adopt the live workers in
+  `worker-list` (never duplicate them); read the Run log, the
+  tracker's roadmap, and every task PR and its base.
+- A user message, or a line `<item id>: <answer>` of an `answers`
+  message:
+  - an answer → log it, then `scripts/send.sh reply <item id> "<answer>"`
+    when the item is an `ask`;
+  - any other instruction → log it; an input change goes to a Roadmap
+    worker.
 
 Then start every ready task, and end the turn per End of turn.
 
@@ -207,7 +212,7 @@ Then start every ready task, and end the turn per End of turn.
 
 - `undelivered` to `run:` → `orca orchestration run-use --id <run id>`.
 - `undelivered` to a Dispatch, or `terminal-worker` → `orca orchestration worker-stop` it, then `worker-start --retry-of <dispatch id>` with the same spec.
-- `unanswered` → answer it, unless it is in Waiting on the user.
+- `unanswered` → answer it, unless it is in `waitingOnUser`.
 - `stopped` → send the worker its next step.
 - `stale` → resend it the Run's latest message to it.
 
@@ -217,10 +222,10 @@ before replying.
 - **Approval request** → check it against the input's acceptance
   criteria, exclusions, and constraints, and the Run log.
   Reply approved, or with the required changes.
-- **Input decision** → add it to Waiting on the user with a number,
-  its `ask` message id, a link to what it decides when there is one,
-  and the choices, your recommended answer first. Reply once the
-  user's answer arrives, and log that answer in the Run log too.
+- **Input decision** → add it to `waitingOnUser` in the planning
+  declaration with `scripts/note.sh declare`
+  (`references/declaration.json`). Reply once the user's answer
+  arrives, and log that answer in the Run log too.
 
 **Settlement.**
 
@@ -230,16 +235,6 @@ before replying.
   worker handled its earlier failure → record the blocker on the
   task's item and ask the user as an input decision.
 - Release the worker.
-
-**PR rules.**
-
-- Check open PRs' merge state.
-- On merge: close the task's item, and retarget PRs based on its
-  branch to the default branch.
-- A task's branch merges or gets new commits → a fresh Work session
-  for every open task PR that depends on it, directly or
-  transitively. New review comments on an open task PR → a fresh
-  Work session in its task worktree.
 
 ## End of turn
 
