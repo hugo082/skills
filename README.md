@@ -40,6 +40,6 @@ Skills stay tool-agnostic. Per-project knowledge (tracker, logs, conventions) li
 - [`program-design`](./program-design/) — templates and guidelines for writing program design documents.
 - [`v-slices`](./v-slices/) — split a task into smaller vertical slices.
 - [`work`](./work/) — working on a task via git best practices and repo conventions.
-- [`orchestrate`](./orchestrate/) — user-invoked `/orchestrate`: deliver a detailed input end to end as an Orca coordinator that runs in rounds, each a fresh session; discover and grow a roadmap DAG of tasks (changes, research, monitoring), run non-conflicting tasks in parallel, one PR per implementation session, publishing to the tracker.
+- [`orchestrate`](./orchestrate/) — user-invoked `/orchestrate`: deliver a detailed input end to end as an Orca coordinator; discover and grow a roadmap DAG of tasks (changes, research, monitoring, operations) that lives only as the tracker's state, one Orca worker per task, one PR per implementation worker.
 - [`orca-wk-prd`](./orca-wk-prd/) — user-invoked `/orca:wk:prd`: run the research → PRD → architecture → slices → per-slice design and work pipeline as an Orca coordinator, one supervised session per stage.
 - [`orca-wk-task`](./orca-wk-task/) — user-invoked `/orca:wk:task`: run the research → design → work pipeline for a change that needs no PRD, as an Orca coordinator, one supervised session per stage.
