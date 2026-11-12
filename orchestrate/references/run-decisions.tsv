@@ -1,5 +1,0 @@
-ts	task	decision	why	evidence
-2026-11-02T09:05:00Z	coordinator	overlay: none	no overlay for this repository	overlay.sh output
-2026-11-02T09:14:00Z	Roadmap	split the export into two change tasks, API first then UI	the UI needs the new endpoint deployed before it can be tested	ENG-412 blocks ENG-413
-2026-11-02T09:15:00Z	Roadmap	out of scope: PDF export	the input excludes formats other than CSV	input, Exclusions
-2026-11-02T11:30:00Z	ENG-412 Design	user: keep CSV as the only format for now	asked as an input decision, it changes the exclusions	ENG-412 Design ask

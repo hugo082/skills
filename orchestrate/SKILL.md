@@ -11,7 +11,16 @@ change task, and every task in the roadmap done.**
 only as the tracker's state.** No document, report, comment, or log row
 restates it.
 
-This session writes nothing but Run decision log rows, reads no code,
+Every decision is one row appended with `scripts/log-decision.sh` to
+the decision log of the context it was taken in
+(`references/decisions.tsv`): the **Run log**,
+`<planning worktree>/decisions-<run id>.tsv`, for this session, the
+First tasks, and Roadmap workers; a **task log**,
+`<planning worktree>/tasks/<task id>/decisions.tsv`, for a task's
+workers. A task decision never contradicts the Run log; one that
+would is an input decision.
+
+This session writes nothing but Run log rows, reads no code,
 and runs no build, test, or CI watch. For an approval, read only the
 sections the decision needs.
 
@@ -46,7 +55,7 @@ sections the decision needs.
    3. Resolve the **document destination**: the input, else the repo
       convention. None found → ask the user as an input decision.
    4. Log `overlay: <path | none>`, `tracking entity: <entity>`, and
-      `document destination: <destination>` in the Run decision log.
+      `document destination: <destination>` in the Run log.
    5. Start the First tasks.
 
 ## Roadmap
@@ -67,6 +76,10 @@ nothing else.
 **Not specified.** An item with a goal but no done signal yet,
 blocked by the tasks whose results will specify it. It is never
 ready.
+
+**Out of scope.** Work outside the input's outcome or inside its
+exclusions: log `out of scope: <work>` in the Run log with the reason
+as why.
 
 **Size rule.** A change task is one PR from one worktree, implemented
 in one `work` session, with one design approval. Its real-app
@@ -90,53 +103,31 @@ settled succeeded counts as done.
 branch of the unmerged dependency that contains every other
 dependency; no such branch → no base yet.
 
-## Documents <TODO: on veut pas limiter les documents, juste le decision log, pas sur que ce soit enought pour une section>
+## Workers
 
-| Level | Document          | Written by                   | Location                                                                                                                               |
-| ----- | ----------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Run   | Input, research   | user, Research workers       | destination                                                                                                                            |
-| Run   | Roadmap proposal  | Roadmap worker               | `<planning worktree>/roadmap-<run id>.md`, overwritten by each Roadmap worker, never committed or published                            |
-| Run   | Run decision log  | this session, Roadmap worker | `<planning worktree>/decisions-<run id>.tsv`, published at the destination                                                             |
-| Task  | Design            | Design worker                | destination                                                                                                                            |
-| Task  | Task decision log | the task's workers           | `<planning worktree>/tasks/<task id>/decisions.tsv`, published at the destination beside the task's documents and linked from its item |
-
-A task-level document never contradicts a Run-level one; a decision
-that would is an input decision.
-
-Every decision is one row appended with `scripts/log-decision.sh`, in
-the log of its level: scope, task splits, out of scope, user answers
-to input decisions, and escalated failures in the Run log; how to
-achieve a task in its task log. `references/run-decisions.tsv` and
-`references/task-decisions.tsv` show the rows.
-
-**Out of scope.** Work outside the input's outcome or inside its
-exclusions: log `out of scope: <work>` in the Run log with the reason
-as why.
-
-## Workers <TODO: on est trop strict sur les types de workers & placement. La seule regle sur le placement c'est task code changes est always isolated dans son propre task worktree>
-
-One fresh session per worker. Each task worktree is a child of the
+One fresh session per worker, titled `<task id> - <role>`. A task's
+code changes are always made in its own task worktree: a child of the
 planning worktree in Orca lineage, git-based on the task's base,
 named after the task, display name `<task id> - <goal>`, linked to
 the task's item, and declared with `scripts/note.sh declare path:<worktree> '<task declaration>'` before its first worker starts
 (`references/declaration.json`).
 
-| Worker             | Skill                | Model              | Placement                          | Title                                      |
-| ------------------ | -------------------- | ------------------ | ---------------------------------- | ------------------------------------------ |
-| Research questions | `research-questions` | `opus`             | planning worktree                  | `<task id> - <topic> - Research questions` |
-| Research           | `research`           | `sonnet`           | planning worktree                  | `Research <n>`                             |
-| Roadmap            | `v-slices`           | `opus`             | planning worktree                  | `<tracking entity id> - Roadmap`           |
-| Design             | `program-design`     | `opus`             | task worktree, created if none     | `<task id> - Design`                       |
-| Work               | `work`               | `sonnet`           | same task worktree, fresh terminal | `<task id> - Implementation`               |
-| Monitor, operation | none                 | `opus` or `sonnet` | planning worktree                  | `<task id> - <goal>`                       |
+Default skill and model per need; use another when the task needs it:
+
+| Need               | Skill                | Model              |
+| ------------------ | -------------------- | ------------------ |
+| Research questions | `research-questions` | `opus`             |
+| Research           | `research`           | `sonnet`           |
+| Roadmap            | `v-slices`           | `opus`             |
+| Design             | `program-design`     | `opus`             |
+| Work               | `work`               | `sonnet`           |
+| Monitor, operation | none                 | `opus` or `sonnet` |
 
 - **First tasks** — Research questions, then Research, on the input;
-  then Roadmap. `<task id>` is the tracking entity's id, and their
-  decision log is the Run log.
+  then Roadmap. `<task id>` is the tracking entity's id.
 - **Change** — Design, then Work.
 - **Research** — Research questions, then Research. A Research spec
-  and title name only the research questions path, nothing about the
-  change.
+  names only the research questions path, nothing about the change.
 - **Monitor** — observe the signal until the done signal holds or the
   deadline passes.
 - **Operation** — run the action.
@@ -152,20 +143,20 @@ Write these into the spec as values, addressed to the worker:
 - **Destination** — the exact path, or item for the output.
   Writing it there is an allowed repository change.
 - **Decisions** — take every decision yourself and log each with
-  `<absolute path of scripts/log-decision.sh> <absolute path of your decision log>`; appending to it is an allowed change outside your
+  `<absolute path of scripts/log-decision.sh> <absolute path of your context's decision log>`; appending to it is an allowed change outside your
   worktree. Answers to your `ask` are already logged. `ask` the
   coordinator only for an **input decision**: one that changes the
   input's outcome, acceptance criteria, exclusions, or constraints,
-  contradicts a Run-level document, or is irreversible. A required
+  contradicts the Run log, or is irreversible. A required
   step that cannot run is an input decision: `ask` for what it needs;
   never skip it.
 - **Approval** — where your skill requires user approval, `ask` the
   coordinator; its reply is that approval.
 - **Turns** — wait for CI and other checks inside your turn; end a
   turn only after `ask` or `worker_done`.
-- **Completion** — `worker_done` succeeded once the output and your
-  task decision log are published and, where required, approved;
-  otherwise failed, with the reason in the body. The summary names
+- **Completion** — `worker_done` succeeded once the output is
+  published with its task log, the log linked from the task's item,
+  and, where required, approved; otherwise failed, with the reason in the body. The summary names
   the output location, follow-ups, and any open blocker.
 - **Settings** and the **size rule**.
 
@@ -175,8 +166,8 @@ Write these into the spec as values, addressed to the worker:
   results since the last Roadmap worker, and the tracker's current
   roadmap. Items, relations, and states in the tracker are fixed;
   change an existing one only when a new result requires it, and log
-  why. Run `v-slices` without a confirmation round, writing the
-  roadmap proposal to its location.
+  why. Run `v-slices` without a confirmation round; its roadmap and
+  slices go to the tracker as tasks, and nowhere else.
 
 - **Design** — the input is the confirmed requirements, with no
   confirmation round; the architecture is explicitly waived. Obsolete
@@ -201,14 +192,14 @@ Orca wakes this session with every message to the Run. Use
 `scripts/send.sh to|reply` instead of `orca orchestration send|reply`; exit 3 means the recipient was not woken: handle it as
 an `undelivered` line. Call every other Orca command directly.
 
-| Event                                                                 | Action                                                                                                                                                                                                                                                    |
-| --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `question`                                                            | Answer the `ask`.                                                                                                                                                                                                                                         |
-| `worker_done`                                                         | Settlement.                                                                                                                                                                                                                                               |
-| `escalation` with `stopReason`                                        | As a `stopped` line.                                                                                                                                                                                                                                      |
-| `tick`                                                                | Its mail-doctor lines, then the PR rules.                                                                                                                                                                                                                 |
-| `resume`                                                              | Handle the Run's unread messages and the lines of `scripts/mail-doctor.sh <run id>`; adopt the live workers in `worker-list` (never duplicate them); read the Run decision log, the tracker's roadmap, and every task PR and its base; then the PR rules. |
-| User message, or a line `<item id>: <answer>` of an `answers` message | An answer → log it, then `scripts/send.sh reply <item id> "<answer>"` when the item is an `ask`. A merge item's new PR state → the PR rules. Any other instruction → log it; an input change goes to a Roadmap worker.                                    |
+| Event                                                                 | Action                                                                                                                                                                                                                                           |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `question`                                                            | Answer the `ask`.                                                                                                                                                                                                                                |
+| `worker_done`                                                         | Settlement.                                                                                                                                                                                                                                      |
+| `escalation` with `stopReason`                                        | As a `stopped` line.                                                                                                                                                                                                                             |
+| `tick`                                                                | Its mail-doctor lines, then the PR rules.                                                                                                                                                                                                        |
+| `resume`                                                              | Handle the Run's unread messages and the lines of `scripts/mail-doctor.sh <run id>`; adopt the live workers in `worker-list` (never duplicate them); read the Run log, the tracker's roadmap, and every task PR and its base; then the PR rules. |
+| User message, or a line `<item id>: <answer>` of an `answers` message | An answer → log it, then `scripts/send.sh reply <item id> "<answer>"` when the item is an `ask`. A merge item's new PR state → the PR rules. Any other instruction → log it; an input change goes to a Roadmap worker.                           |
 
 Then start every ready task, and end the turn per End of turn.
 
@@ -224,7 +215,7 @@ Then start every ready task, and end the turn per End of turn.
 before replying.
 
 - **Approval request** → check it against the input's acceptance
-  criteria, exclusions, and constraints, and the Run decision log.
+  criteria, exclusions, and constraints, and the Run log.
   Reply approved, or with the required changes.
 - **Input decision** → add it to Waiting on the user with a number,
   its `ask` message id, a link to what it decides when there is one,
@@ -258,7 +249,7 @@ Before ending a turn in a Run:
 - Every closed task item with no live worker has its PR merged or
   closed and its task worktree removed.
 - Every acceptance criterion covered by a change task.
-- The Run decision log published at the destination with every row.
+- The Run log published at the destination with every row.
 - State complete → `scripts/tick.sh stop <run id>`; otherwise
   `scripts/tick.sh start <run id> <planning worktree>` and
   `scripts/compact.sh <run id> 8`.
