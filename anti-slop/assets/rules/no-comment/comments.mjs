@@ -8,17 +8,17 @@ import { fileURLToPath } from "node:url";
 
 const USAGE = `Usage: comments.mjs [scope] [mode] [options]
 
+Prints one line per comment group, grouped by file: line, kind, owner symbol,
+prose line count, text. The lint rule with addedSince is the gate; this script
+is the inventory and the cleanup.
+
 Scope (one):
   --diff <ref>     Comments on lines added since the merge base of <ref> and HEAD,
                    including uncommitted and untracked files.
-  --staged         Comments on lines added in the index.
   <path>...        Every comment under these paths.
 
 Mode:
-  (default)        Inventory: one line per comment group, grouped by file.
-  --check          Exit 1 when the scope holds a rejected comment, or an added
-                   directive that disables no-comments.
-  --fix            Delete rejected comments under <path>... (not with --diff or --staged).
+  --fix            Delete rejected comments under <path>... (not with --diff).
 
 Options:
   --all                Also list directives and license headers in the inventory.
@@ -28,17 +28,8 @@ Options:
   --oxlint <bin>       Oxlint binary. Defaults to OXLINT_BIN, then oxlint or vite-plus from the repository.`;
 
 const PLUGIN_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const ALLOWED = new Set(["directive", "jsdoc-public", "license", "marker"]);
 const HIDDEN_BY_DEFAULT = new Set(["directive", "license"]);
 const SOURCE = /\.(?:[cm]?[jt]sx?|vue|svelte|astro)$/u;
-const DISABLES_NO_COMMENTS = /(?:eslint|oxlint)-disable(?:-next-line|-line)?(?:\s+([^*]*))?/u;
-const GUIDANCE = {
-  "in-body": "make the code say it (rename, extract, type); the reason goes in the commit or PR",
-  module: "delete, or name an external constraint with a marker",
-  banner: "delete; split the file or name the parts",
-  "jsdoc-private": "JSDoc is for the public API only",
-  "jsdoc-oversized": "shorten to the contract; rationale goes in the commit, PR or design docs",
-};
 
 function parseArguments(argv) {
   const parsed = {
@@ -46,9 +37,7 @@ function parseArguments(argv) {
     ignores: [],
     width: 160,
     all: false,
-    check: false,
     fix: false,
-    staged: false,
   };
   for (let index = 0; index < argv.length; index++) {
     const argument = argv[index];
@@ -58,8 +47,6 @@ function parseArguments(argv) {
       return next;
     };
     if (argument === "--diff") parsed.diff = value();
-    else if (argument === "--staged") parsed.staged = true;
-    else if (argument === "--check") parsed.check = true;
     else if (argument === "--fix") parsed.fix = true;
     else if (argument === "--all") parsed.all = true;
     else if (argument === "--options") parsed.options = JSON.parse(value());
@@ -72,11 +59,9 @@ function parseArguments(argv) {
     } else if (argument.startsWith("--")) fail(`unknown option ${argument}`);
     else parsed.paths.push(argument);
   }
-  const scopes = [parsed.diff !== undefined, parsed.staged, parsed.paths.length > 0].filter(
-    Boolean,
-  ).length;
-  if (scopes !== 1) fail("give exactly one scope: --diff <ref>, --staged, or paths");
-  if (parsed.fix && parsed.paths.length === 0) fail("--fix takes paths, not --diff or --staged");
+  if ((parsed.diff !== undefined) === parsed.paths.length > 0)
+    fail("give exactly one scope: --diff <ref> or paths");
+  if (parsed.fix && parsed.paths.length === 0) fail("--fix takes paths, not --diff");
   return parsed;
 }
 
@@ -112,7 +97,7 @@ function viaPackage(require, name) {
   }
 }
 
-function addedLines(root, diffArguments, untracked) {
+function addedLines(root, base, untracked) {
   const added = new Map();
   let file;
   for (const line of git(root, [
@@ -120,41 +105,36 @@ function addedLines(root, diffArguments, untracked) {
     "-U0",
     "--no-color",
     "--no-ext-diff",
-    ...diffArguments,
+    "--src-prefix=a/",
+    "--dst-prefix=b/",
+    base,
   ]).split("\n")) {
     if (line.startsWith("+++ ")) {
       file = line === "+++ /dev/null" ? undefined : line.slice(6);
-      if (file) added.set(file, { lines: new Set(), text: [] });
+      if (file) added.set(file, new Set());
       continue;
     }
     const hunk = /^@@ -\S+ \+(\d+)(?:,(\d+))? @@/u.exec(line);
     if (hunk && file) {
       const start = Number(hunk[1]);
       const count = hunk[2] === undefined ? 1 : Number(hunk[2]);
-      for (let offset = 0; offset < count; offset++) added.get(file).lines.add(start + offset);
-      continue;
+      for (let offset = 0; offset < count; offset++) added.get(file).add(start + offset);
     }
-    if (file && line.startsWith("+")) added.get(file).text.push(line.slice(1));
   }
   for (const path of untracked) {
-    const text = readFileSync(join(root, path), "utf8").split("\n");
-    added.set(path, { lines: new Set(text.map((_, index) => index + 1)), text });
+    const count = readFileSync(join(root, path), "utf8").split("\n").length;
+    added.set(path, new Set(Array.from({ length: count }, (_, index) => index + 1)));
   }
   return added;
 }
 
 function scopeOf(root, parsed) {
   if (parsed.paths.length > 0) return { files: parsed.paths, added: null };
-  let diffArguments;
-  let untracked = [];
-  if (parsed.staged) diffArguments = ["--cached"];
-  else {
-    diffArguments = [git(root, ["merge-base", parsed.diff, "HEAD"]).trim()];
-    untracked = git(root, ["ls-files", "--others", "--exclude-standard"])
-      .split("\n")
-      .filter((path) => SOURCE.test(path));
-  }
-  const added = addedLines(root, diffArguments, untracked);
+  const base = git(root, ["merge-base", parsed.diff, "HEAD"]).trim();
+  const untracked = git(root, ["ls-files", "--others", "--exclude-standard"])
+    .split("\n")
+    .filter((path) => SOURCE.test(path));
+  const added = addedLines(root, base, untracked);
   const files = [...added.keys()].filter(
     (path) => SOURCE.test(path) && existsSync(join(root, path)),
   );
@@ -214,26 +194,10 @@ function toEntries(diagnostics) {
 
 function inScope(entry, added) {
   if (!added) return true;
-  const lines = added.get(entry.file)?.lines;
+  const lines = added.get(entry.file);
   if (!lines) return false;
   for (let line = entry.line; line <= entry.endLine; line++) if (lines.has(line)) return true;
   return false;
-}
-
-function addedDisables(added) {
-  const found = [];
-  for (const [file, { text }] of added ?? []) {
-    for (const line of text) {
-      const match = DISABLES_NO_COMMENTS.exec(line);
-      if (!match) continue;
-      const rules = (match[1] ?? "")
-        .split(/[\s,]+/u)
-        .filter((rule) => rule !== "" && rule !== "--");
-      if (rules.length === 0 || rules.some((rule) => rule.endsWith("no-comments")))
-        found.push(`${file}: ${line.trim()}`);
-    }
-  }
-  return found;
 }
 
 function truncate(text, width) {
@@ -287,25 +251,10 @@ function main() {
         );
   entries.sort((left, right) => left.file.localeCompare(right.file) || left.line - right.line);
 
-  if (!parsed.check) {
-    printInventory(
-      entries.filter((entry) => parsed.all || !HIDDEN_BY_DEFAULT.has(entry.kind)),
-      parsed.width,
-    );
-    return;
-  }
-
-  const rejected = entries.filter((entry) => !ALLOWED.has(entry.kind));
-  const disables = addedDisables(added);
-  for (const entry of rejected) {
-    const owner = entry.owner === "" ? "" : ` (${entry.owner})`;
-    console.log(
-      `${entry.file}:${entry.line} ${entry.kind}${owner}: ${GUIDANCE[entry.kind] ?? "delete"}`,
-    );
-  }
-  for (const disable of disables)
-    console.log(`${disable}: do not disable no-comments; delete the comment instead`);
-  if (rejected.length > 0 || disables.length > 0) process.exit(1);
+  printInventory(
+    entries.filter((entry) => parsed.all || !HIDDEN_BY_DEFAULT.has(entry.kind)),
+    parsed.width,
+  );
 }
 
 main();

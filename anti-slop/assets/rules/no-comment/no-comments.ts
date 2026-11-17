@@ -1,9 +1,35 @@
+import { resolve } from "node:path";
+
 import { defineRule } from "@oxlint/plugins";
 
 import type { Fixer, SourceCode } from "@oxlint/plugins";
 
 import { classifyComments, parseOptions } from "./classify.ts";
 import type { CommentGroup, CommentKind } from "./classify.ts";
+
+const DISABLES_NO_COMMENTS = /(?:eslint|oxlint)-disable(?:-next-line|-line)?(?:\s+([^*]*))?/u;
+
+function disablesNoComments(comment: string): boolean {
+  const match = DISABLES_NO_COMMENTS.exec(comment);
+  if (!match) return false;
+  const rules = (match[1] ?? "").split(/[\s,]+/u).filter((rule) => rule !== "" && rule !== "--");
+  return rules.length === 0 || rules.some((rule) => rule.endsWith("no-comments"));
+}
+
+type AddedSince = { readonly lines: ReadonlySet<number> } | { readonly error: string };
+
+function addedSinceOf(option: unknown, filename: string): AddedSince | undefined {
+  if (typeof option !== "object" || option === null || !("addedSince" in option)) return undefined;
+  const value = option.addedSince;
+  if (typeof value !== "object" || value === null) return undefined;
+  if ("error" in value && typeof value.error === "string") return { error: value.error };
+  if (!("lines" in value) || typeof value.lines !== "object" || value.lines === null)
+    return undefined;
+  const lines: unknown = Reflect.get(value.lines, resolve(filename));
+  return {
+    lines: new Set(Array.isArray(lines) ? lines.filter((line) => typeof line === "number") : []),
+  };
+}
 
 const MESSAGE_BY_KIND: Partial<Record<CommentKind, string>> = {
   "in-body": "inBody",
@@ -12,6 +38,11 @@ const MESSAGE_BY_KIND: Partial<Record<CommentKind, string>> = {
   "jsdoc-private": "jsdocPrivate",
   "jsdoc-oversized": "jsdocOversized",
 };
+
+function touches(added: ReadonlySet<number>, first: number, last: number): boolean {
+  for (let line = first; line <= last; line++) if (added.has(line)) return true;
+  return false;
+}
 
 function removalRange(sourceCode: SourceCode, group: CommentGroup): [number, number] {
   const text = sourceCode.text;
@@ -48,6 +79,8 @@ export const noCommentsRule = defineRule({
         "Shorten this JSDoc to {{max}} lines of contract (what `{{owner}}` takes, returns, throws). Move rationale and history to the commit, PR or design docs.",
       inventory: "{{kind}}\t{{owner}}\t{{lines}}\t{{span}}\t{{text}}",
       remove: "Delete the comment.",
+      disable: "Do not disable no-comments. Delete the comment instead.",
+      addedSince: "Cannot read the lines added since `addedSince`: {{error}}",
     },
     schema: [
       {
@@ -57,6 +90,17 @@ export const noCommentsRule = defineRule({
           jsdoc: { enum: ["public", "none"] },
           maxJsdocLines: { type: "integer", minimum: 0 },
           inventory: { type: "boolean" },
+          addedSince: {
+            type: "object",
+            properties: {
+              lines: {
+                type: "object",
+                additionalProperties: { type: "array", items: { type: "integer" } },
+              },
+              error: { type: "string" },
+            },
+            additionalProperties: false,
+          },
         },
         additionalProperties: false,
       },
@@ -73,6 +117,17 @@ export const noCommentsRule = defineRule({
           "inventory" in option &&
           option.inventory === true;
         const sourceCode = context.sourceCode;
+        const addedSince = inventory ? undefined : addedSinceOf(option, context.physicalFilename);
+        if (addedSince && "error" in addedSince) {
+          context.report({
+            loc: { start: { line: 1, column: 0 }, end: { line: 1, column: 0 } },
+            messageId: "addedSince",
+            data: { error: addedSince.error },
+          });
+          return;
+        }
+        const added = addedSince?.lines;
+        if (added?.size === 0) return;
 
         for (const group of classifyComments(sourceCode, options)) {
           const loc = {
@@ -91,6 +146,15 @@ export const noCommentsRule = defineRule({
                 text: group.text,
               },
             });
+            continue;
+          }
+          if (added && !touches(added, loc.start.line, loc.end.line)) continue;
+          if (
+            added &&
+            group.kind === "directive" &&
+            disablesNoComments(sourceCode.text.slice(group.start, group.end))
+          ) {
+            context.report({ loc, messageId: "disable" });
             continue;
           }
           const messageId = MESSAGE_BY_KIND[group.kind];
