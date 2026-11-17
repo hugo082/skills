@@ -24,6 +24,12 @@ vpx skills add https://github.com/hugo082/skills --skill orca-wk-prd
 vpx skills add https://github.com/hugo082/skills --skill orca-wk-task
 ```
 
+### `anti-slop`
+
+```text
+Install anti-slop rules in this repository: run `vpx skills use hugo082/skills@anti-slop` and follow the instructions. Do not add the skill to this repository.
+```
+
 ## Project overlays
 
 Skills stay tool-agnostic. Per-project knowledge (tracker, logs, conventions) lives outside the skills, in `~/.claude/skill-overlays/<owner>-<repo>/<skill>/SKILL.md`, where `<owner>-<repo>` comes from `git remote get-url origin` (e.g. `~/.claude/skill-overlays/grasp-gg-poc.grasp.gg/orchestrate/SKILL.md`). A skill that supports overlays runs its `scripts/overlay.sh <skill> <repo path>` first, which prints `overlay: <file>` and that file when it exists, `overlay: none (<file>)` otherwise, and exits 1 when `<repo path>` is not a git repository with an origin remote. Supported so far: `orchestrate`.
@@ -43,3 +49,4 @@ Skills stay tool-agnostic. Per-project knowledge (tracker, logs, conventions) li
 - [`orchestrate`](./orchestrate/) — user-invoked `/orchestrate`: deliver a detailed input end to end as an Orca coordinator; discover and grow a roadmap DAG of tasks (changes, research, monitoring, operations) that lives only as the tracker's state, one Orca worker per task, one PR per implementation worker.
 - [`orca-wk-prd`](./orca-wk-prd/) — user-invoked `/orca:wk:prd`: run the research → PRD → architecture → slices → per-slice design and work pipeline as an Orca coordinator, one supervised session per stage.
 - [`orca-wk-task`](./orca-wk-task/) — user-invoked `/orca:wk:task`: run the research → design → work pipeline for a change that needs no PRD, as an Orca coordinator, one supervised session per stage.
+- [`anti-slop`](./anti-slop/) — install and update anti-slop in a repository: upstream dmmulroy/anti-slop through its own skill, plus our overlay (the `no-comments` rule, its comment inventory and diff gate, and a Haiku comment reviewer). Run it from the installing session; it is never added to a repository.
