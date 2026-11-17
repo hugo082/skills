@@ -58,6 +58,9 @@ pass locally.
 - **Verification** — every verification step passes on the final
 code.
 - **Reviews** — every review comment has a fix or a reply.
+- **Comments** — repo has a `comment-reviewer` agent → run it on the
+final diff; every `DELETE` and `MUST KILL` is fixed, every `UNSURE` is
+verified or deleted.
 - **History** — after the last change, a `sonnet` sub-agent rewrites
 the branch into atomic commits, never the main session. Rewrite only
 the commits after the head of the previous rewrite; with no previous
