@@ -4,12 +4,14 @@
 # Reads the Stop hook input on stdin. Blocks with a reason when:
 #   - the message has no "**State:** <state>" line with a known state;
 #   - a state other than "not started" lacks a report section;
-#   - the state is "running" and no background task or session cron can wake the session.
+#   - the state is "running" and no background task is in flight;
+#   - the state is "scheduled" and no session cron is pending.
 set -euo pipefail
 
 input=$(cat)
 msg=$(jq -r '.last_assistant_message // ""' <<<"$input")
-wakers=$(jq '(.background_tasks // [] | length) + (.session_crons // [] | length)' <<<"$input")
+tasks=$(jq '.background_tasks // [] | length' <<<"$input")
+crons=$(jq '.session_crons // [] | length' <<<"$input")
 
 block() {
 	jq -nc --arg reason "$1" '{decision: "block", reason: $reason}'
@@ -18,8 +20,8 @@ block() {
 
 state=$(printf '%s\n' "$msg" | sed -nE 's/^\*\*State:\*\* *(.*[^ ]) *$/\1/p' | tail -n 1)
 case "$state" in
-	complete | running | "waiting on user" | blocked | "not started") ;;
-	*) block "End the turn with the report from the orchestrate skill's End of turn: its **State:** line must be complete, running, waiting on user, blocked, or not started." ;;
+	complete | running | scheduled | "waiting on user" | blocked | "not started") ;;
+	*) block "End the turn with the report from the orchestrate skill's End of turn: its **State:** line must be complete, running, scheduled, waiting on user, blocked, or not started." ;;
 esac
 
 if [ "$state" != "not started" ]; then
@@ -31,7 +33,10 @@ if [ "$state" != "not started" ]; then
 	[ "${#missing[@]}" -eq 0 ] || block "The report is missing: $(IFS=','; printf '%s' "${missing[*]}" | sed 's/,/, /g'). Rewrite it per the orchestrate skill's End of turn."
 fi
 
-if [ "$state" = running ] && [ "$wakers" -eq 0 ]; then
+if [ "$state" = running ] && [ "$tasks" -eq 0 ]; then
 	block "State is running but no worker is in flight. Start every ready task, or report the State that holds."
+fi
+if [ "$state" = scheduled ] && [ "$crons" -eq 0 ]; then
+	block "State is scheduled but no measurement is scheduled. Schedule each open monitor task's next measurement, or report the State that holds."
 fi
 exit 0

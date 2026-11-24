@@ -71,7 +71,9 @@ may read code and run commands and operations.
 
 **Resume.** Read the Run log, the tracker's roadmap, every task
 worktree, and every task PR and its base. Start a fresh worker for
-every task whose worker was live, in its existing worktree.
+every task whose worker was live, in its existing worktree. Schedule
+every open monitor task's next measurement; one already due → start
+its Monitor worker.
 
 ## Roadmap
 
@@ -83,7 +85,7 @@ grouped per the grouping setting. Its item states:
   it.
 - **Covers** — change: the acceptance criteria it covers. Research,
   monitor, operation: the question, signal, or action.
-- **Deadline** — monitor only.
+- **Measure at** — monitor only: the time of each measurement.
 
 A dependency of B on A is a relation "A blocks B" in the tracker, and
 nothing else.
@@ -105,8 +107,9 @@ verification and evidence belong to that PR, never to another task.
 - **Change** — its PR is merged into the default branch and its item
   closed.
 - **Research** — the research is published.
-- **Monitor** — the done signal is recorded on the item before the
-  deadline; deadline passed → failed with the last observation.
+- **Monitor** — a measurement records the done signal on the item; the
+  last Measure at passed without it → failed with the last
+  observation.
 - **Operation** — the done signal is recorded on the item. All scripts are attached to its item.
 
 **Ready.** Every task blocking it is done and, destination inside the
@@ -143,11 +146,15 @@ Default skill and model per need; use another when the task needs it:
 - **Change** — Design, then Work.
 - **Research** — Research questions, then Research. A Research spec
   names only the research questions path, nothing about the change.
-- **Monitor** — observe the signal until the done signal holds or the
-  deadline passes.
+- **Monitor** — one Monitor worker per measurement.
 - **Operation** — run the action.
 
-Start every ready task.
+Start every ready task. A ready monitor task starts by scheduling its
+first measurement.
+
+**Schedule a measurement.** `CronCreate` with `recurring: false`, a
+cron expression pinned to the task's next Measure at, never on minute
+`:00` or `:30`, and the prompt `orchestrate: measure <task id>`.
 
 ### Every spec
 
@@ -194,7 +201,9 @@ Write these into the spec as values, addressed to the worker:
 - **Work** — rebase on the task's base, not the default branch, and
   target the PR at it; link the PR to the task's item. Merge only
   when the merge policy says so and the base is the default branch.
-- **Monitor, operation** — record the result on the task's item.
+- **Monitor** — measure the signal once and record the observation on
+  the task's item.
+- **Operation** — record the result on the task's item.
 
 Run a Roadmap worker, one at a time, with every result that arrived
 meanwhile, after:
@@ -209,6 +218,7 @@ meanwhile, after:
 - A worker's final message:
   - `needs-input` → answer it.
   - `done` or `failed` → Settlement.
+- `orchestrate: measure <task id>` → start that task's Monitor worker.
 - A user message, or a line `<n>: <answer>` answering item `<n>` of
   Waiting on the user:
   - an answer → log it, then reply to the worker that asked;
@@ -233,6 +243,9 @@ log, then reply with `SendMessage` to that worker.
 - A Roadmap worker fails, or a task fails again after a Roadmap
   worker handled its earlier failure → record the blocker on the
   task's item and ask the user as an input decision.
+- A Monitor worker settles without the done signal → schedule the
+  next Measure at; none left → the task failed with the last
+  observation.
 
 ## End of turn
 
@@ -248,7 +261,7 @@ End every turn with the report:
 ```
 ## <outcome>
 
-**State:** complete | running | waiting on user | blocked
+**State:** complete | running | scheduled | waiting on user | blocked
 **Roadmap:** <link to the tracking entity>
 
 ### Waiting on the user
@@ -263,6 +276,8 @@ End every turn with the report:
 - **complete** — done holds, no not specified item is open, and every
   follow-up is in the roadmap or logged out of scope.
 - **running** — workers in flight.
+- **scheduled** — no worker in flight; every open task waits for a
+  scheduled measurement. The report names the next one and its time.
 - **waiting on user** — progress needs an item in Waiting on the user:
   an answer or a merge.
 - **blocked** — no task can progress without an unresolved blocker.
