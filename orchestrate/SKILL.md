@@ -1,7 +1,16 @@
 ---
 name: orchestrate
-description: Deliver a detailed input end to end as the Orca coordinator of one Run. Researches the system, discovers a roadmap DAG of tasks, and grows it as tasks settle; runs each task in its own Orca worker, one PR per implementation worker; the roadmap lives only as the tracker's state.
+description: Deliver a detailed input end to end as the coordinator of one Run. Researches the system, discovers a roadmap DAG of tasks, and grows it as tasks settle; runs each task in a background subagent working in the task's own worktree, one PR per implementation task; the roadmap lives only as the tracker's state.
 disable-model-invocation: true
+hooks:
+  Stop:
+    - hooks:
+        - type: command
+          command: '"${CLAUDE_SKILL_DIR:-$HOME/.claude/skills/orchestrate}"/scripts/stop-check.sh'
+  PreCompact:
+    - hooks:
+        - type: command
+          command: "echo 'Keep verbatim: the last orchestrate report; the planning worktree, tracking entity, document destination, and Run log; every live worker with its subagent ID, task id, role, and worktree; every needs-input awaiting a reply, with the ID of the worker that asked.'"
 ---
 
 **Done is every acceptance criterion in the input covered by a merged
@@ -14,20 +23,25 @@ restates it.
 Every decision is one row appended with `scripts/log-decision.sh` to
 the decision log of the context it was taken in
 (`references/decisions.tsv`): the **Run log**,
-`<planning worktree>/decisions-<run id>.tsv`, for this session, the
-First tasks, and Roadmap workers; a **task log**,
+`<planning worktree>/decisions-<tracking entity id>.tsv`, for this
+session, the First tasks, and Roadmap workers; a **task log**,
 `<planning worktree>/tasks/<task id>/decisions.tsv`, for a task's
 workers. A task decision never contradicts the Run log; one that
 would is an input decision.
 
-This session writes nothing but Run log rows, reads no code,
-and runs no build, test, or CI watch. For an approval, read only the
-sections the decision needs.
+`log-decision.sh` prints `rows: <n>`. Run log over 50 rows, with no
+First-task or Roadmap worker live → a `haiku` worker rewrites it with
+one row per decision still in force and appends every removed row to
+`<planning worktree>/decisions-<tracking entity id>.archive.tsv`.
+
+This session changes no repository file other than the Run log. It
+may read code and run commands and operations.
 
 ## Start
 
 1. Run `<skill dir>/scripts/overlay.sh orchestrate <planning worktree>`; the planning worktree is the current worktree. Exit 1
-   → reply with its error, create nothing, and end the turn.
+   → reply with its error and `**State:** not started`, create
+   nothing, and end the turn.
    Precedence, highest first: the user's prompt and the input; changes
    a human made in the tracker; the overlay; this skill.
 2. **Stop gate.** The input (a document, issue, or prompt) states:
@@ -37,26 +51,27 @@ sections the decision needs.
    - **Constraints** — systems, contracts, data, and environments to
      respect.
 
-   Any item missing → reply with the missing items, create nothing (no
-   Run, item, worktree, or document), and end the turn. Do not
-   interview the user to fill them.
+   Any item missing → reply with the missing items and
+   `**State:** not started`, create nothing (no item, worktree, or
+   document), and end the turn. Do not interview the user to fill them.
 
 3. **Settings**, from the input, else the default:
    - **Merge policy** — who merges PRs. Default: the user.
    - **Grouping** — how tasks are grouped in the tracker. Default:
      none.
-4. Prompt `/orchestrate resume <run id>` → `orca orchestration run-use --id <run id>`, then handle a `resume` event. Any other prompt →
-   `orca orchestration run-create --objective "<outcome>"`, then:
-   1. Run `orca skills list` and load the Orca skills for
-      orchestration, worktrees and terminals, and the project's
-      tracker.
-   2. Resolve the **tracking entity**: the one the input gives, else a new item titled after the
+4. Prompt `/orchestrate resume <tracking entity>` → Resume. Any other
+   prompt:
+   1. Resolve the **tracking entity**: the one the input gives, else a new item titled after the
       outcome.
-   3. Resolve the **document destination**: the input, else the repo
+   2. Resolve the **document destination**: the input, else the repo
       convention. None found → ask the user as an input decision.
-   4. Log `overlay: <path | none>`, `tracking entity: <entity>`, and
+   3. Log `overlay: <path | none>`, `tracking entity: <entity>`, and
       `document destination: <destination>` in the Run log.
-   5. Start the First tasks.
+   4. Start the First tasks.
+
+**Resume.** Read the Run log, the tracker's roadmap, every task
+worktree, and every task PR and its base. Start a fresh worker for
+every task whose worker was live, in its existing worktree.
 
 ## Roadmap
 
@@ -105,12 +120,12 @@ dependency; no such branch → no base yet.
 
 ## Workers
 
-One fresh session per worker, titled `<task id> - <role>`. A task's
-code changes are always made in its own task worktree: a child of the
-planning worktree in Orca lineage, git-based on the task's base,
-named after the task, display name `<task id> - <goal>`, linked to
-the task's item, and declared with `scripts/note.sh declare path:<worktree> '<task declaration>'` before its first worker starts
-(`references/declaration.json`).
+A worker is a background subagent, described `<task id> - <role>`,
+started on the model below with a spec that names its skill. A task's
+code changes are always made in its own task worktree,
+`<planning worktree>/.worktrees/<task id>`, ignored by git, on a branch
+named after the task and based on the task's base, created before its
+first worker starts.
 
 Default skill and model per need; use another when the task needs it:
 
@@ -138,26 +153,30 @@ Start every ready task.
 
 Write these into the spec as values, addressed to the worker:
 
+- **Skill** — invoke `<skill>`.
+- **Worktree** — the task worktree's absolute path; work only there.
 - **Precedence** — this spec overrides the project overlay, which
   overrides your skill.
 - **Destination** — the exact path, or item for the output.
   Writing it there is an allowed repository change.
 - **Decisions** — take every decision yourself and log each with
   `<absolute path of scripts/log-decision.sh> <absolute path of your context's decision log>`; appending to it is an allowed change outside your
-  worktree. Answers to your `ask` are already logged. `ask` the
-  coordinator only for an **input decision**: one that changes the
-  input's outcome, acceptance criteria, exclusions, or constraints,
-  contradicts the Run log, or is irreversible. A required
-  step that cannot run is an input decision: `ask` for what it needs;
-  never skip it.
-- **Approval** — where your skill requires user approval, `ask` the
-  coordinator; its reply is that approval.
-- **Turns** — wait for CI and other checks inside your turn; end a
-  turn only after `ask` or `worker_done`.
-- **Completion** — `worker_done` succeeded once the output is
-  published with its task log, the log linked from the task's item,
-  and, where required, approved; otherwise failed, with the reason in the body. The summary names
-  the output location, follow-ups, and any open blocker.
+  worktree. Answers to your `needs-input` are already logged. Ask
+  only for an **input decision**: one that changes the input's
+  outcome, acceptance criteria, exclusions, or constraints,
+  contradicts the Run log, or is irreversible. A required step that
+  cannot run is an input decision: ask for what it needs; never skip
+  it.
+- **Asking** — end your turn with a final message whose first line is
+  `needs-input: <question>`; the reply resumes you.
+- **Approval** — where your skill requires user approval, ask for it;
+  the reply is that approval.
+- **Turns** — wait for CI and other checks inside your turn.
+- **Completion** — end with a final message whose first line is
+  `done` once the output is published with its task log, the log
+  linked from the task's item, and, where required, approved;
+  otherwise `failed: <reason>`. The rest names the output location,
+  follow-ups, and any open blocker.
 
 ### Per worker
 
@@ -187,72 +206,44 @@ meanwhile, after:
 
 ## Events
 
-Orca wakes this session with every message to the Run. Use
-`scripts/send.sh to|reply` instead of `orca orchestration send|reply`; exit 3 means the recipient was not woken: handle it as
-an `undelivered` line. Call every other Orca command directly.
-
-- `question` → answer the `ask`.
-- `worker_done` → Settlement.
-- `escalation` with `stopReason` → as a `stopped` line.
-- `tick` → its mail-doctor lines.
-- `resume` → handle the Run's unread messages and the lines of
-  `scripts/mail-doctor.sh <run id>`; adopt the live workers in
-  `worker-list` (never duplicate them); read the Run log, the
-  tracker's roadmap, and every task PR and its base.
-- A user message, or a line `<item id>: <answer>` of an `answers`
-  message:
-  - an answer → log it, then `scripts/send.sh reply <item id> "<answer>"`
-    when the item is an `ask`;
+- A worker's final message:
+  - `needs-input` → answer it.
+  - `done` or `failed` → Settlement.
+- A user message, or a line `<n>: <answer>` answering item `<n>` of
+  Waiting on the user:
+  - an answer → log it, then reply to the worker that asked;
   - any other instruction → log it; an input change goes to a Roadmap
     worker.
 
 Then start every ready task, and end the turn per End of turn.
 
-**Mail-doctor lines** (`scripts/mail-doctor.sh <run id>`):
-
-- `undelivered` to `run:` → `orca orchestration run-use --id <run id>`.
-- `undelivered` to a Dispatch, or `terminal-worker` → `orca orchestration worker-stop` it, then `worker-start --retry-of <dispatch id>` with the same spec.
-- `unanswered` → answer it, unless it is in `waitingOnUser`.
-- `stopped` → send the worker its next step.
-- `stale` → resend it the Run's latest message to it.
-
-**Answer an `ask`.** Log the answer in the asking worker's task log
-before replying.
+**Answer a `needs-input`.** Log the answer in the asking worker's task
+log, then reply with `SendMessage` to that worker.
 
 - **Approval request** → check it against the input's acceptance
   criteria, exclusions, and constraints, and the Run log.
   Reply approved, or with the required changes.
-- **Input decision** → add it to `waitingOnUser` in the planning
-  declaration with `scripts/note.sh declare`
-  (`references/declaration.json`). Reply once the user's answer
-  arrives, and log that answer in the Run log too.
+- **Input decision** → add it to Waiting on the user. Reply once the
+  user's answer arrives, and log that answer in the Run log too.
 
 **Settlement.**
 
-- Output missing at its destination → dispatch a fresh worker once
+- Output missing at its destination → start a fresh worker once
   with the same inputs; missing again → failed.
 - A Roadmap worker fails, or a task fails again after a Roadmap
   worker handled its earlier failure → record the blocker on the
   task's item and ask the user as an input decision.
-- Release the worker.
 
 ## End of turn
 
 Before ending a turn in a Run:
 
-- Every settled worker released; no reclaimable terminal.
 - Every closed task item with no live worker has its PR merged or
   closed and its task worktree removed.
 - Every acceptance criterion covered by a change task.
 - The Run log published at the destination with every row.
-- State complete → `scripts/tick.sh stop <run id>`; otherwise
-  `scripts/tick.sh start <run id> <planning worktree>` and
-  `scripts/compact.sh <run id> 8`.
 
-Write the report with `scripts/note.sh text path:<planning worktree> "<report>"`, and declare the planning worktree with `scripts/note.sh declare` and the report's State, Waiting on the user, and Blockers
-(`references/declaration.json`). One of these three differs from the
-previous planning declaration → end the turn with the report;
-otherwise with one line naming what changed.
+End every turn with the report:
 
 ```
 ## <outcome>
@@ -261,7 +252,7 @@ otherwise with one line naming what changed.
 **Roadmap:** <link to the tracking entity>
 
 ### Waiting on the user
-<questions, and PRs to merge, bases first, or "none">
+<numbered questions, and PRs to merge, bases first; an item keeps its number across reports; or "none">
 
 ### Blockers
 <each unresolved blocker, or "none">
@@ -271,7 +262,7 @@ otherwise with one line naming what changed.
 
 - **complete** — done holds, no not specified item is open, and every
   follow-up is in the roadmap or logged out of scope.
-- **running** — tasks in flight.
+- **running** — workers in flight.
 - **waiting on user** — progress needs an item in Waiting on the user:
   an answer or a merge.
 - **blocked** — no task can progress without an unresolved blocker.

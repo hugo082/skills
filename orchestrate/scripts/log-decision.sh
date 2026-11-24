@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Append a row to the orchestrate decision log (TSV).
 # Usage: log-decision.sh <logfile> <task> <decision> <why> <evidence>
+# Prints "rows: <n>", the log's row count without the header.
 set -euo pipefail
 
 usage() {
@@ -34,3 +35,5 @@ printf '%s\t%s\t%s\t%s\t%s\n' \
 	"$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
 	"$(clean "$1")" "$(clean "$2")" "$(clean "$3")" "$(clean "$4")" \
 	>> "$logfile"
+
+printf 'rows: %s\n' "$(($(wc -l < "$logfile") - 1))"
