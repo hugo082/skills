@@ -164,8 +164,61 @@
         color: var(--dim);
       }
       .detail {
-        white-space: pre-wrap;
         margin: 10px 0 0;
+        overflow-wrap: anywhere;
+      }
+      .detail > :first-child {
+        margin-top: 0;
+      }
+      .detail > :last-child {
+        margin-bottom: 0;
+      }
+      .detail p,
+      .detail ul,
+      .detail ol,
+      .detail pre,
+      .detail blockquote,
+      .detail table {
+        margin: 0 0 8px;
+      }
+      .detail ul,
+      .detail ol {
+        padding-left: 22px;
+      }
+      .detail h1,
+      .detail h2,
+      .detail h3,
+      .detail h4 {
+        font:
+          600 14px/1.4 system-ui,
+          sans-serif;
+        text-transform: none;
+        letter-spacing: 0;
+        color: var(--text);
+        display: block;
+        margin: 12px 0 6px;
+      }
+      .detail pre {
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 8px 10px;
+        overflow-x: auto;
+      }
+      .detail pre code {
+        background: none;
+        padding: 0;
+      }
+      .detail blockquote {
+        border-left: 3px solid var(--line);
+        padding-left: 10px;
+        color: var(--dim);
+      }
+      .detail th,
+      .detail td {
+        padding: 4px 8px;
+        border: 1px solid var(--line);
+        text-align: left;
       }
       code {
         font: 12.5px var(--mono);
@@ -392,6 +445,8 @@
     <header id="top"></header>
     <main id="main"><p class="empty">Connecting…</p></main>
     <div class="batch" id="batch" hidden></div>
+    <script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/lib/marked.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
     <script>
       const drafts = {};
       let data = null;
@@ -412,6 +467,25 @@
             /(https?:\/\/[^\s<]+[^\s<.,;:)\]])/g,
             '<a href="$1" target="_blank" rel="noreferrer">$1</a>',
           );
+      const markdown = window.marked && window.DOMPurify;
+      if (markdown)
+        DOMPurify.addHook("afterSanitizeAttributes", (node) => {
+          if (node.tagName === "A") {
+            node.setAttribute("target", "_blank");
+            node.setAttribute("rel", "noreferrer");
+          }
+        });
+      const md = (s) =>
+        markdown
+          ? DOMPurify.sanitize(marked.parse(String(s ?? ""), { gfm: true, breaks: true }))
+          : rich(s).replace(/\n/g, "<br>");
+      const mdInline = (s) =>
+        markdown ? DOMPurify.sanitize(marked.parseInline(String(s ?? ""), { gfm: true })) : rich(s);
+      const plain = (s) => {
+        const el = document.createElement("div");
+        el.innerHTML = mdInline(s);
+        return el.textContent;
+      };
       const ago = (iso) => {
         const s = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 1000));
         return s < 45
@@ -511,9 +585,9 @@
 		</div>`;
         }
         return `<article class="card${p ? " done" : d ? " ready" : ""}" style="--c:${c}">
-		<div class="head"><span class="n">#${w.n}</span><span class="title">${esc(w.title)}</span><span class="tag">${esc(w.task)} · ${w.kind === "merge" ? "PR to merge" : `asked by ${esc(w.worker)}`}</span></div>
+		<div class="head"><span class="n">#${w.n}</span><span class="title">${mdInline(w.title)}</span><span class="tag">${esc(w.task)} · ${w.kind === "merge" ? "PR to merge" : `asked by ${esc(w.worker)}`}</span></div>
 		${w.kind === "merge" ? prRow(w) : ""}
-		${w.detail ? `<div class="detail">${rich(w.detail)}</div>` : ""}
+		${w.detail ? `<div class="detail">${md(w.detail)}</div>` : ""}
 		${body}
 	</article>`;
       }
@@ -529,7 +603,7 @@
         }
         top.innerHTML = `
 		<span class="pill" style="--c:${color(s.state)}">${esc(s.state)}</span>
-		<span class="outcome">${esc(s.outcome)}</span>
+		<span class="outcome">${mdInline(s.title)}</span>
 		<span class="meta"><a href="${esc(s.roadmap)}" target="_blank" rel="noreferrer">roadmap ↗</a>
 		<span>${esc(s.run.trackingEntity)}</span><span>updated ${ago(s.updatedAt)}</span>
 		<span id="link" class="${link === "live" ? "" : "off"}"><span class="dot"></span>${link}</span></span>`;
@@ -544,8 +618,11 @@
 			</section>
 		</div>
 		<div>
+			<section><h2><span>Outcome</span></h2>
+				<article class="card"><div class="detail">${md(s.outcome)}</div></article>
+			</section>
 			<section><h2><span>Blockers</span><span>${s.blockers.length}</span></h2>
-				${s.blockers.length ? s.blockers.map((b) => `<article class="card" style="--c:var(--blocked)"><div class="head"><span class="title">${esc(b.title)}</span>${b.task ? `<span class="tag">${esc(b.task)}</span>` : ""}</div>${b.detail ? `<div class="detail">${rich(b.detail)}</div>` : ""}</article>`).join("") : `<p class="empty">none</p>`}
+				${s.blockers.length ? s.blockers.map((b) => `<article class="card" style="--c:var(--blocked)"><div class="head"><span class="title">${mdInline(b.title)}</span>${b.task ? `<span class="tag">${esc(b.task)}</span>` : ""}</div>${b.detail ? `<div class="detail">${md(b.detail)}</div>` : ""}</article>`).join("") : `<p class="empty">none</p>`}
 			</section>
 			<section><h2><span>Workers</span><span>${s.workers.length}</span></h2>
 				${rows(s.workers, (w) => `<tr><td class="k">${esc(w.task)}</td><td>${esc(w.role)}<br><span class="tag">${esc(w.worktree)}</span></td></tr>`)}
@@ -569,7 +646,7 @@
         const s = data?.state;
         const waiting = s ? s.waiting.filter(open).length : 0;
         document.title = s
-          ? `${waiting ? `(${waiting}) ` : ""}${s.state} · ${s.outcome}`
+          ? `${waiting ? `(${waiting}) ` : ""}${s.state} · ${plain(s.title)}`
           : "orchestrate";
       }
 

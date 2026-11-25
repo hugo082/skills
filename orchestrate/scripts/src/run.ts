@@ -27,6 +27,7 @@ import {
 import { basename, join } from "node:path";
 
 type RunState = {
+  title: string;
   outcome: string;
   state: "running" | "scheduled" | "waiting on user" | "blocked" | "complete";
   roadmap: string;

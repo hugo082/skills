@@ -4,12 +4,18 @@
   "description": "The coordinator's published state of one Run, piped into run.js state publish. The status page renders it; the Stop hook checks it each turn.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["outcome", "state", "roadmap", "run", "waiting", "blockers", "workers", "scheduled"],
+  "required": ["title", "outcome", "state", "roadmap", "run", "waiting", "blockers", "workers", "scheduled"],
   "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60,
+      "description": "The Run's name in a few words, the status page's heading; inline Markdown."
+    },
     "outcome": {
       "type": "string",
       "minLength": 1,
-      "description": "The input's outcome: what changes for whom."
+      "description": "The input's outcome: what changes for whom; Markdown."
     },
     "state": {
       "enum": ["running", "scheduled", "waiting on user", "blocked", "complete"],
@@ -74,12 +80,12 @@
           "title": {
             "type": "string",
             "minLength": 1,
-            "description": "The question, or the PR's subject, in one line."
+            "description": "The question, or the PR's subject, in one line; inline Markdown."
           },
           "detail": {
             "type": "string",
             "minLength": 1,
-            "description": "The worker's question in full, the context needed to answer it, each option and its consequences."
+            "description": "The worker's question in full, the context needed to answer it, each option and its consequences; Markdown."
           },
           "worker": {
             "type": "string",
@@ -134,8 +140,8 @@
         "required": ["title"],
         "properties": {
           "task": { "type": "string", "minLength": 1, "description": "The blocked task's id." },
-          "title": { "type": "string", "minLength": 1, "description": "The blocker in one line." },
-          "detail": { "type": "string", "minLength": 1, "description": "What unblocks it." }
+          "title": { "type": "string", "minLength": 1, "description": "The blocker in one line; inline Markdown." },
+          "detail": { "type": "string", "minLength": 1, "description": "What unblocks it; Markdown." }
         }
       }
     },

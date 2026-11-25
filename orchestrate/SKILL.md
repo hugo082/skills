@@ -280,7 +280,8 @@ current directory:
   refuses.
 
 The Run state follows `references/state.schema.json`; each field's
-description says what it holds. The status page shows each merge
+description says what it holds. Write fields marked Markdown in
+GitHub-flavored Markdown: lists, code, links, and emphasis. The status page shows each merge
 item's PR state; the user answers a merge item with `PR merged`,
 `PR closed`, `PR in the merge queue`, or their own text.
 
