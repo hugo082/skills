@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>orchestrate</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0d0f12;
+        --panel: #15181d;
+        --line: #252a32;
+        --text: #d8dde4;
+        --dim: #7c8594;
+        --faint: #4a515c;
+        --running: #5aa9ff;
+        --scheduled: #b48cff;
+        --waiting: #ffb547;
+        --blocked: #ff6b6b;
+        --complete: #4fd38a;
+        --pr-open: #3fb950;
+        --pr-draft: #8b949e;
+        --pr-queue: #d29922;
+        --pr-merged: #a371f7;
+        --pr-closed: #f85149;
+        --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          color-scheme: light;
+          --bg: #f4f5f7;
+          --panel: #fff;
+          --line: #e2e5ea;
+          --text: #1b1f24;
+          --dim: #626b78;
+          --faint: #a4abb5;
+          --running: #1f6fd1;
+          --scheduled: #7a4fd6;
+          --waiting: #b26b00;
+          --blocked: #d23c3c;
+          --complete: #1d9a55;
+          --pr-open: #1a7f37;
+          --pr-draft: #59636e;
+          --pr-queue: #9a6700;
+          --pr-merged: #8250df;
+          --pr-closed: #cf222e;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          14px/1.5 system-ui,
+          -apple-system,
+          sans-serif;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px 20px;
+        padding: 12px 20px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+      }
+      .pill {
+        font: 600 12px var(--mono);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 4px 10px;
+        border-radius: 4px;
+        color: var(--bg);
+        background: var(--c);
+      }
+      .outcome {
+        font-weight: 600;
+        font-size: 15px;
+        flex: 1 1 300px;
+      }
+      .meta {
+        font: 12px var(--mono);
+        color: var(--dim);
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .meta a {
+        color: var(--dim);
+      }
+      .dot {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--complete);
+        margin-right: 6px;
+        vertical-align: 1px;
+      }
+      .off .dot {
+        background: var(--blocked);
+      }
+      main {
+        display: grid;
+        grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+        gap: 20px;
+        padding: 20px 20px 96px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+      @media (max-width: 900px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+      }
+      h2 {
+        font: 600 11px var(--mono);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--dim);
+        margin: 0 0 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+      section + section {
+        margin-top: 24px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--c, var(--line));
+        border-radius: 6px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+      }
+      .card.done {
+        opacity: 0.55;
+      }
+      .card.ready {
+        border-color: color-mix(in srgb, var(--waiting) 45%, var(--line));
+        border-left-color: var(--waiting);
+      }
+      .head {
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+      }
+      .n {
+        font: 700 13px var(--mono);
+        color: var(--c);
+      }
+      .title {
+        font-weight: 600;
+        flex: 1;
+      }
+      .tag {
+        font: 11px var(--mono);
+        color: var(--dim);
+      }
+      .detail {
+        white-space: pre-wrap;
+        margin: 10px 0 0;
+      }
+      code {
+        font: 12.5px var(--mono);
+        background: var(--line);
+        padding: 1px 4px;
+        border-radius: 3px;
+      }
+      a {
+        color: var(--running);
+      }
+      .answer {
+        margin-top: 12px;
+        display: grid;
+        gap: 8px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 64px;
+        resize: vertical;
+        font: 13px/1.45 var(--mono);
+        color: var(--text);
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 8px 10px;
+      }
+      textarea:focus {
+        outline: 1px solid var(--waiting);
+        border-color: var(--waiting);
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+      }
+      button {
+        font: 600 12px var(--mono);
+        padding: 6px 12px;
+        border-radius: 4px;
+        border: 1px solid var(--line);
+        background: var(--bg);
+        color: var(--text);
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: var(--dim);
+      }
+      button.recommended {
+        border-color: color-mix(in srgb, var(--complete) 55%, var(--line));
+      }
+      .rec {
+        margin-left: 8px;
+        padding: 1px 6px;
+        border-radius: 3px;
+        font: 600 10px var(--mono);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--bg);
+        background: var(--complete);
+      }
+      button.picked {
+        border-color: var(--waiting);
+        color: var(--waiting);
+      }
+      button.primary {
+        background: var(--waiting);
+        border-color: var(--waiting);
+        color: var(--bg);
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      button.link {
+        border: 0;
+        background: none;
+        padding: 6px 4px;
+        font-weight: 400;
+        color: var(--dim);
+        text-decoration: underline dotted;
+        text-underline-offset: 3px;
+      }
+      button.link:hover {
+        color: var(--text);
+      }
+      .sent {
+        margin-top: 10px;
+        font: 12px var(--mono);
+        color: var(--complete);
+        white-space: pre-wrap;
+      }
+      .pr {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--bg);
+      }
+      .pr a {
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 600;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .pr a:hover {
+        text-decoration: underline;
+      }
+      .pr .num {
+        font-weight: 400;
+        color: var(--dim);
+      }
+      .pr-icon {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 9px;
+        border-radius: 999px;
+        border: 0;
+        font:
+          600 12px system-ui,
+          sans-serif;
+        color: #fff;
+        background: var(--pc);
+      }
+      .pr-icon svg {
+        width: 14px;
+        height: 14px;
+      }
+      .pr-icon.checking svg {
+        animation: pulse 1s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        50% {
+          opacity: 0.35;
+        }
+      }
+      .pr-open {
+        --pc: var(--pr-open);
+      }
+      .pr-draft {
+        --pc: var(--pr-draft);
+      }
+      .pr-queue {
+        --pc: var(--pr-queue);
+      }
+      .pr-merged {
+        --pc: var(--pr-merged);
+      }
+      .pr-closed {
+        --pc: var(--pr-closed);
+      }
+      .pr-unknown {
+        --pc: var(--faint);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      td {
+        padding: 8px 12px;
+        border-top: 1px solid var(--line);
+        vertical-align: top;
+      }
+      tr:first-child td {
+        border-top: 0;
+      }
+      td.k {
+        font: 12px var(--mono);
+        color: var(--dim);
+        white-space: nowrap;
+      }
+      .empty {
+        color: var(--faint);
+        font: 12px var(--mono);
+        padding: 10px 0;
+      }
+      .wrap {
+        overflow-x: auto;
+      }
+      .batch {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+        background: var(--panel);
+        border-top: 1px solid var(--line);
+        font: 12px var(--mono);
+      }
+      .batch .count {
+        flex: 1;
+        color: var(--dim);
+      }
+      .batch .count b {
+        color: var(--waiting);
+      }
+      .batch .err {
+        color: var(--blocked);
+      }
+      .hint {
+        color: var(--faint);
+      }
+    </style>
+  </head>
+  <body>
+    <header id="top"></header>
+    <main id="main"><p class="empty">Connecting…</p></main>
+    <div class="batch" id="batch" hidden></div>
+    <script>
+      const drafts = {};
+      let data = null;
+      let link = "live";
+      let error = "";
+      let sending = false;
+
+      const esc = (s) =>
+        String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
+        );
+      const rich = (s) =>
+        esc(s)
+          .replace(/`([^`\n]+)`/g, "<code>$1</code>")
+          .replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>")
+          .replace(
+            /(https?:\/\/[^\s<]+[^\s<.,;:)\]])/g,
+            '<a href="$1" target="_blank" rel="noreferrer">$1</a>',
+          );
+      const ago = (iso) => {
+        const s = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 1000));
+        return s < 45
+          ? "just now"
+          : s < 3600
+            ? `${Math.round(s / 60)} min ago`
+            : s < 86400
+              ? `${Math.round(s / 3600)} h ago`
+              : `${Math.round(s / 86400)} d ago`;
+      };
+      const until = (iso) => {
+        const s = Math.round((Date.parse(iso) - Date.now()) / 1000);
+        return s <= 0
+          ? "due"
+          : s < 3600
+            ? `in ${Math.max(1, Math.round(s / 60))} min`
+            : s < 86400
+              ? `in ${Math.round(s / 3600)} h`
+              : `in ${Math.round(s / 86400)} d`;
+      };
+      const time = (iso) =>
+        new Date(iso).toLocaleString([], { weekday: "short", hour: "2-digit", minute: "2-digit" });
+      const color = (s) => `var(--${{ "waiting on user": "waiting" }[s] ?? s})`;
+
+      // GitHub Octicons for a pull request's state (MIT, github.com/primer/octicons).
+      const PR = {
+        open: [
+          "Open",
+          "pr-open",
+          "M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25Zm5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354ZM3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0Z",
+        ],
+        draft: [
+          "Draft",
+          "pr-draft",
+          "M3.25 1A2.25 2.25 0 0 1 4 5.372v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.251 2.251 0 0 1 3.25 1Zm9.5 14a2.25 2.25 0 1 1 0-4.5 2.25 2.25 0 0 1 0 4.5ZM2.5 3.25a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0ZM3.25 12a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm9.5 0a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5ZM14 7.5a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0Zm0-4.25a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0Z",
+        ],
+        "merge queue": [
+          "Queued",
+          "pr-queue",
+          "M3.75 4.5a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5ZM3 7.75a.75.75 0 0 1 1.5 0v2.878a2.251 2.251 0 1 1-1.5 0Zm.75 5.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm5-7.75a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0Zm5.75 2.5a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-1.5 0a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Z",
+        ],
+        merged: [
+          "Merged",
+          "pr-merged",
+          "M5.45 5.154A4.25 4.25 0 0 0 9.25 7.5h1.378a2.251 2.251 0 1 1 0 1.5H9.25A5.734 5.734 0 0 1 5 7.123v3.505a2.25 2.25 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.95-.218ZM4.25 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm8.5-4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM5 3.25a.75.75 0 1 0 0 .005V3.25Z",
+        ],
+        closed: [
+          "Closed",
+          "pr-closed",
+          "M3.25 1A2.25 2.25 0 0 1 4 5.372v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.251 2.251 0 0 1 3.25 1Zm9.5 5.5a.75.75 0 0 1 .75.75v3.378a2.251 2.251 0 1 1-1.5 0V7.25a.75.75 0 0 1 .75-.75Zm-2.03-5.273a.75.75 0 0 1 1.06 0l.97.97.97-.97a.748.748 0 0 1 1.265.332.75.75 0 0 1-.205.729l-.97.97.97.97a.751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018l-.97-.97-.97.97a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734l.97-.97-.97-.97a.75.75 0 0 1 0-1.06ZM2.5 3.25a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0ZM3.25 12a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm9.5 0a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Z",
+        ],
+      };
+
+      const PR_ANSWERS = {
+        "merge queue": "PR in the merge queue",
+        merged: "PR merged",
+        closed: "PR closed",
+      };
+      const mergeAnswer = (w) => PR_ANSWERS[data.prs[w.url]?.state] ?? "PR merged";
+      const expanded = new Set();
+      const latest = (w) => data.messages.filter((m) => m.item === w.n).at(-1);
+      const open = (w) => latest(w)?.status !== "open";
+      const ready = () =>
+        data?.state ? data.state.waiting.filter((w) => open(w) && drafts[w.n]?.trim()) : [];
+
+      function prRow(w) {
+        const pr = data.prs[w.url];
+        const checking = data.checking.includes(w.url);
+        const [label, cls, path] = pr ? PR[pr.state] : ["Unknown", "pr-unknown", PR.open[2]];
+        return `<div class="pr">
+		<button class="pr-icon ${cls}${checking ? " checking" : ""}" data-refresh="${esc(w.url)}" title="${checking ? "Checking…" : "Check again"}"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="${path}"/></svg>${label}</button>
+		<a href="${esc(w.url)}" target="_blank" rel="noreferrer">${pr ? `${esc(pr.title)} <span class="num">${esc(pr.repo)}#${pr.number}</span>` : esc(w.url)}</a>
+	</div>`;
+      }
+
+      function item(w) {
+        const m = latest(w);
+        const p = m?.status === "open" ? m : null;
+        const d = drafts[w.n]?.trim();
+        const c = p ? "var(--complete)" : "var(--waiting)";
+        let body;
+        if (p)
+          body = `<div class="sent">✓ ${esc(p.body)}\n  ${p.readAt ? `read by the orchestrator ${ago(p.readAt)}` : `sent ${ago(p.createdAt)} · not read yet`}</div>`;
+        else {
+          const choices = w.kind === "merge" ? [mergeAnswer(w)] : (w.options ?? []);
+          const custom =
+            !choices.length || expanded.has(String(w.n)) || (d && !choices.includes(d));
+          const hint =
+            w.kind === "merge" && w.url in data.prs && !data.prs[w.url]
+              ? `<span class="hint">gh could not read this PR</span>`
+              : "";
+          body = `<div class="answer">
+			<div class="row">${choices.map((o) => `<button data-pick="${w.n}" data-value="${esc(o)}" class="${d === o ? "picked" : ""}${o === w.recommended ? " recommended" : ""}">${esc(o)}${o === w.recommended ? `<span class="rec">recommended</span>` : ""}</button>`).join("")}
+				${choices.length && !custom ? `<button class="link" data-custom="${w.n}">Custom answer…</button>` : ""}${hint}</div>
+			${custom ? `<textarea data-draft="${w.n}" placeholder="Your answer…"></textarea>` : ""}
+			${m ? `<div class="hint">Your answer “${esc(m.body)}” was handled ${ago(m.updatedAt)}; the orchestrator kept this open.</div>` : ""}
+		</div>`;
+        }
+        return `<article class="card${p ? " done" : d ? " ready" : ""}" style="--c:${c}">
+		<div class="head"><span class="n">#${w.n}</span><span class="title">${esc(w.title)}</span><span class="tag">${esc(w.task)} · ${w.kind === "merge" ? "PR to merge" : `asked by ${esc(w.worker)}`}</span></div>
+		${w.kind === "merge" ? prRow(w) : ""}
+		${w.detail ? `<div class="detail">${rich(w.detail)}</div>` : ""}
+		${body}
+	</article>`;
+      }
+
+      function render() {
+        const s = data?.state;
+        const top = document.getElementById("top");
+        const main = document.getElementById("main");
+        if (!s) {
+          top.innerHTML = `<span class="outcome">orchestrate</span>`;
+          main.innerHTML = `<p class="empty">No state published yet.</p>`;
+          return;
+        }
+        top.innerHTML = `
+		<span class="pill" style="--c:${color(s.state)}">${esc(s.state)}</span>
+		<span class="outcome">${esc(s.outcome)}</span>
+		<span class="meta"><a href="${esc(s.roadmap)}" target="_blank" rel="noreferrer">roadmap ↗</a>
+		<span>${esc(s.run.trackingEntity)}</span><span>updated ${ago(s.updatedAt)}</span>
+		<span id="link" class="${link === "live" ? "" : "off"}"><span class="dot"></span>${link}</span></span>`;
+        const rows = (list, f) =>
+          list.length
+            ? `<div class="wrap"><table>${list.map(f).join("")}</table></div>`
+            : `<p class="empty">none</p>`;
+        main.innerHTML = `
+		<div>
+			<section><h2><span>Waiting on you</span><span>${s.waiting.filter(open).length}</span></h2>
+				${s.waiting.length ? s.waiting.map(item).join("") : `<p class="empty">Nothing needs you right now.</p>`}
+			</section>
+		</div>
+		<div>
+			<section><h2><span>Blockers</span><span>${s.blockers.length}</span></h2>
+				${s.blockers.length ? s.blockers.map((b) => `<article class="card" style="--c:var(--blocked)"><div class="head"><span class="title">${esc(b.title)}</span>${b.task ? `<span class="tag">${esc(b.task)}</span>` : ""}</div>${b.detail ? `<div class="detail">${rich(b.detail)}</div>` : ""}</article>`).join("") : `<p class="empty">none</p>`}
+			</section>
+			<section><h2><span>Workers</span><span>${s.workers.length}</span></h2>
+				${rows(s.workers, (w) => `<tr><td class="k">${esc(w.task)}</td><td>${esc(w.role)}<br><span class="tag">${esc(w.worktree)}</span></td></tr>`)}
+			</section>
+			<section><h2><span>Scheduled</span><span>${s.scheduled.length}</span></h2>
+				${rows(s.scheduled, (m) => `<tr><td class="k">${esc(m.task)}</td><td>${time(m.at)} <span class="tag">${until(m.at)}</span></td></tr>`)}
+			</section>
+			<section><h2><span>Run</span></h2>
+				${rows(Object.entries(s.run), ([k, v]) => `<tr><td class="k">${esc(k)}</td><td><code>${esc(v)}</code></td></tr>`)}
+			</section>
+		</div>`;
+      }
+
+      function renderBatch() {
+        const bar = document.getElementById("batch");
+        const n = ready().length;
+        const asks = data?.state ? data.state.waiting.filter(open).length : 0;
+        bar.hidden = !asks;
+        bar.innerHTML = `<span class="count"><b>${n}</b> of ${asks} answer${asks === 1 ? "" : "s"} ready${error ? ` · <span class="err">${esc(error)}</span>` : ""}</span>
+		<span class="hint">⌘↵</span><button class="primary" data-send ${!n || sending ? "disabled" : ""}>${sending ? "Sending…" : `Send ${n || ""} answer${n === 1 ? "" : "s"}`}</button>`;
+        const s = data?.state;
+        const waiting = s ? s.waiting.filter(open).length : 0;
+        document.title = s
+          ? `${waiting ? `(${waiting}) ` : ""}${s.state} · ${s.outcome}`
+          : "orchestrate";
+      }
+
+      function paint() {
+        const active = document.activeElement;
+        const key = active?.dataset?.draft;
+        const sel = key ? [active.selectionStart, active.selectionEnd] : null;
+        render();
+        for (const el of document.querySelectorAll("[data-draft]"))
+          el.value = drafts[el.dataset.draft] ?? "";
+        if (key) {
+          const el = document.querySelector(`[data-draft="${key}"]`);
+          if (el) {
+            el.focus();
+            el.setSelectionRange(...sel);
+          }
+        }
+        renderBatch();
+      }
+
+      async function post(path, body) {
+        const res = await fetch(path, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body ?? {}),
+        });
+        if (!res.ok)
+          throw new Error((await res.json().catch(() => ({}))).error ?? `HTTP ${res.status}`);
+      }
+
+      async function sendAll() {
+        const list = ready().map((w) => ({ n: w.n, answer: drafts[w.n].trim() }));
+        if (!list.length || sending) return;
+        sending = true;
+        error = "";
+        renderBatch();
+        try {
+          await post("/api/answers", { answers: list });
+          for (const a of list) {
+            delete drafts[a.n];
+            expanded.delete(String(a.n));
+          }
+        } catch (e) {
+          error = e.message;
+        }
+        sending = false;
+        paint();
+      }
+
+      async function refreshPr(url) {
+        if (!data.checking.includes(url)) data.checking.push(url);
+        paint();
+        try {
+          const res = await fetch("/api/prs/refresh", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ url }),
+          });
+          if (res.ok) data.prs[url] = (await res.json()).pr;
+        } catch {}
+        data.checking = data.checking.filter((u) => u !== url);
+        paint();
+      }
+
+      document.addEventListener("input", (e) => {
+        const key = e.target?.dataset?.draft;
+        if (!key) return;
+        drafts[key] = e.target.value;
+        e.target.closest(".card")?.classList.toggle("ready", !!e.target.value.trim());
+        for (const b of e.target.closest(".card")?.querySelectorAll("[data-pick]") ?? [])
+          b.classList.toggle("picked", b.dataset.value === e.target.value.trim());
+        renderBatch();
+      });
+      document.addEventListener("click", (e) => {
+        const pick = e.target.closest("[data-pick]");
+        if (pick) {
+          const n = pick.dataset.pick;
+          drafts[n] = drafts[n]?.trim() === pick.dataset.value ? "" : pick.dataset.value;
+          return paint();
+        }
+        const custom = e.target.closest("[data-custom]");
+        if (custom) {
+          expanded.add(custom.dataset.custom);
+          paint();
+          return document.querySelector(`[data-draft="${custom.dataset.custom}"]`)?.focus();
+        }
+        if (e.target.closest("[data-send]")) return sendAll();
+        const refresh = e.target.closest("[data-refresh]");
+        if (refresh) refreshPr(refresh.dataset.refresh);
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+          e.preventDefault();
+          sendAll();
+        }
+      });
+
+      const es = new EventSource("/api/events");
+      const setLink = (st) => {
+        link = st;
+        const el = document.getElementById("link");
+        if (el) {
+          el.className = st === "live" ? "" : "off";
+          el.lastChild.textContent = st;
+        }
+      };
+      es.addEventListener("state", (e) => {
+        data = JSON.parse(e.data);
+        setLink("live");
+        paint();
+      });
+      es.addEventListener("error", () => setLink("reconnecting"));
+      setInterval(() => data && paint(), 30000);
+    </script>
+  </body>
+</html>

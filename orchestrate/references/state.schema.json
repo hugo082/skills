@@ -1,0 +1,205 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "orchestrate Run state",
+  "description": "The coordinator's published state of one Run, piped into run.js state publish. The status page renders it; the Stop hook checks it each turn.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["outcome", "state", "roadmap", "run", "waiting", "blockers", "workers", "scheduled"],
+  "properties": {
+    "outcome": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The input's outcome: what changes for whom."
+    },
+    "state": {
+      "enum": ["running", "scheduled", "waiting on user", "blocked", "complete"],
+      "description": "The Run's state, per the skill's States."
+    },
+    "roadmap": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Link to the tracking entity."
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trackingEntity", "planningWorktree", "runLog", "documentDestination"],
+      "description": "The Run's settings, resolved at Start.",
+      "properties": {
+        "trackingEntity": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The tracking entity's id."
+        },
+        "planningWorktree": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Absolute path of the planning worktree."
+        },
+        "runLog": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Absolute path of the Run log."
+        },
+        "documentDestination": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Where documents are published; unresolved until the user answers."
+        },
+        "mergePolicy": { "type": "string", "minLength": 1, "description": "Who merges PRs." }
+      }
+    },
+    "waiting": {
+      "type": "array",
+      "description": "Every input decision awaiting the user and every PR for the user to merge, bases first.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["n", "kind", "task", "title"],
+        "properties": {
+          "n": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "The item's number. It keeps it until it is answered; the user answers with `<n>: <answer>`."
+          },
+          "kind": {
+            "enum": ["question", "merge"],
+            "description": "question: an input decision. merge: a PR for the user to merge."
+          },
+          "task": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The task id the item belongs to."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The question, or the PR's subject, in one line."
+          },
+          "detail": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The worker's question in full, the context needed to answer it, each option and its consequences."
+          },
+          "worker": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The subagent ID of the worker that asked."
+          },
+          "options": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1 },
+            "description": "Short answers the user can pick."
+          },
+          "recommended": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The option you recommend; one of options."
+          },
+          "url": { "type": "string", "pattern": "^https://", "description": "The PR's link." }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "kind": { "const": "question" } } },
+            "then": { "required": ["detail", "worker"], "not": { "required": ["url"] } }
+          },
+          {
+            "if": { "properties": { "kind": { "const": "merge" } } },
+            "then": {
+              "required": ["url"],
+              "not": {
+                "anyOf": [
+                  { "required": ["options"] },
+                  { "required": ["recommended"] },
+                  { "required": ["worker"] }
+                ]
+              }
+            }
+          },
+          {
+            "if": { "required": ["options"] },
+            "then": { "required": ["recommended"] }
+          }
+        ]
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "description": "Every unresolved blocker.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title"],
+        "properties": {
+          "task": { "type": "string", "minLength": 1, "description": "The blocked task's id." },
+          "title": { "type": "string", "minLength": 1, "description": "The blocker in one line." },
+          "detail": { "type": "string", "minLength": 1, "description": "What unblocks it." }
+        }
+      }
+    },
+    "workers": {
+      "type": "array",
+      "description": "Every live worker.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "task", "role", "worktree"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1, "description": "The worker's subagent ID." },
+          "task": { "type": "string", "minLength": 1, "description": "The task id." },
+          "role": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The worker's role: Research questions, Research, Roadmap, Design, Work, Monitor, or Operation."
+          },
+          "worktree": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Absolute path of the task worktree."
+          }
+        }
+      }
+    },
+    "scheduled": {
+      "type": "array",
+      "description": "Each open monitor task's next scheduled measurement.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["task", "at"],
+        "properties": {
+          "task": { "type": "string", "minLength": 1, "description": "The monitor task's id." },
+          "at": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}",
+            "description": "ISO time of the measurement."
+          }
+        }
+      }
+    },
+    "updatedAt": {
+      "type": "string",
+      "description": "Set by state publish when it publishes the state."
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "state": { "const": "running" } } },
+      "then": { "properties": { "workers": { "type": "array", "minItems": 1 } } }
+    },
+    {
+      "if": { "properties": { "state": { "const": "scheduled" } } },
+      "then": { "properties": { "scheduled": { "type": "array", "minItems": 1 } } }
+    },
+    {
+      "if": { "properties": { "state": { "const": "waiting on user" } } },
+      "then": { "properties": { "waiting": { "type": "array", "minItems": 1 } } }
+    },
+    {
+      "if": { "properties": { "state": { "const": "blocked" } } },
+      "then": { "properties": { "blockers": { "type": "array", "minItems": 1 } } }
+    }
+  ]
+}

@@ -6,11 +6,16 @@ hooks:
   Stop:
     - hooks:
         - type: command
-          command: '"${CLAUDE_SKILL_DIR:-$HOME/.claude/skills/orchestrate}"/scripts/stop-check.sh'
+          command: 'bun "${CLAUDE_SKILL_DIR:-$HOME/.claude/skills/orchestrate}"/scripts/run.js hook-stop'
   PreCompact:
     - hooks:
         - type: command
-          command: "echo 'Keep verbatim: the last orchestrate report; the planning worktree, tracking entity, document destination, and Run log; every live worker with its subagent ID, task id, role, and worktree; every needs-input awaiting a reply, with the ID of the worker that asked.'"
+          command: "echo 'Keep verbatim: the planning worktree path, the orchestrate skill directory, and that the Run state is in the state.json of the Run directory (scripts/run.js dir). After compaction, read that state.json before acting.'"
+  SessionStart:
+    - matcher: compact
+      hooks:
+        - type: command
+          command: 'bun "${CLAUDE_SKILL_DIR:-$HOME/.claude/skills/orchestrate}"/scripts/run.js hook-session-start'
 ---
 
 **Done is every acceptance criterion in the input covered by a merged
@@ -35,7 +40,8 @@ one row per decision still in force and appends every removed row to
 `<planning worktree>/decisions-<tracking entity id>.archive.tsv`.
 
 This session changes no repository file other than the Run log. It
-may read code and run commands and operations.
+may read code, run commands and operations, and write the Run
+directory.
 
 ## Start
 
@@ -63,14 +69,18 @@ may read code and run commands and operations.
    prompt:
    1. Resolve the **tracking entity**: the one the input gives, else a new item titled after the
       outcome.
-   2. Resolve the **document destination**: the input, else the repo
-      convention. None found → ask the user as an input decision.
-   3. Log `overlay: <path | none>`, `tracking entity: <entity>`, and
+   2. Start the status page.
+   3. Resolve the **document destination**: the input, else the repo
+      convention. None found → ask the user as an input decision, with
+      `documentDestination` published as `unresolved` until answered.
+   4. Log `overlay: <path | none>`, `tracking entity: <entity>`, and
       `document destination: <destination>` in the Run log.
-   4. Start the First tasks.
+   5. Start the First tasks.
 
-**Resume.** Read the Run log, the tracker's roadmap, every task
-worktree, and every task PR and its base. Start a fresh worker for
+**Resume.** Start the status page. Read the Run log, the state.json
+of the Run directory, the open messages, the tracker's roadmap, every
+task worktree, and every task PR and its base. Handle every open
+message. Start a fresh worker for
 every task whose worker was live, in its existing worktree. Schedule
 every open monitor task's next measurement; one already due → start
 its Monitor worker.
@@ -219,8 +229,12 @@ meanwhile, after:
   - `needs-input` → answer it.
   - `done` or `failed` → Settlement.
 - `orchestrate: measure <task id>` → start that task's Monitor worker.
-- A user message, or a line `<n>: <answer>` answering item `<n>` of
-  Waiting on the user:
+- The answer wait completes with lines
+  `message <id> · item <n>: <answer>` → each answers waiting item
+  `<n>`. Close each message once handled; start the answer wait
+  again.
+- A user message, or a line `<n>: <answer>` answering waiting item
+  `<n>`:
   - an answer → log it, then reply to the worker that asked;
   - any other instruction → log it; an input change goes to a Roadmap
     worker.
@@ -233,7 +247,7 @@ log, then reply with `SendMessage` to that worker.
 - **Approval request** → check it against the input's acceptance
   criteria, exclusions, and constraints, and the Run log.
   Reply approved, or with the required changes.
-- **Input decision** → add it to Waiting on the user. Reply once the
+- **Input decision** → add it as a waiting item. Reply once the
   user's answer arrives, and log that answer in the Run log too.
 
 **Settlement.**
@@ -247,6 +261,29 @@ log, then reply with `SendMessage` to that worker.
   next Measure at; none left → the task failed with the last
   observation.
 
+## Status page
+
+`<skill dir>/scripts/run.js` with the planning worktree as the
+current directory:
+
+- **Start the status page** — `bun run.js start`; it prints the
+  page URL. Then start the answer wait.
+- **Answer wait** — `bun run.js mail wait`, as a background Bash
+  command (`run_in_background`). It marks the messages it prints as
+  read. Keep exactly one in flight while the state is not complete.
+- **Close messages** — `bun run.js mail close <id>...`, once the
+  answer is logged and replied to the worker, or once you decide to
+  keep its item waiting.
+- **Open messages** — `bun run.js mail list`.
+- **Publish the state** — pipe the Run state as JSON into
+  `bun run.js state publish`. It prints the errors of a state it
+  refuses.
+
+The Run state follows `references/state.schema.json`; each field's
+description says what it holds. The status page shows each merge
+item's PR state; the user answers a merge item with `PR merged`,
+`PR closed`, `PR in the merge queue`, or their own text.
+
 ## End of turn
 
 Before ending a turn in a Run:
@@ -255,21 +292,9 @@ Before ending a turn in a Run:
   closed and its task worktree removed.
 - Every acceptance criterion covered by a change task.
 - The Run log published at the destination with every row.
+- The Run state published.
 
-End every turn with the report:
-
-```
-## <outcome>
-
-**State:** complete | running | scheduled | waiting on user | blocked
-**Roadmap:** <link to the tracking entity>
-
-### Waiting on the user
-<numbered questions, and PRs to merge, bases first; an item keeps its number across reports; or "none">
-
-### Blockers
-<each unresolved blocker, or "none">
-```
+End every turn with the line `**State:** <state> · <status page URL>`.
 
 **States:**
 
@@ -277,7 +302,7 @@ End every turn with the report:
   follow-up is in the roadmap or logged out of scope.
 - **running** — workers in flight.
 - **scheduled** — no worker in flight; every open task waits for a
-  scheduled measurement. The report names the next one and its time.
-- **waiting on user** — progress needs an item in Waiting on the user:
-  an answer or a merge.
+  scheduled measurement.
+- **waiting on user** — progress needs a waiting item: an answer or a
+  merge.
 - **blocked** — no task can progress without an unresolved blocker.
