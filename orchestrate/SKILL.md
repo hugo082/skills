@@ -233,6 +233,8 @@ meanwhile, after:
   `message <id> · item <n>: <answer>` → each answers waiting item
   `<n>`. Close each message once handled; start the answer wait
   again.
+- The answer wait completes with `mail: no message`, or ends any
+  other way → start the answer wait again.
 - A user message, or a line `<n>: <answer>` answering waiting item
   `<n>`:
   - an answer → log it, then reply to the worker that asked;
@@ -270,7 +272,8 @@ current directory:
   page URL. Then start the answer wait.
 - **Answer wait** — `bun run.js mail wait`, as a background Bash
   command (`run_in_background`). It marks the messages it prints as
-  read. Keep exactly one in flight while the state is not complete.
+  read, and prints `mail: no message` after 110 minutes without one.
+  Keep exactly one in flight while the state is not complete.
 - **Close messages** — `bun run.js mail close <id>...`, once the
   answer is logged and replied to the worker, or once you decide to
   keep its item waiting.

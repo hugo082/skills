@@ -2702,7 +2702,11 @@ async function mail(sub, ids = []) {
     `SELECT ${COLUMNS} FROM messages WHERE status = 'open' AND read_at IS NULL ORDER BY id`,
   );
   if (sub === "wait") {
-    while (!unread.all().length) await Bun.sleep(500);
+    const deadline = Date.now() + 110 * 60000;
+    while (!unread.all().length) {
+      if (Date.now() > deadline) return console.log("mail: no message");
+      await Bun.sleep(500);
+    }
     await Bun.sleep(1000);
     const batch = db.transaction(() => {
       const list = unread.all();
